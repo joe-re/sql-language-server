@@ -3,5 +3,15 @@
   "version": "0.0.1",
   "main": "index.js",
   "author": "joe-re <joe.tialtngo@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "dev": "parcel index.ts --out-dir dist"
+  },
+  "dependencies": {
+    "node-query": "^0.3.3"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.7.1",
+    "typescript": "^2.8.3"
+  }
 }
