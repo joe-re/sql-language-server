@@ -5,7 +5,7 @@
   "author": "joe-re <joe.tialtngo@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "parcel index.ts --out-dir dist"
+    "dev": "parcel src/index.ts --out-dir dist"
   },
   "dependencies": {
     "node-query": "^0.3.3"

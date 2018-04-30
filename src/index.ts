@@ -26,10 +26,10 @@ function run(str) {
   var ast = Parser.parse(str);
   var ar  = new AstReader(ast);
 
-  console.log(ar.getAst().columns);
+  console.log(ar.getAst());
 }
 try {
-  run('SELECT hoge.hoge from hoge where hohoho');
+  run('SELECT hoge.hoge union SELECT foo.goo');
 } catch (e) {
   console.log(e)
 }
