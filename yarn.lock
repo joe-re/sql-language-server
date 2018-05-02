@@ -90,6 +90,10 @@ assign-symbols@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/assign-symbols/-/assign-symbols-1.0.0.tgz#59667f41fadd4f20ccbc2bb96b8d4f7f78ec0367"
 
+asty@^1.7.10:
+  version "1.7.10"
+  resolved "https://registry.yarnpkg.com/asty/-/asty-1.7.10.tgz#47747f20b299f841a31044957202b4c706d88c46"
+
 async-each@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/async-each/-/async-each-1.0.1.tgz#19d386a1d9edc6e7c1c85d388aedbcc56d33602d"
@@ -2212,6 +2216,10 @@ node-query@^0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/node-query/-/node-query-0.3.3.tgz#b3e3d757fef2e2801d52cd3d4798a455f01ae4ab"
 
+"node-query@git://@github.com/alibaba/nquery#master":
+  version "0.3.4"
+  resolved "git://@github.com/alibaba/nquery#98c145c85958cb4098f727715cfffc6931c584c8"
+
 nopt@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/nopt/-/nopt-4.0.1.tgz#d0d4685afd5415193c8c7505602d0d17cd64474d"
@@ -2484,6 +2492,16 @@ pbkdf2@^3.0.3:
     ripemd160 "^2.0.1"
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
+
+pegjs-util@^1.4.10:
+  version "1.4.10"
+  resolved "https://registry.yarnpkg.com/pegjs-util/-/pegjs-util-1.4.10.tgz#f3d96f44f4213dce53bebe7753486e18e2686392"
+  dependencies:
+    pegjs ">=0.10.0"
+
+pegjs@>=0.10.0, pegjs@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/pegjs/-/pegjs-0.10.0.tgz#cf8bafae6eddff4b5a7efb185269eaaf4610ddbd"
 
 physical-cpu-count@^2.0.0:
   version "2.0.0"

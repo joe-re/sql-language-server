@@ -5,10 +5,14 @@
   "author": "joe-re <joe.tialtngo@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "parcel src/index.ts --out-dir dist"
+    "dev": "parcel src/index.ts --out-dir dist",
+    "peg": "pegjs ./node_modules/node-query/peg/nquery.pegjs nquery.js"
   },
   "dependencies": {
-    "node-query": "^0.3.3"
+    "asty": "^1.7.10",
+    "node-query": "git://@github.com/alibaba/nquery#master",
+    "pegjs": "^0.10.0",
+    "pegjs-util": "^1.4.10"
   },
   "devDependencies": {
     "parcel-bundler": "^1.7.1",

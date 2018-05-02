@@ -1,8 +1,12 @@
-import nQuery from 'node-query'
-
+import nQuery from '@joe-re/node-sql-parser'
+// import nQueryParser from 'node-query/base/nquery'
+import PEGUtil from 'pegjs-util'
+import PEG from 'pegjs'
+import asty from 'asty'
 var Parser    = nQuery.Parser;
 var Executor  = nQuery.Executor;
 var AstReader = nQuery.AstReader;
+var AstHelper = nQuery.AstHelper;
 
 var dc = {
   columns :  [
@@ -25,11 +29,14 @@ var doSelectFilter = Executor.doSelectFilter;
 function run(str) {
   var ast = Parser.parse(str);
   var ar  = new AstReader(ast);
-
+  console.log(ast)
   console.log(ar.getAst());
+  console.log(ar.getAst().columns);
+  console.log(ar.getAsNames());
+  console.log(AstHelper.getRefColInfo(ar.getAst()));
 }
 try {
-  run('SELECT hoge.hoge union SELECT foo.goo');
+  run('SELECT DISTINCT a FROM b WHERE c = 0 GROUP BY d ORDER BY e limit 3');
 } catch (e) {
   console.log(e)
 }
