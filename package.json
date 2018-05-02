@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "parcel src/index.ts --out-dir dist",
-    "peg": "pegjs ./node_modules/node-query/peg/nquery.pegjs nquery.js"
+    "peg": "pegjs ./node_modules/node-query/peg/nquery.pegjs nquery.js",
+    "test": "ava"
   },
   "dependencies": {
     "asty": "^1.7.10",
@@ -15,6 +16,7 @@
     "pegjs-util": "^1.4.10"
   },
   "devDependencies": {
+    "ava": "1.0.0-beta.4",
     "parcel-bundler": "^1.7.1",
     "typescript": "^2.8.3"
   }
