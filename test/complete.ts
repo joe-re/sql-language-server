@@ -1,7 +1,8 @@
-import test from 'ava';
+import test from 'ava'
+import complete from '../src/complete'
 
-const fn = async () => Promise.resolve('foo');
-
-test('test', async (t) => {
-	t.is(await fn(), 'foo');
+test("complete 'select' key word", async (t) => {
+  const result = complete('S', { line: 1, column: 1 })
+	t.is(result.candidates.length, 1);
+	t.is(result.candidates[0], 'SELECT');
 });

@@ -1,23 +1,26 @@
 import { Parser, AstReader } from '@joe-re/node-sql-parser'
 
+function extractExpectedLiterals(expected: { type: string, text: string }[]): string[] {
+  return expected.filter(v => v.type === 'literal')
+	  .map(v => v.text)
+		.filter((v, i, self) => self.indexOf(v) === i)
+}
+
 export default function complete(sql: string, pos: { line: number, column: number }) {
-  const candidates = []
+  let candidates: string[] = []
+	let error = {};
   try {
     const ast = Parser.parse(sql);
     const ar  = new AstReader(ast);
-    const lines = sql.split('\n')
-    console.log(ar.getAst())
   } catch (e) {
-    return(
-      {
-        error: {
-          label: e.name,
-          detail: e.message,
-          line: e.line,
-          offset: e.offset
-        },
-        candidates: e.candidates
-      }
-    )
+	  candidates = extractExpectedLiterals(e.expected)
+		error = {
+      label: e.name,
+      detail: e.message,
+      line: e.line,
+      offset: e.offset
+    }
   }
+	candidates = candidates.filter(v => v.startsWith(sql))
+	return { candidates, error }
 }
