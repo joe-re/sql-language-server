@@ -7,15 +7,11 @@
   "scripts": {
     "dev": "parcel src/index.ts --out-dir dist",
     "peg": "pegjs ./node_modules/node-query/peg/nquery.pegjs nquery.js",
-    "test": "ava"
+    "test": "tsc && ava"
   },
-  "dependencies": {
-    "asty": "^1.7.10",
-    "node-query": "git://@github.com/alibaba/nquery#master",
-    "pegjs": "^0.10.0",
-    "pegjs-util": "^1.4.10"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@types/node": "^10.0.3",
     "ava": "1.0.0-beta.4",
     "parcel-bundler": "^1.7.1",
     "typescript": "^2.8.3"

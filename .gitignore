@@ -1,3 +1,5 @@
 node_modules
 dist
 .cache
+src/*.js
+test/*.js

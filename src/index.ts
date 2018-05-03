@@ -1,13 +1,4 @@
-import nQuery from '@joe-re/node-sql-parser'
 // import nQueryParser from 'node-query/base/nquery'
-import PEGUtil from 'pegjs-util'
-import PEG from 'pegjs'
-import asty from 'asty'
-var Parser    = nQuery.Parser;
-var Executor  = nQuery.Executor;
-var AstReader = nQuery.AstReader;
-var AstHelper = nQuery.AstHelper;
-
 var dc = {
   columns :  [
     'name' , 'type', 'shop_id', 'title', 'money'
