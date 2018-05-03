@@ -7,7 +7,6 @@
     "moduleResolution": "node",
     "esModuleInterop": true
   },
-
   "include": [
     "./src/**/*",
     "./test/**/*"
