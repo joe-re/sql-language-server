@@ -1,0 +1,33 @@
+{
+  "name": "sql-language-server-client",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+	"main": "./out/extension",
+	"publisher": "joe-re",
+  "scripts": {
+		"watch": "tsc -w -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "engines": {
+    "vscode": "^1.22.0"
+  },
+  "activationEvents": [
+    "onLanguage:plaintext"
+  ],
+  "configuration": {
+    "type": "object",
+    "title": "Example configuration",
+    "properties": {
+      "lspSample.maxNumberOfProblems": {
+        "type": "number",
+        "default": 100,
+        "description": "Controls the maximum number of problems produced by the server."
+      }
+    }
+  },
+  "dependencies": {
+    "vscode": "^1.1.17",
+    "vscode-languageclient": "^4.1.3"
+  }
+}

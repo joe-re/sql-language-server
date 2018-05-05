@@ -1,0 +1,54 @@
+Arguments: 
+  /Users/noguchimasato/.ndenv/versions/v9.5.0/bin/node /usr/local/Cellar/yarn/1.2.1/libexec/bin/yarn.js add vscode-languageserver
+
+PATH: 
+  /Users/noguchimasato/.ndenv/versions/v9.5.0/bin:/Users/noguchimasato/.ndenv/libexec:/Users/noguchimasato/.ndenv/plugins/node-build/bin:/Users/noguchimasato/bin:/Users/noguchimasato/.opam/system/bin:/usr/local/heroku/bin:/Users/noguchimasato/.rbenv/shims:/Users/noguchimasato/.rbenv/bin:/Users/noguchimasato/.cargo/bin:/Users/noguchimasato/.pyenv/bin:/Users/noguchimasato/.ndenv/shims:/Users/noguchimasato/.ndenv/bin:/Users/noguchimasato/.pyenv/shims:/usr/local/heroku/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/noguchimasato/go/bin:/usr/local/bin:~/bin::/usr/local/bin:/usr/local/opt/go/libexec/bin:/Users/noguchimasato/go/bin
+  eval export PATH="/Users/noguchimasato/.pyenv/shims:${PATH}"
+  export PYENV_SHELL=zsh
+  source '/usr/local/Cellar/pyenv/1.2.3/libexec/../completions/pyenv.zsh'
+  command pyenv rehash 2>/dev/null
+  pyenv() {
+    local command
+    command="$1"
+    if [ "$#" -gt 0 ]; then
+      shift
+    fi
+  
+    case "$command" in
+    rehash|shell)
+      eval "$(pyenv "sh-$command" "$@")";;
+    *)
+      command pyenv "$command" "$@";;
+    esac
+  }
+  eval "$(pyenv virtualenv-init -)":/Users/noguchimasato/.ndenv/versions/v9.5.0/bin:/Users/noguchimasato/Library/Android/sdk/tools:/Users/noguchimasato/Library/Android/sdk/platform-tools
+
+Yarn version: 
+  1.2.1
+
+Node version: 
+  9.5.0
+
+Platform: 
+  darwin x64
+
+npm manifest: 
+  {
+    "name": "server",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
+
+Trace: 
+  Error: https://registry.yarnpkg.com/vscode-languageserver: ETIMEDOUT
+      at Timeout._onTimeout (/usr/local/Cellar/yarn/1.2.1/libexec/lib/cli.js:123675:19)
+      at ontimeout (timers.js:458:11)
+      at tryOnTimeout (timers.js:296:5)
+      at Timer.listOnTimeout (timers.js:259:5)

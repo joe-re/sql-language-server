@@ -4,10 +4,16 @@
   "main": "index.js",
   "author": "joe-re <joe.tialtngo@gmail.com>",
   "license": "MIT",
+	"publisher": "joe-re",
   "scripts": {
     "dev": "parcel src/index.ts --out-dir dist",
     "peg": "pegjs ./node_modules/node-query/peg/nquery.pegjs nquery.js",
-    "test": "tsc && ava"
+    "compile": "tsc -p client/tsconfig.json && cd server && npm run installServer && cd .. && tsc -p server/tsconfig.json",
+    "test": "tsc && ava",
+		"compile:client": "tsc -p client/tsconfig.json",
+		"watch:client": "tsc -w -p client/tsconfig.json",
+		"compile:server": "cd server && npm run installServer && cd .. && tsc -p server/tsconfig.json",
+		"watch:server": "cd server && npm run installServer && cd .. && tsc -w -p server/tsconfig.json"
   },
   "dependencies": {},
   "devDependencies": {
