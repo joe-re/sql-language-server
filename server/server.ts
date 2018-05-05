@@ -9,6 +9,16 @@ import {
 	Diagnostic, DiagnosticSeverity, InitializeResult, TextDocumentPositionParams, CompletionItem,
 	CompletionItemKind
 } from 'vscode-languageserver';
+import * as log4js from 'log4js';
+import cache from './cache'
+log4js.configure({
+  appenders: { server: { type: 'file', filename: '/Users/noguchimasato/src/sql-language-server/server.log' } },
+  categories: { default: { appenders: ['server'], level: 'debug' } }
+});
+
+const logger = log4js.getLogger()
+logger.debug('Test!!')
+logger.error('Error!!')
 
 // Create a connection for the server. The connection uses Node's IPC as a transport
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
@@ -41,9 +51,10 @@ connection.onInitialize((_params): InitializeResult => {
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
-documents.onDidChangeContent((change) => {
-	validateTextDocument(change.document);
-});
+// documents.onDidChangeContent((change) => {
+//   logger.debug(`didChangeContent: ${change.document.uri}`)
+//   cache.set(change.document.uri, change.document.getText())
+// });
 
 // The settings interface describe the server relevant settings part
 interface Settings {
@@ -65,6 +76,10 @@ connection.onDidChangeConfiguration((change) => {
 	maxNumberOfProblems = settings.lspSample.maxNumberOfProblems || 100;
 	// Revalidate any open text documents
 	documents.all().forEach(validateTextDocument);
+});
+connection.onDidChangeTextDocument((params) => {
+  logger.debug(`didChangeTextDocument: ${params.textDocument.uri}`)
+  cache.set(params.textDocument.uri, params.contentChanges[0].text)
 });
 
 function validateTextDocument(textDocument: TextDocument): void {
@@ -123,11 +138,13 @@ connection.onDidChangeWatchedFiles((_change) => {
 });
 
 
-// This handler provides the initial list of the completion items.
-connection.onCompletion((_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-	// The pass parameter contains the position of the text document in
-	// which code complete got requested. For the example we ignore this
-	// info and always provide the same completion items.
+connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[] => {
+	let text = cache.get(docParams.textDocument.uri)
+	if (!text) {
+		cache.setFromUri(docParams.textDocument.uri)
+		text = cache.get(docParams.textDocument.uri)
+	}
+	logger.debug(text)
 	return [
 		{
 			label: 'TypeScript',
@@ -145,15 +162,16 @@ connection.onCompletion((_textDocumentPosition: TextDocumentPositionParams): Com
 // This handler resolve additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-	if (item.data === 1) {
-		item.detail = 'TypeScript details',
-			item.documentation = 'TypeScript documentation'
-	} else if (item.data === 2) {
-		item.detail = 'JavaScript details',
-			item.documentation = 'JavaScript documentation'
-	}
-	return item;
+  if (item.data === 1) {
+    item.detail = 'TypeScript details dedede',
+    item.documentation = 'TypeScript documentation'
+  } else if (item.data === 2) {
+    item.detail = 'JavaScript details',
+    item.documentation = 'JavaScript documentation'
+  }
+  return item;
 });
+
 
 /*
 connection.onDidOpenTextDocument((params) => {
@@ -162,12 +180,7 @@ connection.onDidOpenTextDocument((params) => {
 	// params.text the initial full content of the document.
 	connection.console.log(`${params.textDocument.uri} opened.`);
 });
-connection.onDidChangeTextDocument((params) => {
-	// The content of a text document did change in VSCode.
-	// params.uri uniquely identifies the document.
-	// params.contentChanges describe the content changes to the document.
-	connection.console.log(`${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
-});
+
 connection.onDidCloseTextDocument((params) => {
 	// A text document got closed in VSCode.
 	// params.uri uniquely identifies the document.

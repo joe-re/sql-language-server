@@ -5,6 +5,15 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_languageserver_1 = require("vscode-languageserver");
+const log4js = require("log4js");
+const cache_1 = require("./cache");
+log4js.configure({
+    appenders: { server: { type: 'file', filename: '/Users/noguchimasato/src/sql-language-server/server.log' } },
+    categories: { default: { appenders: ['server'], level: 'debug' } }
+});
+const logger = log4js.getLogger();
+logger.debug('Test!!');
+logger.error('Error!!');
 // Create a connection for the server. The connection uses Node's IPC as a transport
 let connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
 // Create a simple text document manager. The text document manager
@@ -29,11 +38,6 @@ connection.onInitialize((_params) => {
         }
     };
 });
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-documents.onDidChangeContent((change) => {
-    validateTextDocument(change.document);
-});
 // hold the maxNumberOfProblems setting
 let maxNumberOfProblems;
 // The settings have changed. Is send on server activation
@@ -43,6 +47,10 @@ connection.onDidChangeConfiguration((change) => {
     maxNumberOfProblems = settings.lspSample.maxNumberOfProblems || 100;
     // Revalidate any open text documents
     documents.all().forEach(validateTextDocument);
+});
+connection.onDidChangeTextDocument((params) => {
+    logger.debug(`didChangeTextDocument: ${params.textDocument.uri}`);
+    cache_1.default.set(params.textDocument.uri, params.contentChanges[0].text);
 });
 function validateTextDocument(textDocument) {
     let diagnostics = [];
@@ -96,11 +104,13 @@ connection.onDidChangeWatchedFiles((_change) => {
     // Monitored files have change in VSCode
     connection.console.log('We received an file change event');
 });
-// This handler provides the initial list of the completion items.
-connection.onCompletion((_textDocumentPosition) => {
-    // The pass parameter contains the position of the text document in
-    // which code complete got requested. For the example we ignore this
-    // info and always provide the same completion items.
+connection.onCompletion((docParams) => {
+    let text = cache_1.default.get(docParams.textDocument.uri);
+    if (!text) {
+        cache_1.default.setFromUri(docParams.textDocument.uri);
+        text = cache_1.default.get(docParams.textDocument.uri);
+    }
+    logger.debug(text);
     return [
         {
             label: 'TypeScript',
@@ -118,7 +128,7 @@ connection.onCompletion((_textDocumentPosition) => {
 // the completion list.
 connection.onCompletionResolve((item) => {
     if (item.data === 1) {
-        item.detail = 'TypeScript details',
+        item.detail = 'TypeScript details dedede',
             item.documentation = 'TypeScript documentation';
     }
     else if (item.data === 2) {
@@ -134,12 +144,7 @@ connection.onDidOpenTextDocument((params) => {
     // params.text the initial full content of the document.
     connection.console.log(`${params.textDocument.uri} opened.`);
 });
-connection.onDidChangeTextDocument((params) => {
-    // The content of a text document did change in VSCode.
-    // params.uri uniquely identifies the document.
-    // params.contentChanges describe the content changes to the document.
-    connection.console.log(`${params.textDocument.uri} changed: ${JSON.stringify(params.contentChanges)}`);
-});
+
 connection.onDidCloseTextDocument((params) => {
     // A text document got closed in VSCode.
     // params.uri uniquely identifies the document.

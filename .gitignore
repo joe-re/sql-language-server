@@ -6,3 +6,5 @@ test/*.js
 
 client/out/*
 server/out/*
+
+server.log
