@@ -11,14 +11,15 @@ import {
 } from 'vscode-languageserver';
 import * as log4js from 'log4js';
 import cache from './cache'
+import complete from './complete'
+
 log4js.configure({
-  appenders: { server: { type: 'file', filename: '/Users/noguchimasato/src/sql-language-server/server.log' } },
+  appenders: { server: { type: 'file', filename: `${__dirname}/server.log` } },
   categories: { default: { appenders: ['server'], level: 'debug' } }
 });
 
 const logger = log4js.getLogger()
-logger.debug('Test!!')
-logger.error('Error!!')
+
 
 // Create a connection for the server. The connection uses Node's IPC as a transport
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
@@ -145,30 +146,36 @@ connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[
 		text = cache.get(docParams.textDocument.uri)
 	}
 	logger.debug(text)
-	return [
-		{
-			label: 'TypeScript',
-			kind: CompletionItemKind.Text,
-			data: 1
-		},
-		{
-			label: 'JavaScript',
-			kind: CompletionItemKind.Text,
-			data: 2
-		}
-	]
+	const candidates = complete(text, {
+		line: docParams.position.line,
+		column: docParams.position.character
+	}, [ { table: 'USERS', columns: ['id', 'email', 'created_at', 'updated_at'] }]).candidates
+	logger.debug(candidates.join(","))
+	return candidates.map(v => ({ label: v, kind: CompletionItemKind.Text }))
+	// return [
+	// 	{
+	// 		label: 'TypeScript',
+	// 		kind: CompletionItemKind.Text,
+	// 		data: 1
+	// 	},
+	// 	{
+	// 		label: 'JavaScript',
+	// 		kind: CompletionItemKind.Text,
+	// 		data: 2
+	// 	}
+	// ]
 });
 
 // This handler resolve additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  if (item.data === 1) {
-    item.detail = 'TypeScript details dedede',
-    item.documentation = 'TypeScript documentation'
-  } else if (item.data === 2) {
-    item.detail = 'JavaScript details',
-    item.documentation = 'JavaScript documentation'
-  }
+  // if (item.data === 1) {
+  //   item.detail = 'TypeScript details dedede',
+  //   item.documentation = 'TypeScript documentation'
+  // } else if (item.data === 2) {
+  //   item.detail = 'JavaScript details',
+  //   item.documentation = 'JavaScript documentation'
+  // }
   return item;
 });
 

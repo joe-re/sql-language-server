@@ -7,13 +7,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_languageserver_1 = require("vscode-languageserver");
 const log4js = require("log4js");
 const cache_1 = require("./cache");
+const complete_1 = require("./complete");
 log4js.configure({
-    appenders: { server: { type: 'file', filename: '/Users/noguchimasato/src/sql-language-server/server.log' } },
+    appenders: { server: { type: 'file', filename: `${__dirname}/server.log` } },
     categories: { default: { appenders: ['server'], level: 'debug' } }
 });
 const logger = log4js.getLogger();
-logger.debug('Test!!');
-logger.error('Error!!');
 // Create a connection for the server. The connection uses Node's IPC as a transport
 let connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
 // Create a simple text document manager. The text document manager
@@ -111,30 +110,35 @@ connection.onCompletion((docParams) => {
         text = cache_1.default.get(docParams.textDocument.uri);
     }
     logger.debug(text);
-    return [
-        {
-            label: 'TypeScript',
-            kind: vscode_languageserver_1.CompletionItemKind.Text,
-            data: 1
-        },
-        {
-            label: 'JavaScript',
-            kind: vscode_languageserver_1.CompletionItemKind.Text,
-            data: 2
-        }
-    ];
+    const candidates = complete_1.default(text, {
+        line: docParams.position.line,
+        column: docParams.position.character
+    }, [{ table: 'USERS', columns: ['id', 'email', 'created_at', 'updated_at'] }]).candidates;
+    logger.debug(candidates.join(","));
+    return candidates.map(v => ({ label: v, kind: vscode_languageserver_1.CompletionItemKind.Text }));
+    // return [
+    // 	{
+    // 		label: 'TypeScript',
+    // 		kind: CompletionItemKind.Text,
+    // 		data: 1
+    // 	},
+    // 	{
+    // 		label: 'JavaScript',
+    // 		kind: CompletionItemKind.Text,
+    // 		data: 2
+    // 	}
+    // ]
 });
 // This handler resolve additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve((item) => {
-    if (item.data === 1) {
-        item.detail = 'TypeScript details dedede',
-            item.documentation = 'TypeScript documentation';
-    }
-    else if (item.data === 2) {
-        item.detail = 'JavaScript details',
-            item.documentation = 'JavaScript documentation';
-    }
+    // if (item.data === 1) {
+    //   item.detail = 'TypeScript details dedede',
+    //   item.documentation = 'TypeScript documentation'
+    // } else if (item.data === 2) {
+    //   item.detail = 'JavaScript details',
+    //   item.documentation = 'JavaScript documentation'
+    // }
     return item;
 });
 /*
