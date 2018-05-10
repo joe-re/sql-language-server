@@ -44,7 +44,8 @@ connection.onInitialize((_params): InitializeResult => {
 			textDocumentSync: documents.syncKind,
 			// Tell the client that the server support code complete
 			completionProvider: {
-				resolveProvider: true
+				resolveProvider: true,
+        triggerCharacters: ['.'],
 			}
 		}
 	}

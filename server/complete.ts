@@ -14,6 +14,15 @@ type ColumnRefNode = {
 	}
 }
 
+type FromTableNode = {
+  db: string,
+	table: string,
+  as: string | null,
+	location: {
+		start: { offset: number, line: number, column: number },
+		end: { offset: number, line: number, column: number },
+	}
+}
 const CLAUSES = ['SELECT', 'FROM', 'WHERE', 'ORDER BY', 'GROUP BY', 'LIMIT']
 
 function extractExpectedLiterals(expected: { type: string, text: string }[]): string[] {
@@ -30,6 +39,13 @@ function getLastToken(sql: string) {
 
 function getColumnRefByPos(columns: ColumnRefNode[], pos: { line: number, column: number }) {
 	return columns.find(v =>
+		(v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
+		(v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column)
+	)
+}
+
+function getFromTableByPos(fromTables: FromTableNode[], pos: { line: number, column: number }) {
+	return fromTables.find(v =>
 		(v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
 		(v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column)
 	)
@@ -54,6 +70,7 @@ export default function complete(sql: string, pos: { line: number, column: numbe
 		const ar = new AstReader(ast)
 		logger.debug(`ast: ${JSON.stringify(ar.getAst())}`)
    	logger.debug(`columns: ${JSON.stringify(ar.getAst().columns)}`)
+    console.log(JSON.stringify(ar.getAst()))
 		if (Array.isArray(ar.getAst().columns)) {
 			const columnRef = getColumnRefByPos(ar.getAst().columns.map((v: any) => v.expr), pos)
       logger.debug(JSON.stringify(columnRef))
@@ -61,6 +78,11 @@ export default function complete(sql: string, pos: { line: number, column: numbe
 				candidates = candidates.concat(getCandidatesFromColumnRefNode(columnRef, tables))
 			}
 		}
+		if (Array.isArray(ar.getAst().from)) {
+      if (getFromTableByPos(ar.getAst().from || [], pos)) {
+        candidates = candidates.concat(tables.map(v => v.table))
+      }
+    }
 	} catch (e) {
 		logger.debug('error')
 		logger.debug(e)

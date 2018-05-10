@@ -20,13 +20,13 @@ function getColumnRefByPos(columns, pos) {
     return columns.find(v => (v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
         (v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column));
 }
+function getFromTableByPos(fromTables, pos) {
+    return fromTables.find(v => (v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
+        (v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column));
+}
 function getCandidatesFromColumnRefNode(columnRefNode, tables) {
     const tableCandidates = tables.map(v => v.table).filter(v => v.startsWith(columnRefNode.table));
-    console.log('table candidates');
-    console.log(tableCandidates);
     const columnCandidates = Array.prototype.concat.apply([], tables.filter(v => tableCandidates.includes(v.table)).map(v => v.columns));
-    console.log('column candidates');
-    console.log(columnCandidates);
     return tableCandidates.concat(columnCandidates);
 }
 function complete(sql, pos, tables = []) {
@@ -38,18 +38,21 @@ function complete(sql, pos, tables = []) {
     try {
         candidates = CLAUSES;
         logger.debug('before parse');
-        console.log('before parse');
         const ast = node_sql_parser_1.Parser.parse(target);
         const ar = new node_sql_parser_1.AstReader(ast);
         logger.debug(`ast: ${JSON.stringify(ar.getAst())}`);
         logger.debug(`columns: ${JSON.stringify(ar.getAst().columns)}`);
-        console.log(ar.getAst());
+        console.log(JSON.stringify(ar.getAst()));
         if (Array.isArray(ar.getAst().columns)) {
             const columnRef = getColumnRefByPos(ar.getAst().columns.map((v) => v.expr), pos);
             logger.debug(JSON.stringify(columnRef));
             if (columnRef) {
-                console.log(tables);
                 candidates = candidates.concat(getCandidatesFromColumnRefNode(columnRef, tables));
+            }
+        }
+        if (Array.isArray(ar.getAst().from)) {
+            if (getFromTableByPos(ar.getAst().from || [], pos)) {
+                candidates = candidates.concat(tables.map(v => v.table));
             }
         }
     }
@@ -59,23 +62,14 @@ function complete(sql, pos, tables = []) {
         if (e.name !== 'SyntaxError') {
             throw e;
         }
-        console.log(JSON.stringify(e));
         candidates = extractExpectedLiterals(e.expected);
-        console.log('token');
-        console.log(target);
-        console.log(pos.column);
-        console.log(target[pos.column - 1]);
         if (target[pos.column - 1] === '.') {
-            console.log('token lastToken');
-            console.log(getLastToken(target.slice(0, target.length - 1)));
             const tableName = getLastToken(target.slice(0, target.length - 1));
             const table = tables.find(v => v.table === tableName);
             if (table) {
                 candidates = table.columns;
             }
         }
-        console.log('error candidates');
-        console.log(candidates);
         error = {
             label: e.name,
             detail: e.message,
@@ -83,13 +77,7 @@ function complete(sql, pos, tables = []) {
             offset: e.offset
         };
     }
-    console.log('target');
-    console.log(target);
     const lastToken = getLastToken(target);
-    console.log('lastToken');
-    console.log(lastToken);
-    console.log('candidates');
-    console.log(candidates);
     candidates = candidates.filter(v => v.startsWith(lastToken));
     return { candidates, error };
 }

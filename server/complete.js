@@ -27,6 +27,10 @@ function getColumnRefByPos(columns, pos) {
     return columns.find(v => (v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
         (v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column));
 }
+function getFromTableByPos(fromTables, pos) {
+    return fromTables.find(v => (v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
+        (v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column));
+}
 function getCandidatesFromColumnRefNode(columnRefNode, tables) {
     const tableCandidates = tables.map(v => v.table).filter(v => v.startsWith(columnRefNode.table));
     const columnCandidates = Array.prototype.concat.apply([], tables.filter(v => tableCandidates.includes(v.table)).map(v => v.columns));
@@ -45,11 +49,17 @@ function complete(sql, pos, tables = []) {
         const ar = new node_sql_parser_1.AstReader(ast);
         logger.debug(`ast: ${JSON.stringify(ar.getAst())}`);
         logger.debug(`columns: ${JSON.stringify(ar.getAst().columns)}`);
+        console.log(JSON.stringify(ar.getAst()));
         if (Array.isArray(ar.getAst().columns)) {
             const columnRef = getColumnRefByPos(ar.getAst().columns.map((v) => v.expr), pos);
             logger.debug(JSON.stringify(columnRef));
             if (columnRef) {
                 candidates = candidates.concat(getCandidatesFromColumnRefNode(columnRef, tables));
+            }
+        }
+        if (Array.isArray(ar.getAst().from)) {
+            if (getFromTableByPos(ar.getAst().from || [], pos)) {
+                candidates = candidates.concat(tables.map(v => v.table));
             }
         }
     }
