@@ -1,10 +1,11 @@
 node_modules
-dist
 .cache
 src/*.js
 test/*.js
 
 client/out/*
 server/out/*
+client/server
 
 server.log
+**/*/*.log
