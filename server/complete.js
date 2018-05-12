@@ -42,19 +42,17 @@ function complete(sql, pos, tables = []) {
     let error = null;
     const target = sql.split('\n').filter((_v, idx) => pos.line >= idx).map((v, idx) => idx === pos.line ? v.slice(0, pos.column) : v).join('\n');
     logger.debug(`target: ${target}`);
-    console.log(`target: ${target}`);
     try {
-        candidates = CLAUSES;
+        candidates = [].concat(CLAUSES);
         const ast = node_sql_parser_1.Parser.parse(target);
         const ar = new node_sql_parser_1.AstReader(ast);
         logger.debug(`ast: ${JSON.stringify(ar.getAst())}`);
-        logger.debug(`columns: ${JSON.stringify(ar.getAst().columns)}`);
-        console.log(JSON.stringify(ar.getAst()));
+        if (!ar.getAst().distinct) {
+            candidates.push('DISTINCT');
+        }
         if (Array.isArray(ar.getAst().columns)) {
             const selectColumnRefs = ar.getAst().columns.map((v) => v.expr).filter(v => !!v);
             const whereColumnRefs = ar.getAst().where || [];
-            console.log(`select columns: ${selectColumnRefs}`);
-            console.log(` where columns: ${whereColumnRefs}`);
             const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos);
             logger.debug(JSON.stringify(columnRef));
             if (columnRef) {
@@ -70,8 +68,6 @@ function complete(sql, pos, tables = []) {
     catch (e) {
         logger.debug('error');
         logger.debug(e);
-        console.log('error');
-        console.log(JSON.stringify(e));
         if (e.name !== 'SyntaxError') {
             throw e;
         }
