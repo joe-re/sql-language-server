@@ -61,7 +61,8 @@ function complete(sql, pos, tables = []) {
         }
         if (Array.isArray(ar.getAst().from)) {
             if (getFromTableByPos(ar.getAst().from || [], pos)) {
-                candidates = candidates.concat(tables.map(v => v.table));
+                candidates = candidates.concat(tables.map(v => v.table))
+                    .concat(['INNER JOIN', 'LEFT JOIN']);
             }
         }
     }

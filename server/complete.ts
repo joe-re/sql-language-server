@@ -83,6 +83,7 @@ export default function complete(sql: string, pos: { line: number, column: numbe
     if (Array.isArray(ar.getAst().from)) {
       if (getFromTableByPos(ar.getAst().from || [], pos)) {
         candidates = candidates.concat(tables.map(v => v.table))
+          .concat(['INNER JOIN', 'LEFT JOIN'])
       }
     }
   } catch (e) {
