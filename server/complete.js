@@ -42,16 +42,20 @@ function complete(sql, pos, tables = []) {
     let error = null;
     const target = sql.split('\n').filter((_v, idx) => pos.line >= idx).map((v, idx) => idx === pos.line ? v.slice(0, pos.column) : v).join('\n');
     logger.debug(`target: ${target}`);
+    console.log(`target: ${target}`);
     try {
         candidates = CLAUSES;
-        logger.debug('before parse');
         const ast = node_sql_parser_1.Parser.parse(target);
         const ar = new node_sql_parser_1.AstReader(ast);
         logger.debug(`ast: ${JSON.stringify(ar.getAst())}`);
         logger.debug(`columns: ${JSON.stringify(ar.getAst().columns)}`);
         console.log(JSON.stringify(ar.getAst()));
         if (Array.isArray(ar.getAst().columns)) {
-            const columnRef = getColumnRefByPos(ar.getAst().columns.map((v) => v.expr), pos);
+            const selectColumnRefs = ar.getAst().columns.map((v) => v.expr).filter(v => !!v);
+            const whereColumnRefs = ar.getAst().where || [];
+            console.log(`select columns: ${selectColumnRefs}`);
+            console.log(` where columns: ${whereColumnRefs}`);
+            const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos);
             logger.debug(JSON.stringify(columnRef));
             if (columnRef) {
                 candidates = candidates.concat(getCandidatesFromColumnRefNode(columnRef, tables));
@@ -66,10 +70,15 @@ function complete(sql, pos, tables = []) {
     catch (e) {
         logger.debug('error');
         logger.debug(e);
+        console.log('error');
+        console.log(JSON.stringify(e));
         if (e.name !== 'SyntaxError') {
             throw e;
         }
         candidates = extractExpectedLiterals(e.expected);
+        if (candidates.includes('.')) {
+            candidates = candidates.concat(tables.map(v => v.table));
+        }
         if (target[pos.column - 1] === '.') {
             const tableName = getLastToken(target.slice(0, target.length - 1));
             const table = tables.find(v => v.table === tableName);

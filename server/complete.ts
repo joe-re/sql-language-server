@@ -65,14 +65,14 @@ export default function complete(sql: string, pos: { line: number, column: numbe
 	logger.debug(`target: ${target}`)
 	try {
 		candidates = CLAUSES
-		logger.debug('before parse')
 		const ast = Parser.parse(target);
 		const ar = new AstReader(ast)
 		logger.debug(`ast: ${JSON.stringify(ar.getAst())}`)
    	logger.debug(`columns: ${JSON.stringify(ar.getAst().columns)}`)
-    console.log(JSON.stringify(ar.getAst()))
 		if (Array.isArray(ar.getAst().columns)) {
-			const columnRef = getColumnRefByPos(ar.getAst().columns.map((v: any) => v.expr), pos)
+      const selectColumnRefs = ar.getAst().columns.map((v: any) => v.expr).filter(v => !!v)
+      const whereColumnRefs = ar.getAst().where || []
+			const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
       logger.debug(JSON.stringify(columnRef))
 			if (columnRef) {
 				candidates = candidates.concat(getCandidatesFromColumnRefNode(columnRef, tables))
@@ -90,6 +90,9 @@ export default function complete(sql: string, pos: { line: number, column: numbe
 			throw e
 		}
 		candidates = extractExpectedLiterals(e.expected)
+    if (candidates.includes('.')) {
+      candidates = candidates.concat(tables.map(v => v.table))
+    }
     if (target[pos.column - 1] === '.') {
       const tableName = getLastToken(target.slice(0, target.length - 1))
       const table = tables.find(v => v.table === tableName)

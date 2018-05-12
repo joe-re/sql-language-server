@@ -3,12 +3,12 @@
     "target": "es2015",
     "module": "commonjs",
     "lib": [ "dom", "es2015", "es2016" ],
-    "strict": true,
+    "strict": false,
     "moduleResolution": "node",
     "esModuleInterop": true
   },
   "include": [
-    "./src/**/*",
+    "./server/**/*",
     "./test/**/*"
   ]
 }

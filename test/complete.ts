@@ -51,11 +51,21 @@ test("complete ColumnName: cursor on dot", (t) => {
 	t.is(result.candidates[1], 'COLUMN2');
 });
 
-test("from clause: complete ColumnName", (t) => {
+test("from clause: complete TableName", (t) => {
   const result =
 	  complete(
 		'SELECT TABLE1.COLUMN1 FROM T',
 		{ line: 0, column: 28 },
+		[{ table: 'TABLE1', columns: ['COLUMN1', 'COLUMN2'] }])
+	t.is(result.candidates.length, 1);
+	t.is(result.candidates[0], 'TABLE1');
+});
+
+test("where clause: complete TableName", (t) => {
+  const result =
+	  complete(
+		'SELECT TABLE1.COLUMN1 FROM TABLE WHERE T',
+		{ line: 0, column: 40 },
 		[{ table: 'TABLE1', columns: ['COLUMN1', 'COLUMN2'] }])
 	t.is(result.candidates.length, 1);
 	t.is(result.candidates[0], 'TABLE1');
