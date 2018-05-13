@@ -36,6 +36,27 @@ function getCandidatesFromColumnRefNode(columnRefNode, tables) {
     const columnCandidates = Array.prototype.concat.apply([], tables.filter(v => tableCandidates.includes(v.table)).map(v => v.columns));
     return tableCandidates.concat(columnCandidates);
 }
+function getCandidatesFromError(target, tables, e) {
+    console.log(target);
+    console.log(e.expected);
+    let candidates = extractExpectedLiterals(e.expected);
+    console.log(candidates);
+    if (candidates.includes("'") || candidates.includes('"')) {
+        return [];
+    }
+    if (candidates.includes('.')) {
+        candidates = candidates.concat(tables.map(v => v.table));
+    }
+    logger.debug(`lastChar: ${target[target.length - 1]}`);
+    if (target[target.length - 1] === '.') {
+        const tableName = getLastToken(target.slice(0, target.length - 1));
+        const table = tables.find(v => v.table === tableName);
+        if (table) {
+            candidates = table.columns;
+        }
+    }
+    return candidates;
+}
 function complete(sql, pos, tables = []) {
     logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`);
     let candidates = [];
@@ -76,25 +97,11 @@ function complete(sql, pos, tables = []) {
         if (e.name !== 'SyntaxError') {
             throw e;
         }
-        candidates = extractExpectedLiterals(e.expected);
-        if (candidates.includes('.')) {
-            candidates = candidates.concat(tables.map(v => v.table));
-        }
-        if (target[target.length - 1] === '.') {
-            const tableName = getLastToken(target.slice(0, target.length - 1));
-            const table = tables.find(v => v.table === tableName);
-            if (table) {
-                candidates = table.columns;
-            }
-        }
-        error = {
-            label: e.name,
-            detail: e.message,
-            line: e.line,
-            offset: e.offset
-        };
+        candidates = getCandidatesFromError(target, tables, e);
+        error = { label: e.name, detail: e.message, line: e.line, offset: e.offset };
     }
     const lastToken = getLastToken(target);
+    logger.debug(`lastToken: ${lastToken}`);
     candidates = candidates.filter(v => v.startsWith(lastToken));
     return { candidates, error };
 }

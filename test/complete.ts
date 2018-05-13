@@ -129,3 +129,13 @@ test("where clause: complete TableName", (t) => {
   t.is(result.candidates.length, 1);
   t.is(result.candidates[0], 'TABLE1');
 });
+
+test("no complete when a cursor is on dot in string literal", (t) => {
+  const result =
+    complete(
+      'SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = "hoge.',
+      { line: 0, column: 63 },
+      [{ table: 'TABLE1', columns: ['COLUMN1', 'COLUMN2'] }])
+  console.log(result)
+  t.is(result.candidates.length, 0);
+});

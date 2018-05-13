@@ -59,6 +59,26 @@ function getCandidatesFromColumnRefNode(columnRefNode: ColumnRefNode, tables: Ta
   return tableCandidates.concat(columnCandidates)
 }
 
+function getCandidatesFromError(target: string, tables: Table[], e) {
+  let candidates = extractExpectedLiterals(e.expected)
+  console.log(candidates)
+  if (candidates.includes("'") || candidates.includes('"')) {
+    return []
+  }
+  if (candidates.includes('.')) {
+    candidates = candidates.concat(tables.map(v => v.table))
+  }
+  logger.debug(`lastChar: ${target[target.length - 1]}`)
+  if (target[target.length - 1] === '.') {
+    const tableName = getLastToken(target.slice(0, target.length - 1))
+    const table = tables.find(v => v.table === tableName)
+    if (table) {
+      candidates = table.columns
+    }
+  }
+  return candidates
+}
+
 export default function complete(sql: string, pos: { line: number, column: number }, tables: Table[] = []) {
   logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   let candidates: string[] = []
@@ -98,24 +118,8 @@ export default function complete(sql: string, pos: { line: number, column: numbe
     if (e.name !== 'SyntaxError') {
       throw e
     }
-    candidates = extractExpectedLiterals(e.expected)
-    if (candidates.includes('.')) {
-      candidates = candidates.concat(tables.map(v => v.table))
-    }
-    logger.debug(`lastChar: ${target[target.length - 1]}`)
-    if (target[target.length - 1] === '.') {
-      const tableName = getLastToken(target.slice(0, target.length - 1))
-      const table = tables.find(v => v.table === tableName)
-      if (table) {
-        candidates = table.columns
-      }
-    }
-    error = {
-      label: e.name,
-      detail: e.message,
-      line: e.line,
-      offset: e.offset
-    }
+    candidates = getCandidatesFromError(target, tables, e)
+    error = { label: e.name, detail: e.message, line: e.line, offset: e.offset }
   }
   const lastToken = getLastToken(target)
   logger.debug(`lastToken: ${lastToken}`)
