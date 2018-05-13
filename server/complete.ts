@@ -72,7 +72,7 @@ export default function complete(sql: string, pos: { line: number, column: numbe
       candidates.push('DISTINCT')
     }
     if (Array.isArray(ar.getAst().columns)) {
-      const selectColumnRefs = ar.getAst().columns.map((v: any) => v.expr).filter(v => !!v)
+      const selectColumnRefs = ar.getAst().columns.map((v: any) => v.expr).filter((v: any) => !!v)
       const whereColumnRefs = ar.getAst().where || []
       const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
       logger.debug(JSON.stringify(columnRef))

@@ -1,8 +1,4 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-'use strict';
+"use strict";
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -25,22 +21,14 @@ log4js.configure({
 const logger = log4js.getLogger();
 // Create a connection for the server. The connection uses Node's IPC as a transport
 let connection = vscode_languageserver_1.createConnection(new vscode_languageserver_1.IPCMessageReader(process), new vscode_languageserver_1.IPCMessageWriter(process));
-// Create a simple text document manager. The text document manager
-// supports full document sync only
 let documents = new vscode_languageserver_1.TextDocuments();
-// Make the text document manager listen on the connection
-// for open, change and close text document events
 documents.listen(connection);
 let shouldSendDiagnosticRelatedInformation = false;
-// After the server has started the client sends an initialize request. The server receives
-// in the passed params the rootPath of the workspace plus the client capabilities.
 connection.onInitialize((_params) => {
     shouldSendDiagnosticRelatedInformation = _params.capabilities && _params.capabilities.textDocument && _params.capabilities.textDocument.publishDiagnostics && _params.capabilities.textDocument.publishDiagnostics.relatedInformation;
     return {
         capabilities: {
-            // Tell the client that the server works in FULL text document sync mode
             textDocumentSync: documents.syncKind,
-            // Tell the client that the server support code complete
             completionProvider: {
                 resolveProvider: true,
                 triggerCharacters: ['.'],
@@ -54,7 +42,7 @@ let maxNumberOfProblems;
 // as well.
 connection.onDidChangeConfiguration((change) => {
     let settings = change.settings;
-    maxNumberOfProblems = settings.lspSample.maxNumberOfProblems || 100;
+    maxNumberOfProblems = settings.sqlLanguageServer.maxNumberOfProblems || 100;
     // Revalidate any open text documents
     documents.all().forEach(validateTextDocument);
 });
@@ -127,29 +115,8 @@ connection.onCompletion((docParams) => {
     }, [{ table: 'USERS', columns: ['id', 'email', 'created_at', 'updated_at'] }]).candidates;
     logger.debug(candidates.join(","));
     return candidates.map(v => ({ label: v, kind: vscode_languageserver_1.CompletionItemKind.Text }));
-    // return [
-    // 	{
-    // 		label: 'TypeScript',
-    // 		kind: CompletionItemKind.Text,
-    // 		data: 1
-    // 	},
-    // 	{
-    // 		label: 'JavaScript',
-    // 		kind: CompletionItemKind.Text,
-    // 		data: 2
-    // 	}
-    // ]
 });
-// This handler resolve additional information for the item selected in
-// the completion list.
 connection.onCompletionResolve((item) => {
-    // if (item.data === 1) {
-    //   item.detail = 'TypeScript details dedede',
-    //   item.documentation = 'TypeScript documentation'
-    // } else if (item.data === 2) {
-    //   item.detail = 'JavaScript details',
-    //   item.documentation = 'JavaScript documentation'
-    // }
     return item;
 });
 /*

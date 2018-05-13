@@ -5,23 +5,23 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 
 export function activate(context: ExtensionContext) {
 
-	let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
-	let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+  let serverModule = context.asAbsolutePath(path.join('server', 'server.js'));
+  let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 
-	let serverOptions: ServerOptions = {
-		run : { module: serverModule, transport: TransportKind.ipc },
-		debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
-	}
+  let serverOptions: ServerOptions = {
+    run : { module: serverModule, transport: TransportKind.ipc },
+    debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
+  }
 
-	let clientOptions: LanguageClientOptions = {
-		documentSelector: [{scheme: 'file', language: 'plaintext'}],
-		synchronize: {
-			configurationSection: 'sqlLanguageServer',
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-		}
-	}
+  let clientOptions: LanguageClientOptions = {
+    documentSelector: [{scheme: 'file', language: 'sql', pattern: '**/*.sql'}],
+    synchronize: {
+      configurationSection: 'sqlLanguageServer',
+      fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+    }
+  }
 
-	let disposable = new LanguageClient('sqlLanguageServer', 'SQL Language Server', serverOptions, clientOptions).start();
+  let disposable = new LanguageClient('sqlLanguageServer', 'SQL Language Server', serverOptions, clientOptions).start();
 
-	context.subscriptions.push(disposable);
+  context.subscriptions.push(disposable);
 }
