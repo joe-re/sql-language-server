@@ -60,9 +60,13 @@ function complete(sql, pos, tables = []) {
             }
         }
         if (Array.isArray(ar.getAst().from)) {
-            if (getFromTableByPos(ar.getAst().from || [], pos)) {
+            const fromTable = getFromTableByPos(ar.getAst().from || [], pos);
+            if (fromTable) {
                 candidates = candidates.concat(tables.map(v => v.table))
                     .concat(['INNER JOIN', 'LEFT JOIN']);
+                if (fromTable.join && !fromTable.on) {
+                    candidates.push('ON');
+                }
             }
         }
     }

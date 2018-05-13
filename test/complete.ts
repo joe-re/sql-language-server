@@ -22,7 +22,6 @@ test("complete 'WHERE' keyword", (t) => {
 
 test("complete 'DISTINCT' keyword", (t) => {
   const result = complete('SELECT D', { line: 0, column: 9 })
-  console.log(result.candidates)
   t.is(result.candidates.length, 1);
   t.is(result.candidates[0], 'DISTINCT');
 });
@@ -86,6 +85,19 @@ test("from clause: LEFT JOIN", (t) => {
       { line: 0, column: 35 },
       [{ table: 'TABLE1', columns: ['COLUMN1', 'COLUMN2'] }])
   t.truthy(result.candidates.includes('LEFT JOIN'));
+});
+
+test("from clause: complete 'ON' keyword on 'INNER JOIN'", (t) => {
+  const result =
+    complete(
+      'SELECT TABLE1.COLUMN1 FROM TABLE1 INNER JOIN TABLE2 O',
+      { line: 0, column: 53 },
+      [
+        { table: 'TABLE1', columns: ['COLUMN1', 'COLUMN2'] },
+        { table: 'TABLE2', columns: ['COLUMN1', 'COLUMN2'] }
+      ]
+    )
+  t.truthy(result.candidates.includes('ON'));
 });
 
 test("where clause: complete TableName", (t) => {

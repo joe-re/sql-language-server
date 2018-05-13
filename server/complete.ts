@@ -21,7 +21,9 @@ type FromTableNode = {
   location: {
     start: { offset: number, line: number, column: number },
     end: { offset: number, line: number, column: number },
-  }
+  },
+  join?: 'INNER JOIN' | 'LEFT JOIN',
+  on?: any
 }
 const CLAUSES = ['SELECT', 'FROM', 'WHERE', 'ORDER BY', 'GROUP BY', 'LIMIT']
 
@@ -81,9 +83,13 @@ export default function complete(sql: string, pos: { line: number, column: numbe
       }
     }
     if (Array.isArray(ar.getAst().from)) {
-      if (getFromTableByPos(ar.getAst().from || [], pos)) {
+      const fromTable = getFromTableByPos(ar.getAst().from || [], pos)
+      if (fromTable) {
         candidates = candidates.concat(tables.map(v => v.table))
           .concat(['INNER JOIN', 'LEFT JOIN'])
+        if (fromTable.join && !fromTable.on) {
+          candidates.push('ON')
+        }
       }
     }
   } catch (e) {
