@@ -58,6 +58,17 @@ test("complete ColumnName: cursor on dot", (t) => {
   t.is(result.candidates[1], 'COLUMN2');
 });
 
+test("complete ColumnName:cursor on dot:multi line", (t) => {
+  const result =
+    complete(
+      'SELECT *\nFROM TABLE1\nWHERE TABLE1.',
+      { line: 2, column: 13 },
+      [{ table: 'TABLE1', columns: ['COLUMN1', 'COLUMN2'] }])
+  t.is(result.candidates.length, 2);
+  t.is(result.candidates[0], 'COLUMN1');
+  t.is(result.candidates[1], 'COLUMN2');
+});
+
 test("from clause: complete TableName", (t) => {
   const result =
     complete(
@@ -68,6 +79,15 @@ test("from clause: complete TableName", (t) => {
   t.is(result.candidates[0], 'TABLE1');
 });
 
+test("from clause: complete TableName:multi lines", (t) => {
+  const result =
+    complete(
+      'SELECT TABLE1.COLUMN1\nFROM T',
+      { line: 1, column: 6 },
+      [{ table: 'TABLE1', columns: ['COLUMN1', 'COLUMN2'] }])
+  t.is(result.candidates.length, 1);
+  t.is(result.candidates[0], 'TABLE1');
+});
 
 test("from clause: INNER JOIN", (t) => {
   const result =

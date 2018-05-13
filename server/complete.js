@@ -17,7 +17,7 @@ function extractExpectedLiterals(expected) {
         .filter((v, i, self) => self.indexOf(v) === i);
 }
 function getLastToken(sql) {
-    const match = sql.match(/^.*[\s|.|,](.*?)$/);
+    const match = sql.match(/^(?:.|\s)*[\s|.|,](.*?)$/);
     if (!match) {
         return sql;
     }
@@ -80,7 +80,7 @@ function complete(sql, pos, tables = []) {
         if (candidates.includes('.')) {
             candidates = candidates.concat(tables.map(v => v.table));
         }
-        if (target[pos.column - 1] === '.') {
+        if (target[target.length - 1] === '.') {
             const tableName = getLastToken(target.slice(0, target.length - 1));
             const table = tables.find(v => v.table === tableName);
             if (table) {

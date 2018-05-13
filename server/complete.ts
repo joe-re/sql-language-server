@@ -34,7 +34,7 @@ function extractExpectedLiterals(expected: { type: string, text: string }[]): st
 }
 
 function getLastToken(sql: string) {
-  const match = sql.match(/^.*[\s|.|,](.*?)$/)
+  const match = sql.match(/^(?:.|\s)*[\s|.|,](.*?)$/)
   if (!match) { return sql }
   return match[1]
 }
@@ -102,7 +102,8 @@ export default function complete(sql: string, pos: { line: number, column: numbe
     if (candidates.includes('.')) {
       candidates = candidates.concat(tables.map(v => v.table))
     }
-    if (target[pos.column - 1] === '.') {
+    logger.debug(`lastChar: ${target[target.length - 1]}`)
+    if (target[target.length - 1] === '.') {
       const tableName = getLastToken(target.slice(0, target.length - 1))
       const table = tables.find(v => v.table === tableName)
       if (table) {
@@ -117,6 +118,7 @@ export default function complete(sql: string, pos: { line: number, column: numbe
     }
   }
   const lastToken = getLastToken(target)
+  logger.debug(`lastToken: ${lastToken}`)
   candidates = candidates.filter(v => v.startsWith(lastToken))
   return { candidates, error }
 }
