@@ -25,6 +25,8 @@ type FromTableNode = {
   join?: 'INNER JOIN' | 'LEFT JOIN',
   on?: any
 }
+type Pos = { line: number, column: number }
+
 const CLAUSES = ['SELECT', 'FROM', 'WHERE', 'ORDER BY', 'GROUP BY', 'LIMIT']
 
 function extractExpectedLiterals(expected: { type: string, text: string }[]): string[] {
@@ -59,18 +61,31 @@ function getCandidatesFromColumnRefNode(columnRefNode: ColumnRefNode, tables: Ta
   return tableCandidates.concat(columnCandidates)
 }
 
-function getCandidatesFromError(target: string, tables: Table[], e) {
+function isCursorOnFromClause(sql: string, pos: Pos) {
+  try {
+    const ast = Parser.parse(sql)
+    return !!getFromTableByPos(ast.from || [], pos)
+  } catch (_e) {
+    return false
+  }
+}
+
+function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e) {
   let candidates = extractExpectedLiterals(e.expected)
-  console.log(candidates)
   if (candidates.includes("'") || candidates.includes('"')) {
     return []
   }
   if (candidates.includes('.')) {
     candidates = candidates.concat(tables.map(v => v.table))
   }
-  logger.debug(`lastChar: ${target[target.length - 1]}`)
-  if (target[target.length - 1] === '.') {
-    const tableName = getLastToken(target.slice(0, target.length - 1))
+  const lastChar = target[target.length - 1]
+  logger.debug(`lastChar: ${lastChar}`)
+  if (lastChar === '.') {
+    const removedLastDotTarget = target.slice(0, target.length - 1)
+    if (isCursorOnFromClause(removedLastDotTarget, { line: pos.line, column: pos.column - 1})) {
+      return []
+    }
+    const tableName = getLastToken(removedLastDotTarget)
     const table = tables.find(v => v.table === tableName)
     if (table) {
       candidates = table.columns
@@ -79,7 +94,7 @@ function getCandidatesFromError(target: string, tables: Table[], e) {
   return candidates
 }
 
-export default function complete(sql: string, pos: { line: number, column: number }, tables: Table[] = []) {
+export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
   logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   let candidates: string[] = []
   let error = null;
@@ -118,7 +133,7 @@ export default function complete(sql: string, pos: { line: number, column: numbe
     if (e.name !== 'SyntaxError') {
       throw e
     }
-    candidates = getCandidatesFromError(target, tables, e)
+    candidates = getCandidatesFromError(target, tables, pos, e)
     error = { label: e.name, detail: e.message, line: e.line, offset: e.offset }
   }
   const lastToken = getLastToken(target)

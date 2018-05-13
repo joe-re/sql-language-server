@@ -36,23 +36,33 @@ function getCandidatesFromColumnRefNode(columnRefNode, tables) {
     const columnCandidates = Array.prototype.concat.apply([], tables.filter(v => tableCandidates.includes(v.table)).map(v => v.columns));
     return tableCandidates.concat(columnCandidates);
 }
-function getCandidatesFromError(target, tables, e) {
-    console.log(target);
-    console.log(e.expected);
+function isCursorOnFromClause(sql, pos) {
+    try {
+        const ast = node_sql_parser_1.Parser.parse(sql);
+        return !!getFromTableByPos(ast.from || [], pos);
+    }
+    catch (_e) {
+        return false;
+    }
+}
+function getCandidatesFromError(target, tables, pos, e) {
     let candidates = extractExpectedLiterals(e.expected);
-    console.log(candidates);
     if (candidates.includes("'") || candidates.includes('"')) {
         return [];
     }
     if (candidates.includes('.')) {
         candidates = candidates.concat(tables.map(v => v.table));
     }
-    logger.debug(`lastChar: ${target[target.length - 1]}`);
-    if (target[target.length - 1] === '.') {
-        const tableName = getLastToken(target.slice(0, target.length - 1));
-        const table = tables.find(v => v.table === tableName);
-        if (table) {
-            candidates = table.columns;
+    const lastChar = target[target.length - 1];
+    logger.debug(`lastChar: ${lastChar}`);
+    if (lastChar === '.') {
+        const removedLastDotTarget = target.slice(0, target.length - 1);
+        if (!isCursorOnFromClause(removedLastDotTarget, { line: pos.line, column: pos.column - 1 })) {
+            const tableName = getLastToken(removedLastDotTarget);
+            const table = tables.find(v => v.table === tableName);
+            if (table) {
+                candidates = table.columns;
+            }
         }
     }
     return candidates;
@@ -97,7 +107,7 @@ function complete(sql, pos, tables = []) {
         if (e.name !== 'SyntaxError') {
             throw e;
         }
-        candidates = getCandidatesFromError(target, tables, e);
+        candidates = getCandidatesFromError(target, tables, pos, e);
         error = { label: e.name, detail: e.message, line: e.line, offset: e.offset };
     }
     const lastToken = getLastToken(target);
