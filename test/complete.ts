@@ -69,6 +69,17 @@ test("complete ColumnName:cursor on dot:multi line", (t) => {
   t.is(result.candidates[1], 'COLUMN2');
 });
 
+test("complete ColumnName:cursor on dot:using alias", (t) => {
+  const result =
+    complete(
+      'SELECT *\nFROM TABLE1 t\nWHERE t.',
+      { line: 2, column: 8 },
+      [{ table: 'TABLE1', columns: ['COLUMN1', 'COLUMN2'] }])
+  t.is(result.candidates.length, 2);
+  t.is(result.candidates[0], 'COLUMN1');
+  t.is(result.candidates[1], 'COLUMN2');
+});
+
 test("from clause: complete TableName", (t) => {
   const result =
     complete(

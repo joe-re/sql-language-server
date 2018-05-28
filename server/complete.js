@@ -45,7 +45,7 @@ function isCursorOnFromClause(sql, pos) {
         return false;
     }
 }
-function getCandidatesFromError(target, tables, pos, e) {
+function getCandidatesFromError(target, tables, pos, e, fromClauseTables) {
     let candidates = extractExpectedLiterals(e.expected);
     if (candidates.includes("'") || candidates.includes('"')) {
         return [];
@@ -57,15 +57,29 @@ function getCandidatesFromError(target, tables, pos, e) {
     logger.debug(`lastChar: ${lastChar}`);
     if (lastChar === '.') {
         const removedLastDotTarget = target.slice(0, target.length - 1);
-        if (!isCursorOnFromClause(removedLastDotTarget, { line: pos.line, column: pos.column - 1 })) {
-            const tableName = getLastToken(removedLastDotTarget);
-            const table = tables.find(v => v.table === tableName);
-            if (table) {
-                candidates = table.columns;
-            }
+        if (isCursorOnFromClause(removedLastDotTarget, { line: pos.line, column: pos.column - 1 })) {
+            return [];
+        }
+        const tableName = getLastToken(removedLastDotTarget);
+        const attachedAlias = tables.map(v => {
+            const fromNode = fromClauseTables.find(v2 => v.table === v2.table);
+            return Object.assign({}, v, { as: fromNode ? fromNode.as : null });
+        });
+        let table = attachedAlias.find(v => v.table === tableName || v.as === tableName);
+        if (table) {
+            candidates = table.columns;
         }
     }
     return candidates;
+}
+function getTableNodeFromClause(sql) {
+    try {
+        return node_sql_parser_1.Parser.parseFromClause(sql).from;
+    }
+    catch (_e) {
+        // no-op
+        return null;
+    }
 }
 function complete(sql, pos, tables = []) {
     logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`);
@@ -107,7 +121,10 @@ function complete(sql, pos, tables = []) {
         if (e.name !== 'SyntaxError') {
             throw e;
         }
-        candidates = getCandidatesFromError(target, tables, pos, e);
+        const fromClauseTables = getTableNodeFromClause(sql) || [];
+        console.log('table');
+        console.log(fromClauseTables);
+        candidates = getCandidatesFromError(target, tables, pos, e, fromClauseTables);
         error = { label: e.name, detail: e.message, line: e.line, offset: e.offset };
     }
     const lastToken = getLastToken(target);

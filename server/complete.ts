@@ -70,7 +70,7 @@ function isCursorOnFromClause(sql: string, pos: Pos) {
   }
 }
 
-function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e) {
+function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: any, fromClauseTables: FromTableNode[]) {
   let candidates = extractExpectedLiterals(e.expected)
   if (candidates.includes("'") || candidates.includes('"')) {
     return []
@@ -86,7 +86,11 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e) {
       return []
     }
     const tableName = getLastToken(removedLastDotTarget)
-    const table = tables.find(v => v.table === tableName)
+    const attachedAlias = tables.map(v => {
+      const fromNode = fromClauseTables.find(v2 => v.table === v2.table)
+      return Object.assign({}, v, { as: fromNode ? fromNode.as : null })
+    })
+    let table = attachedAlias.find(v => v.table === tableName || v.as === tableName)
     if (table) {
       candidates = table.columns
     }
@@ -94,10 +98,21 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e) {
   return candidates
 }
 
+function getTableNodeFromClause(sql: string): FromTableNode[] | null {
+  try {
+    return Parser.parseFromClause(sql).from
+  } catch (_e) {
+    // no-op
+    return null
+  }
+}
+
+
 export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
   logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   let candidates: string[] = []
   let error = null;
+
   const target = sql.split('\n').filter((_v, idx) => pos.line >= idx).map((v, idx) => idx === pos.line ? v.slice(0, pos.column) : v).join('\n')
   logger.debug(`target: ${target}`)
   try {
@@ -133,7 +148,8 @@ export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
     if (e.name !== 'SyntaxError') {
       throw e
     }
-    candidates = getCandidatesFromError(target, tables, pos, e)
+    const fromClauseTables = getTableNodeFromClause(sql) || []
+    candidates = getCandidatesFromError(target, tables, pos, e, fromClauseTables)
     error = { label: e.name, detail: e.message, line: e.line, offset: e.offset }
   }
   const lastToken = getLastToken(target)
