@@ -47,6 +47,7 @@ function isCursorOnFromClause(sql, pos) {
 }
 function getCandidatesFromError(target, tables, pos, e, fromClauseTables) {
     let candidates = extractExpectedLiterals(e.expected);
+    console.log(candidates);
     if (candidates.includes("'") || candidates.includes('"')) {
         return [];
     }
@@ -55,6 +56,8 @@ function getCandidatesFromError(target, tables, pos, e, fromClauseTables) {
     }
     const lastChar = target[target.length - 1];
     logger.debug(`lastChar: ${lastChar}`);
+    console.log('lastchar!');
+    console.log(lastChar);
     if (lastChar === '.') {
         const removedLastDotTarget = target.slice(0, target.length - 1);
         if (isCursorOnFromClause(removedLastDotTarget, { line: pos.line, column: pos.column - 1 })) {
@@ -62,10 +65,12 @@ function getCandidatesFromError(target, tables, pos, e, fromClauseTables) {
         }
         const tableName = getLastToken(removedLastDotTarget);
         const attachedAlias = tables.map(v => {
-            const fromNode = fromClauseTables.find(v2 => v.table === v2.table);
-            return Object.assign({}, v, { as: fromNode ? fromNode.as : null });
+            const as = fromClauseTables.filter(v2 => v.table === v2.table).map(v => v.as);
+            return Object.assign({}, v, { as: as ? as : [] });
         });
-        let table = attachedAlias.find(v => v.table === tableName || v.as === tableName);
+        console.log('attachedAlias');
+        console.log(attachedAlias);
+        let table = attachedAlias.find(v => v.table === tableName || v.as.includes(tableName));
         if (table) {
             candidates = table.columns;
         }
@@ -87,6 +92,7 @@ function complete(sql, pos, tables = []) {
     let error = null;
     const target = sql.split('\n').filter((_v, idx) => pos.line >= idx).map((v, idx) => idx === pos.line ? v.slice(0, pos.column) : v).join('\n');
     logger.debug(`target: ${target}`);
+    console.log(`target: ${target}`);
     try {
         candidates = [].concat(CLAUSES);
         const ast = node_sql_parser_1.Parser.parse(target);
@@ -122,7 +128,6 @@ function complete(sql, pos, tables = []) {
             throw e;
         }
         const fromClauseTables = getTableNodeFromClause(sql) || [];
-        console.log('table');
         console.log(fromClauseTables);
         candidates = getCandidatesFromError(target, tables, pos, e, fromClauseTables);
         error = { label: e.name, detail: e.message, line: e.line, offset: e.offset };

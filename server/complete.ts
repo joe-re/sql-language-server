@@ -87,10 +87,10 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: an
     }
     const tableName = getLastToken(removedLastDotTarget)
     const attachedAlias = tables.map(v => {
-      const fromNode = fromClauseTables.find(v2 => v.table === v2.table)
-      return Object.assign({}, v, { as: fromNode ? fromNode.as : null })
-    })
-    let table = attachedAlias.find(v => v.table === tableName || v.as === tableName)
+        const as = fromClauseTables.filter(v2 => v.table === v2.table).map(v => v.as)
+        return Object.assign({}, v, { as: as ? as : [] })
+      })
+    let table = attachedAlias.find(v => v.table === tableName || v.as.includes(tableName))
     if (table) {
       candidates = table.columns
     }
