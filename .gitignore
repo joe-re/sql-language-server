@@ -2,6 +2,8 @@ node_modules
 .cache
 src/*.js
 test/*.js
+server/*.js
+client/*.js
 
 client/out/*
 server/out/*
