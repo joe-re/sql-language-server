@@ -6,6 +6,7 @@ import {
 import * as log4js from 'log4js';
 import cache from './cache'
 import complete from './complete'
+import createDiagnostics from './createDiagnostics'
 
 log4js.configure({
   appenders: { server: { type: 'file', filename: `${__dirname}/server.log` } },
@@ -26,27 +27,20 @@ let shouldSendDiagnosticRelatedInformation: boolean = false;
 
 connection.onInitialize((_params): InitializeResult => {
 	shouldSendDiagnosticRelatedInformation = _params.capabilities && _params.capabilities.textDocument && _params.capabilities.textDocument.publishDiagnostics && _params.capabilities.textDocument.publishDiagnostics.relatedInformation;
-	return {
-		capabilities: {
-			textDocumentSync: documents.syncKind,
-			completionProvider: {
-				resolveProvider: true,
+  return {
+    capabilities: {
+      textDocumentSync: documents.syncKind,
+      completionProvider: {
+        resolveProvider: true,
         triggerCharacters: ['.'],
-			}
-		}
-	}
+      }
+    }
+  }
 });
-
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-// documents.onDidChangeContent((change) => {
-//   logger.debug(`didChangeContent: ${change.document.uri}`)
-//   cache.set(change.document.uri, change.document.getText())
-// });
 
 // The settings interface describe the server relevant settings part
 interface Settings {
-	sqlLanguageServer: SqlLanguageServerSettings;
+  sqlLanguageServer: SqlLanguageServerSettings;
 }
 
 // These are the example settings we defined in the client's package.json
@@ -59,66 +53,19 @@ interface SqlLanguageServerSettings {
 let maxNumberOfProblems: number;
 // The settings have changed. Is send on server activation
 // as well.
-connection.onDidChangeConfiguration((change) => {
-	let settings = <Settings>change.settings;
-	maxNumberOfProblems = settings.sqlLanguageServer.maxNumberOfProblems || 100;
-	// Revalidate any open text documents
-	documents.all().forEach(validateTextDocument);
-});
+// connection.onDidChangeConfiguration((change) => {
+//   let settings = <Settings>change.settings;
+//   maxNumberOfProblems = settings.sqlLanguageServer.maxNumberOfProblems || 100;
+//   // Revalidate any open text documents
+//   documents.all().forEach(validateTextDocument);
+// });
+
 connection.onDidChangeTextDocument((params) => {
   logger.debug(`didChangeTextDocument: ${params.textDocument.uri}`)
   cache.set(params.textDocument.uri, params.contentChanges[0].text)
+  const diagnostics = createDiagnostics(params.textDocument.uri, params.contentChanges[0].text)
+  connection.sendDiagnostics(diagnostics); 
 });
-
-function validateTextDocument(textDocument: TextDocument): void {
-	let diagnostics: Diagnostic[] = [];
-	let lines = textDocument.getText().split(/\r?\n/g);
-	let problems = 0;
-	for (var i = 0; i < lines.length && problems < maxNumberOfProblems; i++) {
-		let line = lines[i];
-		let index = line.indexOf('typescript');
-		if (index >= 0) {
-			problems++;
-
-			let diagnosic: Diagnostic = {
-				severity: DiagnosticSeverity.Warning,
-				range: {
-					start: { line: i, character: index },
-					end: { line: i, character: index + 10 }
-				},
-				message: `${line.substr(index, 10)} should be spelled TypeScript`,
-				source: 'ex'
-			};
-			if (shouldSendDiagnosticRelatedInformation) {
-				diagnosic.relatedInformation = [
-					{
-						location: {
-							uri: textDocument.uri,
-							range: {
-								start: { line: i, character: index },
-								end: { line: i, character: index + 10 }
-							}
-						},
-						message: 'Spelling matters'
-					},
-					{
-						location: {
-							uri: textDocument.uri,
-							range: {
-								start: { line: i, character: index },
-								end: { line: i, character: index + 10 }
-							}
-						},
-						message: 'Particularly for names'
-					}
-				];
-			}
-			diagnostics.push(diagnosic);
-		}
-	}
-	// Send the computed diagnostics to VSCode.
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-}
 
 connection.onDidChangeWatchedFiles((_change) => {
 	// Monitored files have change in VSCode
