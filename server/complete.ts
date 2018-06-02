@@ -36,7 +36,7 @@ function extractExpectedLiterals(expected: { type: string, text: string }[]): st
 }
 
 function getLastToken(sql: string) {
-  const match = sql.match(/^(?:.|\s)*[\s|.|,](.*?)$/)
+  const match = sql.match(/^(?:.|\s)*[^A-z0-9](.*?)$/)
   if (!match) { return sql }
   return match[1]
 }

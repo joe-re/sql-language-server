@@ -166,7 +166,7 @@ const COMPLEX_TABLES = [
   { table: 'job_history', columns: ['employee_id', 'start_date', 'end_date', 'job_id', 'department_id'] },
   { table: 'departments', columns: ['department_id', 'department_name', 'manager_id', 'location_id'] },
   { table: 'locations', columns: ['location_id', 'street_address', 'postal_code', 'ciry', 'state_province', 'country_id'] },
-  { table: 'contries', columns: ['country_id', 'country_name', 'region_id'] },
+  { table: 'countries', columns: ['country_id', 'country_name', 'region_id'] },
   { table: 'regions', columns: ['region_id', 'region_name'] },
 ]
 
@@ -186,3 +186,39 @@ test("conplete columns from duplicated alias", (t) => {
   const result = complete(sql, { line: 1, column: 14 }, COMPLEX_TABLES)
   t.is(result.candidates.length, 11);
 })
+
+test("conplete columns inside function", (t) => {
+  const sql = `
+    SELECT
+      e.employee_id AS "Employee #"
+      , e.first_name || ' ' || e.last_name AS "Name"
+      , e.email AS "Email"
+      , e.phone_number AS "Phone"
+      , TO_CHAR(e., 'MM/DD/YYYY') AS "Hire Date"
+    FROM employees e
+      JOIN jobs j
+        ON e.job_id = j.job_id
+      LEFT JOIN employees m
+        ON e.manager_id = m.manager_id
+      LEFT JOIN departments d
+        ON d.department_id = e.department_id
+      LEFT JOIN employees dm
+        ON d.manager_id = dm.employee_id
+      LEFT JOIN locations l
+        ON d.location_id = l.location_id
+      LEFT JOIN countries c
+        ON l.country_id = c.country_id
+      LEFT JOIN regions r
+        ON c.region_id = r.region_id
+      LEFT JOIN job_history jh
+        ON e.employee_id = jh.employee_id
+      LEFT JOIN jobs jj
+        ON jj.job_id = jh.job_id
+      LEFT JOIN departments d
+        ON dd.department_id = jh.department_id
+      ORDER BY e.employee_id;
+  `
+  const result = complete(sql, { line: 6, column: 18 }, COMPLEX_TABLES)
+  t.is(result.candidates.length, 11);
+})
+

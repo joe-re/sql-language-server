@@ -142,7 +142,7 @@ connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[
 	  { table: 'job_history', columns: ['employee_id', 'start_date', 'end_date', 'job_id', 'department_id'] },
 	  { table: 'departments', columns: ['department_id', 'department_name', 'manager_id', 'location_id'] },
 	  { table: 'locations', columns: ['location_id', 'street_address', 'postal_code', 'ciry', 'state_province', 'country_id'] },
-	  { table: 'contries', columns: ['country_id', 'country_name', 'region_id'] },
+	  { table: 'countries', columns: ['country_id', 'country_name', 'region_id'] },
 	  { table: 'regions', columns: ['region_id', 'region_name'] },
 	]).candidates
 	logger.debug(candidates.join(","))
