@@ -27,7 +27,7 @@ type FromTableNode = {
 }
 type Pos = { line: number, column: number }
 
-const CLAUSES = ['SELECT', 'FROM', 'WHERE', 'ORDER BY', 'GROUP BY', 'LIMIT']
+const CLAUSES = ['WHERE', 'ORDER BY', 'GROUP BY', 'LIMIT']
 
 function extractExpectedLiterals(expected: { type: string, text: string }[]): string[] {
   return expected.filter(v => v.type === 'literal')
