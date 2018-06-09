@@ -3,28 +3,46 @@ import * as log4js from 'log4js';
 
 const logger = log4js.getLogger()
 
+type Location = {
+  start: { offset: number, line: number, column: number },
+  end: { offset: number, line: number, column: number },
+}
 type Table = { table: string, columns: string[] }
 type ColumnRefNode = {
   type: 'column_ref',
   table: string,
   column: string,
-  location: {
-    start: { offset: number, line: number, column: number },
-    end: { offset: number, line: number, column: number },
-  }
+  location: Location
 }
-
+type Subquery = {
+  type: 'subquery',
+  as: 'string' | null,
+  subquery: any,
+  location: Location
+}
+type IncompleteSubquery = {
+  type: 'incomplete_subquery',
+  as: 'string' | null,
+  text: string,
+  location: Location
+}
 type FromTableNode = {
+  type: 'table',
   db: string,
   table: string,
   as: string | null,
-  location: {
-    start: { offset: number, line: number, column: number },
-    end: { offset: number, line: number, column: number },
-  },
+  location: Location,
   join?: 'INNER JOIN' | 'LEFT JOIN',
   on?: any
 }
+type FromClauseParserResult = {
+  before: string,
+  from: FromNode[],
+  after: string
+}
+
+type FromNode = FromTableNode | Subquery | IncompleteSubquery
+
 type Pos = { line: number, column: number }
 
 const CLAUSES = ['WHERE', 'ORDER BY', 'GROUP BY', 'LIMIT']
@@ -48,8 +66,8 @@ function getColumnRefByPos(columns: ColumnRefNode[], pos: { line: number, column
   )
 }
 
-function getFromTableByPos(fromTables: FromTableNode[], pos: { line: number, column: number }) {
-  return fromTables.find(v =>
+function getFromNodeByPos(fromNodes: FromNode[], pos: { line: number, column: number }) {
+  return fromNodes.find(v =>
     (v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
     (v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column)
   )
@@ -64,13 +82,40 @@ function getCandidatesFromColumnRefNode(columnRefNode: ColumnRefNode, tables: Ta
 function isCursorOnFromClause(sql: string, pos: Pos) {
   try {
     const ast = Parser.parse(sql)
-    return !!getFromTableByPos(ast.from || [], pos)
+    return !!getFromNodeByPos(ast.from || [], pos)
   } catch (_e) {
     return false
   }
 }
 
-function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: any, fromClauseTables: FromTableNode[]) {
+function getCandidatedFromIncompleteSubquery(params: {
+  sql: string,
+  incompleteSubquery: IncompleteSubquery,
+  pos: Pos,
+  tables: Table[]
+}): string[] {
+  let candidates: string[] = []
+  const { tables, incompleteSubquery, pos } = params
+  const parsedFromClause = getFromNodesFromClause(incompleteSubquery.text)
+  try {
+    Parser.parse(incompleteSubquery.text);
+  } catch (e) {
+    if (e.name !== 'SyntaxError') {
+      throw e
+    }
+    const fromNodes = parsedFromClause && parsedFromClause.from || []
+    const fromText = incompleteSubquery.text
+    const newPos = parsedFromClause ? {
+      line: pos.line - (incompleteSubquery.location.start.line - 1),
+      column: pos.column - incompleteSubquery.location.start.column + 1
+    } : { line: 0, column: 0 }
+    const newTarget = fromText.split('\n').filter((_v, idx) => newPos.line >= idx).map((v, idx) => idx === newPos.line ? v.slice(0, newPos.column) : v).join('\n')
+    candidates = getCandidatesFromError(newTarget, tables, newPos, e, fromNodes)
+  }
+  return candidates
+}
+
+function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: any, fromNodes: FromNode[]) {
   let candidates = extractExpectedLiterals(e.expected)
   if (candidates.includes("'") || candidates.includes('"')) {
     return []
@@ -87,9 +132,9 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: an
     }
     const tableName = getLastToken(removedLastDotTarget)
     const attachedAlias = tables.map(v => {
-        const as = fromClauseTables.filter(v2 => v.table === v2.table).map(v => v.as)
-        return Object.assign({}, v, { as: as ? as : [] })
-      })
+      const as = fromNodes.filter((v2: any) => v.table === v2.table).map(v => v.as)
+      return Object.assign({}, v, { as: as ? as : [] })
+    })
     let table = attachedAlias.find(v => v.table === tableName || v.as.includes(tableName))
     if (table) {
       candidates = table.columns
@@ -98,9 +143,9 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: an
   return candidates
 }
 
-function getTableNodeFromClause(sql: string): FromTableNode[] | null {
+function getFromNodesFromClause(sql: string):FromClauseParserResult {
   try {
-    return Parser.parseFromClause(sql).from
+    return Parser.parseFromClause(sql)
   } catch (_e) {
     // no-op
     return null
@@ -133,8 +178,8 @@ export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
       }
     }
     if (Array.isArray(ar.getAst().from)) {
-      const fromTable = getFromTableByPos(ar.getAst().from || [], pos)
-      if (fromTable) {
+      const fromTable = getFromNodeByPos(ar.getAst().from || [], pos)
+      if (fromTable && fromTable.type === 'table') {
         candidates = candidates.concat(tables.map(v => v.table))
           .concat(['INNER JOIN', 'LEFT JOIN'])
         if (fromTable.join && !fromTable.on) {
@@ -148,8 +193,19 @@ export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
     if (e.name !== 'SyntaxError') {
       throw e
     }
-    const fromClauseTables = getTableNodeFromClause(sql) || []
-    candidates = getCandidatesFromError(target, tables, pos, e, fromClauseTables)
+    const parsedFromClause = getFromNodesFromClause(sql)
+    const fromNodes = parsedFromClause && parsedFromClause.from || []
+    const fromNodeOnCursor = getFromNodeByPos(fromNodes || [], pos)
+    if (fromNodeOnCursor && fromNodeOnCursor.type === 'incomplete_subquery') {
+      candidates = getCandidatedFromIncompleteSubquery({
+        sql,
+        pos,
+        incompleteSubquery: fromNodeOnCursor,
+        tables
+      })
+    } else {
+      candidates = getCandidatesFromError(target, tables, pos, e, fromNodes)
+    }
     error = { label: e.name, detail: e.message, line: e.line, offset: e.offset }
   }
   const lastToken = getLastToken(target)

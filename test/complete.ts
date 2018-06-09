@@ -222,3 +222,9 @@ test("conplete columns inside function", (t) => {
   t.is(result.candidates.length, 11);
 })
 
+
+test("conplete column name inside from clause subquery", (t) => {
+  const sql = 'SELECT sub FROM (SELECT e. FROM employees e) sub'
+  const result = complete(sql, { line: 0, column: 26 }, COMPLEX_TABLES)
+  t.is(result.candidates.length, 11);
+})
