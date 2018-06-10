@@ -240,3 +240,10 @@ test("complete column name inside from clause subquery:multiline", (t) => {
   const result = complete(sql, { line: 1, column: 16 }, COMPLEX_TABLES)
   t.is(result.candidates.length, 11);
 })
+
+test("complete column name from subquery", (t) => {
+  const sql = 'SELECT sub. FROM (SELECT e.employee_id sub_id FROM employees e) sub'
+  const result = complete(sql, { line: 0, column: 11 }, COMPLEX_TABLES)
+  t.is(result.candidates.length, 1);
+  t.is(result.candidates[0], 'sub_id');
+})

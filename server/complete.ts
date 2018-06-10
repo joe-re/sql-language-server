@@ -14,10 +14,19 @@ type ColumnRefNode = {
   column: string,
   location: Location
 }
+
+type ColumnExpr = { expr: ColumnRefNode, as: string | null } | string
+type SelectStatement = {
+  type: 'select',
+  distinct: null | boolean,
+  columns: ColumnExpr[],
+  from: FromNode[]
+}
+
 type Subquery = {
   type: 'subquery',
   as: 'string' | null,
-  subquery: any,
+  subquery: SelectStatement,
   location: Location
 }
 type IncompleteSubquery = {
@@ -121,6 +130,16 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: an
   if (candidates.includes('.')) {
     candidates = candidates.concat(tables.map(v => v.table))
   }
+  const subqueryTables: Table[] = fromNodes.reduce((p, c) => {
+    if (c.type !== 'subquery') {
+      return p
+    }
+    const columns = c.subquery.columns.map(v => {
+      if (typeof v === 'string') { return null }
+      return v.as || v.expr.column
+    })
+    return p.concat({ columns, table: c.as })
+  }, [])
   const lastChar = target[target.length - 1]
   logger.debug(`lastChar: ${lastChar}`)
   if (lastChar === '.') {
@@ -129,7 +148,7 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: an
       return []
     }
     const tableName = getLastToken(removedLastDotTarget)
-    const attachedAlias = tables.map(v => {
+    const attachedAlias = tables.concat(subqueryTables).map(v => {
       const as = fromNodes.filter((v2: any) => v.table === v2.table).map(v => v.as)
       return Object.assign({}, v, { as: as ? as : [] })
     })
