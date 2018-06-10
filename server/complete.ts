@@ -103,14 +103,12 @@ function getCandidatedFromIncompleteSubquery(params: {
     if (e.name !== 'SyntaxError') {
       throw e
     }
-    const fromNodes = parsedFromClause && parsedFromClause.from || []
     const fromText = incompleteSubquery.text
     const newPos = parsedFromClause ? {
       line: pos.line - (incompleteSubquery.location.start.line - 1),
       column: pos.column - incompleteSubquery.location.start.column + 1
     } : { line: 0, column: 0 }
-    const newTarget = fromText.split('\n').filter((_v, idx) => newPos.line >= idx).map((v, idx) => idx === newPos.line ? v.slice(0, newPos.column) : v).join('\n')
-    candidates = getCandidatesFromError(newTarget, tables, newPos, e, fromNodes)
+    candidates = complete(fromText, newPos, tables).candidates
   }
   return candidates
 }
@@ -152,13 +150,17 @@ function getFromNodesFromClause(sql: string):FromClauseParserResult {
   }
 }
 
+function getRidOfAfterCursorString(sql: string, pos: Pos) {
+  return sql.split('\n').filter((_v, idx) => pos.line >= idx).map((v, idx) => idx === pos.line ? v.slice(0, pos.column) : v).join('\n')
+}
+
 
 export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
   logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   let candidates: string[] = []
   let error = null;
 
-  const target = sql.split('\n').filter((_v, idx) => pos.line >= idx).map((v, idx) => idx === pos.line ? v.slice(0, pos.column) : v).join('\n')
+  const target = getRidOfAfterCursorString(sql, pos)
   logger.debug(`target: ${target}`)
   try {
     candidates = [].concat(CLAUSES)

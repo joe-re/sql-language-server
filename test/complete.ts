@@ -187,7 +187,7 @@ test("conplete columns from duplicated alias", (t) => {
   t.is(result.candidates.length, 11);
 })
 
-test("conplete columns i3nside function", (t) => {
+test("conplete columns innside function", (t) => {
   const sql = `
     SELECT
       e.employee_id AS "Employee #"
@@ -226,6 +226,12 @@ test("conplete columns i3nside function", (t) => {
 test("complete column name inside from clause subquery", (t) => {
   const sql = 'SELECT sub FROM (SELECT e. FROM employees e) sub'
   const result = complete(sql, { line: 0, column: 26 }, COMPLEX_TABLES)
+  t.is(result.candidates.length, 11);
+})
+
+test("complete column name inside from clause subquery:nested", (t) => {
+  const sql = 'SELECT sub FROM (SELECT e.employee_id FROM (SELECT e2. FROM employees e2) e) sub'
+  const result = complete(sql, { line: 0, column: 54 }, COMPLEX_TABLES)
   t.is(result.candidates.length, 11);
 })
 
