@@ -122,15 +122,8 @@ function getCandidatedFromIncompleteSubquery(params: {
   return candidates
 }
 
-function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: any, fromNodes: FromNode[]) {
-  let candidates = extractExpectedLiterals(e.expected)
-  if (candidates.includes("'") || candidates.includes('"')) {
-    return []
-  }
-  if (candidates.includes('.')) {
-    candidates = candidates.concat(tables.map(v => v.table))
-  }
-  const subqueryTables: Table[] = fromNodes.reduce((p, c) => {
+function createTablesFromFromNodes(fromNodes: FromNode[]): Table[] {
+  return fromNodes.reduce((p, c) => {
     if (c.type !== 'subquery') {
       return p
     }
@@ -140,6 +133,16 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: an
     })
     return p.concat({ columns, table: c.as })
   }, [])
+}
+
+function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: any, fromNodes: FromNode[]) {
+  let candidates = extractExpectedLiterals(e.expected)
+  if (candidates.includes("'") || candidates.includes('"')) {
+    return []
+  }
+  if (candidates.includes('.')) {
+    candidates = candidates.concat(tables.map(v => v.table))
+  }
   const lastChar = target[target.length - 1]
   logger.debug(`lastChar: ${lastChar}`)
   if (lastChar === '.') {
@@ -148,6 +151,7 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: an
       return []
     }
     const tableName = getLastToken(removedLastDotTarget)
+    const subqueryTables = createTablesFromFromNodes(fromNodes)
     const attachedAlias = tables.concat(subqueryTables).map(v => {
       const as = fromNodes.filter((v2: any) => v.table === v2.table).map(v => v.as)
       return Object.assign({}, v, { as: as ? as : [] })
