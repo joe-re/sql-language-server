@@ -1,6 +1,6 @@
 import {
-	IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocuments, TextDocument,
-	Diagnostic, DiagnosticSeverity, InitializeResult, TextDocumentPositionParams, CompletionItem,
+	IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocuments,
+	InitializeResult, TextDocumentPositionParams, CompletionItem,
 	CompletionItemKind
 } from 'vscode-languageserver';
 import * as log4js from 'log4js';
@@ -16,17 +16,13 @@ log4js.configure({
 const logger = log4js.getLogger()
 
 
-// Create a connection for the server. The connection uses Node's IPC as a transport
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 
 let documents: TextDocuments = new TextDocuments();
 documents.listen(connection);
 
 
-let shouldSendDiagnosticRelatedInformation: boolean = false;
-
 connection.onInitialize((_params): InitializeResult => {
-	shouldSendDiagnosticRelatedInformation = _params.capabilities && _params.capabilities.textDocument && _params.capabilities.textDocument.publishDiagnostics && _params.capabilities.textDocument.publishDiagnostics.relatedInformation;
   return {
     capabilities: {
       textDocumentSync: documents.syncKind,
@@ -38,40 +34,12 @@ connection.onInitialize((_params): InitializeResult => {
   }
 });
 
-// The settings interface describe the server relevant settings part
-interface Settings {
-  sqlLanguageServer: SqlLanguageServerSettings;
-}
-
-// These are the example settings we defined in the client's package.json
-// file
-interface SqlLanguageServerSettings {
-	maxNumberOfProblems: number;
-}
-
-// hold the maxNumberOfProblems setting
-let maxNumberOfProblems: number;
-// The settings have changed. Is send on server activation
-// as well.
-// connection.onDidChangeConfiguration((change) => {
-//   let settings = <Settings>change.settings;
-//   maxNumberOfProblems = settings.sqlLanguageServer.maxNumberOfProblems || 100;
-//   // Revalidate any open text documents
-//   documents.all().forEach(validateTextDocument);
-// });
-
 connection.onDidChangeTextDocument((params) => {
   logger.debug(`didChangeTextDocument: ${params.textDocument.uri}`)
   cache.set(params.textDocument.uri, params.contentChanges[0].text)
   const diagnostics = createDiagnostics(params.textDocument.uri, params.contentChanges[0].text)
   connection.sendDiagnostics(diagnostics); 
 });
-
-connection.onDidChangeWatchedFiles((_change) => {
-	// Monitored files have change in VSCode
-	connection.console.log('We received an file change event');
-});
-
 
 connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[] => {
 	let text = cache.get(docParams.textDocument.uri)
@@ -100,21 +68,4 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
   return item;
 });
 
-
-/*
-connection.onDidOpenTextDocument((params) => {
-	// A text document got opened in VSCode.
-	// params.uri uniquely identifies the document. For documents store on disk this is a file URI.
-	// params.text the initial full content of the document.
-	connection.console.log(`${params.textDocument.uri} opened.`);
-});
-
-connection.onDidCloseTextDocument((params) => {
-	// A text document got closed in VSCode.
-	// params.uri uniquely identifies the document.
-	connection.console.log(`${params.textDocument.uri} closed.`);
-});
-*/
-
-// Listen on the connection
 connection.listen();
