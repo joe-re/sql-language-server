@@ -11,3 +11,5 @@ client/server
 
 server.log
 **/*/*.log
+server/dist
+out

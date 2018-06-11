@@ -5,10 +5,9 @@
     "lib": [ "dom", "es2015", "es2016" ],
     "strict": false,
     "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "outDir": "./out"
   },
-  "include": [
-    "./server/**/*",
-    "./test/**/*"
-  ]
+  "exclude": ["node_modules", "server", "test"]
 }

@@ -1,22 +1,17 @@
-import {
-	IPCMessageReader, IPCMessageWriter, createConnection, IConnection, TextDocuments,
-	InitializeResult, TextDocumentPositionParams, CompletionItem,
-	CompletionItemKind
-} from 'vscode-languageserver';
+import { createConnection, IConnection, TextDocuments, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import * as log4js from 'log4js';
 import cache from './cache'
 import complete from './complete'
 import createDiagnostics from './createDiagnostics'
 
 log4js.configure({
-  appenders: { server: { type: 'file', filename: `${__dirname}/server.log` } },
+  appenders: { server: { type: 'file', filename: `sql-language-server.log` } },
   categories: { default: { appenders: ['server'], level: 'debug' } }
 });
 
 const logger = log4js.getLogger()
 
-
-let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
+let connection: IConnection = createConnection()
 
 let documents: TextDocuments = new TextDocuments();
 documents.listen(connection);

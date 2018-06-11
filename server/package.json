@@ -4,12 +4,14 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "installServer": "installServerIntoExtension ../client ./package.json ./tsconfig.json",
-    "compile": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc -p .",
-    "watch": "installServerIntoExtension ../client ./package.json ./tsconfig.json && tsc -w -p ."
+    "compile": "tsc -p .",
+    "watch": "tsc --watch"
   },
   "dependencies": {
     "log4js": "^2.5.3",
     "vscode-languageserver": "^4.1.2"
+  },
+  "devDependencies": {
+    "typescript": "^2.9.1"
   }
 }
