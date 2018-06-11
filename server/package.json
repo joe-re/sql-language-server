@@ -5,13 +5,15 @@
   "license": "MIT",
   "scripts": {
     "compile": "tsc -p .",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "test": "tsc && ava dist/test"
   },
   "dependencies": {
     "log4js": "^2.5.3",
     "vscode-languageserver": "^4.1.2"
   },
   "devDependencies": {
+    "ava": "^0.25.0",
     "typescript": "^2.9.1"
   }
 }

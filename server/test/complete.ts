@@ -1,5 +1,5 @@
 import test from 'ava'
-import complete from '../server/complete'
+import complete from '../complete'
 
 test("complete 'SELECT' keyword", (t) => {
   const result = complete('S', { line: 0, column: 1 })
