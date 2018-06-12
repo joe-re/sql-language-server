@@ -123,7 +123,7 @@ function getCandidatedFromIncompleteSubquery(params: {
 }
 
 function createTablesFromFromNodes(fromNodes: FromNode[]): Table[] {
-  return fromNodes.reduce((p, c) => {
+  return fromNodes.reduce((p: any, c) => {
     if (c.type !== 'subquery') {
       return p
     }
@@ -164,7 +164,7 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: an
   return candidates
 }
 
-function getFromNodesFromClause(sql: string):FromClauseParserResult {
+function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
   try {
     return Parser.parseFromClause(sql)
   } catch (_e) {
@@ -186,7 +186,7 @@ export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
   const target = getRidOfAfterCursorString(sql, pos)
   logger.debug(`target: ${target}`)
   try {
-    candidates = [].concat(CLAUSES)
+    candidates = CLAUSES.concat([])
     const ast = Parser.parse(target);
     const ar = new AstReader(ast)
     logger.debug(`ast: ${JSON.stringify(ar.getAst())}`)

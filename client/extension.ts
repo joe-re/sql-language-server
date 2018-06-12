@@ -4,12 +4,13 @@ import { workspace, ExtensionContext } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
-  let serverModule = context.asAbsolutePath(path.join('server', 'dist', 'server.js'));
+  let serverModule = context.asAbsolutePath(path.join('server', 'dist', 'server.js'))
+  let execArgs = ['--method', 'node-ipc']
   let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 
   let serverOptions: ServerOptions = {
-    run : { module: serverModule, transport: TransportKind.ipc },
-    debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
+    run : { module: serverModule, transport: TransportKind.ipc, args: execArgs },
+    debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions, args:execArgs }
   }
 
   let clientOptions: LanguageClientOptions = {

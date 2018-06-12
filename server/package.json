@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "log4js": "^2.5.3",
-    "vscode-languageserver": "^4.1.2"
+    "vscode-languageserver": "^4.1.2",
+    "yargs": "^11.0.0"
   },
   "devDependencies": {
+    "@types/yargs": "^11.0.0",
     "ava": "^0.25.0",
     "typescript": "^2.9.1"
   }

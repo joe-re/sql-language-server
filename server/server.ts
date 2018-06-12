@@ -1,17 +1,24 @@
-import { createConnection, IConnection, TextDocuments, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { IConnection, TextDocuments, InitializeResult, TextDocumentPositionParams, CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 import * as log4js from 'log4js';
 import cache from './cache'
 import complete from './complete'
 import createDiagnostics from './createDiagnostics'
+import createConnection from './createConnection'
+import { argv } from 'yargs'
+
+export type ConnectionMethod = 'node-ipc' | 'stdio'
+type Args = {
+	method?: ConnectionMethod
+}
 
 log4js.configure({
-  appenders: { server: { type: 'file', filename: `sql-language-server.log` } },
+  appenders: { server: { type: 'file', filename: `${__dirname}/sql-language-server.log` } },
   categories: { default: { appenders: ['server'], level: 'debug' } }
 });
 
 const logger = log4js.getLogger()
 
-let connection: IConnection = createConnection()
+let connection: IConnection = createConnection((argv as Args).method || 'node-ipc')
 
 let documents: TextDocuments = new TextDocuments();
 documents.listen(connection);
@@ -42,8 +49,8 @@ connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[
 		cache.setFromUri(docParams.textDocument.uri)
 		text = cache.get(docParams.textDocument.uri)
 	}
-	logger.debug(text)
-	const candidates = complete(text, {
+	logger.debug(text || '')
+	const candidates = complete(text || '', {
 		line: docParams.position.line,
 		column: docParams.position.character
 	}, [
