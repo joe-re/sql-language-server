@@ -5,6 +5,7 @@ import complete from './complete'
 import createDiagnostics from './createDiagnostics'
 import createConnection from './createConnection'
 import { argv } from 'yargs'
+import SettingStore from './SettingStore'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
 type Args = {
@@ -23,8 +24,11 @@ let connection: IConnection = createConnection((argv as Args).method || 'node-ip
 let documents: TextDocuments = new TextDocuments();
 documents.listen(connection);
 
-
-connection.onInitialize((_params): InitializeResult => {
+connection.onInitialize((params): InitializeResult => {
+	logger.debug(`onInitialize: ${params.rootPath}`)
+	if (params.rootPath) {
+		SettingStore.getInstance().setSettingFromFile(`${params.rootPath}/.sqllsrc.json`)
+	}
   return {
     capabilities: {
       textDocumentSync: documents.syncKind,

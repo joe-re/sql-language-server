@@ -17,7 +17,7 @@ export function activate(context: ExtensionContext) {
     documentSelector: [{scheme: 'file', language: 'sql', pattern: '**/*.sql'}],
     synchronize: {
       configurationSection: 'sqlLanguageServer',
-      fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+      fileEvents: workspace.createFileSystemWatcher('**/.sqllsrc.json')
     }
   }
 
