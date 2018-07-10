@@ -3,10 +3,11 @@ import * as log4js from 'log4js';
 
 const logger = log4js.getLogger()
 
-type Setting = {
+export type Setting = {
   host: string | null,
   port: string | null,
   user: string | null,
+  database: string | null,
   password: string | null
 }
 export default class SettingStore {
@@ -14,6 +15,7 @@ export default class SettingStore {
     host: null,
     port: null,
     user: null,
+    database: null,
     password: null
   }
   private static instance: SettingStore;

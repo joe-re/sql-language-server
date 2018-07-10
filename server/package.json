@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "log4js": "^2.5.3",
+    "mysql": "^2.15.0",
     "vscode-languageserver": "^4.1.2",
     "yargs": "^11.0.0"
   },

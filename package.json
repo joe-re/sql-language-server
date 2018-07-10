@@ -21,10 +21,12 @@
     "onLanguage:sql"
   ],
   "dependencies": {
+    "mysql": "^2.15.0",
     "vscode": "^1.1.18",
     "vscode-languageclient": "^4.2.1"
   },
   "devDependencies": {
+    "@types/mysql": "^2.15.5",
     "@types/node": "^10.0.3",
     "ava": "1.0.0-beta.4",
     "npm-run-all": "^4.1.3",
