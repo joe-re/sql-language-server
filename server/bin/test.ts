@@ -8,5 +8,5 @@ const client = new MysqlClient({
   password: null
 })
 client.connect()
-client.getSchema()
+client.getSchema().then(() => client.endConnection())
 
