@@ -1,5 +1,7 @@
 import { Parser, AstReader } from '@joe-re/node-sql-parser'
 import * as log4js from 'log4js';
+import { Schema, Table, Column } from './database_libs/MysqlClient'
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 
 const logger = log4js.getLogger()
 
@@ -7,7 +9,6 @@ type Location = {
   start: { offset: number, line: number, column: number },
   end: { offset: number, line: number, column: number },
 }
-type Table = { table: string, columns: string[] }
 type ColumnRefNode = {
   type: 'column_ref',
   table: string,
@@ -54,12 +55,18 @@ type FromNode = FromTableNode | Subquery | IncompleteSubquery
 
 type Pos = { line: number, column: number }
 
-const CLAUSES = ['WHERE', 'ORDER BY', 'GROUP BY', 'LIMIT']
+const CLAUSES: CompletionItem[] = [
+  { label: 'WHERE', kind: CompletionItemKind.Text },
+  { label: 'ORDER BY', kind: CompletionItemKind.Text },
+  { label: 'GROUP BY', kind: CompletionItemKind.Text },
+  { label: 'LIMIT', kind: CompletionItemKind.Text }
+]
 
-function extractExpectedLiterals(expected: { type: string, text: string }[]): string[] {
+function extractExpectedLiterals(expected: { type: string, text: string }[]): CompletionItem[] {
   return expected.filter(v => v.type === 'literal')
     .map(v => v.text)
     .filter((v, i, self) => self.indexOf(v) === i)
+    .map(v => ( { label: v }))
 }
 
 function getLastToken(sql: string) {
@@ -82,9 +89,27 @@ function getFromNodeByPos(fromNodes: FromNode[], pos: { line: number, column: nu
   )
 }
 
-function getCandidatesFromColumnRefNode(columnRefNode: ColumnRefNode, tables: Table[]) {
-  const tableCandidates = tables.map(v => v.table).filter(v => v.startsWith(columnRefNode.table))
-  const columnCandidates = Array.prototype.concat.apply([], tables.filter(v => tableCandidates.includes(v.table)).map(v => v.columns))
+function toCompletionItemFromTable(table: Table): CompletionItem {
+  return {
+    label: table.tableName,
+    detail: `table ${table.tableName}`,
+    kind: CompletionItemKind.Text
+  }
+}
+
+function toCompletionItemFromColumn(column: Column): CompletionItem {
+  return {
+    label: column.columnName,
+    detail: `column ${column.description}`,
+    kind: CompletionItemKind.Text
+  }
+}
+
+function getCandidatesFromColumnRefNode(columnRefNode: ColumnRefNode, schema: Schema): CompletionItem[] {
+  const tableCandidates = schema.filter(v => v.tableName.startsWith(columnRefNode.table)).map(v => toCompletionItemFromTable(v))
+  const columnCandidates = Array.prototype.concat.apply([],
+    schema.filter(v => tableCandidates.map(v => v.label).includes(v.tableName)).map(v => v.columns)
+  ).map((v: Column) => toCompletionItemFromColumn(v))
   return tableCandidates.concat(columnCandidates)
 }
 
@@ -101,10 +126,10 @@ function getCandidatedFromIncompleteSubquery(params: {
   sql: string,
   incompleteSubquery: IncompleteSubquery,
   pos: Pos,
-  tables: Table[]
-}): string[] {
-  let candidates: string[] = []
-  const { tables, incompleteSubquery, pos } = params
+  schema: Schema
+}): CompletionItem[] {
+  let candidates: CompletionItem[] = []
+  const { schema, incompleteSubquery, pos } = params
   const parsedFromClause = getFromNodesFromClause(incompleteSubquery.text)
   try {
     Parser.parse(incompleteSubquery.text);
@@ -117,31 +142,32 @@ function getCandidatedFromIncompleteSubquery(params: {
       line: pos.line - (incompleteSubquery.location.start.line - 1),
       column: pos.column - incompleteSubquery.location.start.column + 1
     } : { line: 0, column: 0 }
-    candidates = complete(fromText, newPos, tables).candidates
+    candidates = complete(fromText, newPos, schema).candidates
   }
   return candidates
 }
 
-function createTablesFromFromNodes(fromNodes: FromNode[]): Table[] {
+function createTablesFromFromNodes(fromNodes: FromNode[]): Schema {
   return fromNodes.reduce((p: any, c) => {
     if (c.type !== 'subquery') {
       return p
     }
     const columns = c.subquery.columns.map(v => {
       if (typeof v === 'string') { return null }
-      return v.as || v.expr.column
+      return { columnName: v.as || v.expr.column || '', description: 'alias' }
     })
-    return p.concat({ columns, table: c.as })
+    return p.concat({ database: null, columns, tableName: c.as })
   }, [])
 }
 
-function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: any, fromNodes: FromNode[]) {
+function getCandidatesFromError(target: string, schema: Schema, pos: Pos, e: any, fromNodes: FromNode[]): CompletionItem[] {
   let candidates = extractExpectedLiterals(e.expected)
-  if (candidates.includes("'") || candidates.includes('"')) {
+  const candidatesLiterals = candidates.map(v => v.label)
+  if (candidatesLiterals.includes("'") || candidatesLiterals.includes('"')) {
     return []
   }
-  if (candidates.includes('.')) {
-    candidates = candidates.concat(tables.map(v => v.table))
+  if (candidatesLiterals.includes('.')) {
+    candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
   }
   const lastChar = target[target.length - 1]
   logger.debug(`lastChar: ${lastChar}`)
@@ -152,13 +178,13 @@ function getCandidatesFromError(target: string, tables: Table[], pos: Pos, e: an
     }
     const tableName = getLastToken(removedLastDotTarget)
     const subqueryTables = createTablesFromFromNodes(fromNodes)
-    const attachedAlias = tables.concat(subqueryTables).map(v => {
-      const as = fromNodes.filter((v2: any) => v.table === v2.table).map(v => v.as)
+    const attachedAlias = schema.concat(subqueryTables).map(v => {
+      const as = fromNodes.filter((v2: any) => v.tableName === v2.table).map(v => v.as)
       return Object.assign({}, v, { as: as ? as : [] })
     })
-    let table = attachedAlias.find(v => v.table === tableName || v.as.includes(tableName))
+    let table = attachedAlias.find(v => v.tableName === tableName || v.as.includes(tableName))
     if (table) {
-      candidates = table.columns
+      candidates = table.columns.map(v => toCompletionItemFromColumn(v))
     }
   }
   return candidates
@@ -178,9 +204,9 @@ function getRidOfAfterCursorString(sql: string, pos: Pos) {
 }
 
 
-export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
+export default function complete(sql: string, pos: Pos, schema: Schema = []) {
   logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
-  let candidates: string[] = []
+  let candidates: CompletionItem[] = []
   let error = null;
 
   const target = getRidOfAfterCursorString(sql, pos)
@@ -191,7 +217,7 @@ export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
     const ar = new AstReader(ast)
     logger.debug(`ast: ${JSON.stringify(ar.getAst())}`)
     if (!ar.getAst().distinct) {
-      candidates.push('DISTINCT')
+      candidates.push({ label: 'DISTINCT', kind: CompletionItemKind.Text })
     }
     if (Array.isArray(ar.getAst().columns)) {
       const selectColumnRefs = ar.getAst().columns.map((v: any) => v.expr).filter((v: any) => !!v)
@@ -199,16 +225,16 @@ export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
       const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
       logger.debug(JSON.stringify(columnRef))
       if (columnRef) {
-        candidates = candidates.concat(getCandidatesFromColumnRefNode(columnRef, tables))
+        candidates = candidates.concat(getCandidatesFromColumnRefNode(columnRef, schema))
       }
     }
     if (Array.isArray(ar.getAst().from)) {
       const fromTable = getFromNodeByPos(ar.getAst().from || [], pos)
       if (fromTable && fromTable.type === 'table') {
-        candidates = candidates.concat(tables.map(v => v.table))
-          .concat(['INNER JOIN', 'LEFT JOIN'])
+        candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
+          .concat([{ label: 'INNER JOIN' }, { label: 'LEFT JOIN' }])
         if (fromTable.join && !fromTable.on) {
-          candidates.push('ON')
+          candidates.push({ label: 'ON' })
         }
       }
     }
@@ -226,15 +252,15 @@ export default function complete(sql: string, pos: Pos, tables: Table[] = []) {
         sql,
         pos,
         incompleteSubquery: fromNodeOnCursor,
-        tables
+        schema
       })
     } else {
-      candidates = getCandidatesFromError(target, tables, pos, e, fromNodes)
+      candidates = getCandidatesFromError(target, schema, pos, e, fromNodes)
     }
     error = { label: e.name, detail: e.message, line: e.line, offset: e.offset }
   }
   const lastToken = getLastToken(target)
   logger.debug(`lastToken: ${lastToken}`)
-  candidates = candidates.filter(v => v.startsWith(lastToken))
+  candidates = candidates.filter(v => v.label.startsWith(lastToken))
   return { candidates, error }
 }

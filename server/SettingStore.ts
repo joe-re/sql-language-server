@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as log4js from 'log4js';
+import * as EventEmitter from 'events'
 
 const logger = log4js.getLogger()
 
@@ -10,7 +11,8 @@ export type Setting = {
   database: string | null,
   password: string | null
 }
-export default class SettingStore {
+
+export default class SettingStore extends EventEmitter {
   private state: Setting = {
     host: null,
     port: null,
@@ -20,7 +22,7 @@ export default class SettingStore {
   }
   private static instance: SettingStore;
 
-  private constructor() {}
+  private constructor() { super() }
 
   static getInstance() {
     if (SettingStore.instance) {
@@ -65,5 +67,6 @@ export default class SettingStore {
 
   setSetting(setting: Partial<Setting>) {
     this.state = Object.assign({}, this.state, setting)
+    this.emit('change', this.state)
   }
 }

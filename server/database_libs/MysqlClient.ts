@@ -11,6 +11,16 @@ type RawField = {
   Privilleges: string,
   Comment: string
 }
+export type Column = {
+  columnName: string,
+  description: string
+}
+export type Table = {
+  database: string | null,
+  tableName: string,
+  columns: Column[]
+}
+export type Schema = Table[]
 export default class MysqlClient {
   connection: mysql.Connection | null = null
 
@@ -26,19 +36,30 @@ export default class MysqlClient {
     })
   }
 
-  endConnection() {
-    if (!this.connection) {
-      throw new Error("Don't have database connection.")
+  disconnect() {
+    if (this.connection) {
+      this.connection.end()
     }
-    this.connection.end()
+    this.connection = null
   }
 
-  async getSchema() {
+  async getSchema(): Promise<Schema> {
     const tables = await this.getTables()
     const schema = await Promise.all(
-      tables.map((v) => this.getColumns(v).then(columns => ({ database: this.setting.database, tableName: v, columns })))
+      tables.map((v) => this.getColumns(v).then(columns => ({
+        database: this.setting.database,
+        tableName: v,
+        columns: columns.map(v => this.toColumnFromRawField(v)) }
+      )))
     )
     return schema
+  }
+
+  toColumnFromRawField(field: RawField): Column {
+    return {
+      columnName: field.Field,
+      description: `${field.Field}(Type: ${field.Type}, Null: ${field.Null}, Default: ${field.Type})`
+    }
   }
 
   getTables(): Promise<string[]> {
