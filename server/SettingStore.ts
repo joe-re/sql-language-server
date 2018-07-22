@@ -6,7 +6,7 @@ const logger = log4js.getLogger()
 
 export type Setting = {
   host: string | null,
-  port: string | null,
+  port: number | null,
   user: string | null,
   database: string | null,
   password: string | null

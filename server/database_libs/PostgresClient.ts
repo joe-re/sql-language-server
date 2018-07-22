@@ -1,14 +1,11 @@
-import * as mysql from 'mysql'
+import { Client } from 'pg'
 import { Setting } from '../SettingStore'
 
 type RawField = {
   Field: string,
   Type: string,
-  Collation: null | string,
-  Null: 'Yes' | 'No',
+  Null: string,
   Default: any,
-  Extra: string,
-  Privilleges: string,
   Comment: string
 }
 export type Column = {
@@ -21,19 +18,21 @@ export type Table = {
   columns: Column[]
 }
 export type Schema = Table[]
-export default class MysqlClient {
-  connection: mysql.Connection | null = null
+export default class PosgresClient {
+  connection: Client | null = null
 
   constructor(private setting: Setting) {}
 
   connect() {
-    this.connection = mysql.createConnection({
-      host: this.setting.host || 'localhost',
+    const client = new Client({
+      user: this.setting.user || '',
+      host: this.setting.host || '',
+      database: this.setting.database || '',
       password: this.setting.password || '',
-      user: this.setting.user || 'root',
-      port: this.setting.port || 3306,
-      database: this.setting.database || undefined
+      port: this.setting.port || 5432,
     })
+    client.connect()
+    this.connection = client
   }
 
   disconnect() {
@@ -58,15 +57,15 @@ export default class MysqlClient {
   toColumnFromRawField(field: RawField): Column {
     return {
       columnName: field.Field,
-      description: `${field.Field}(Type: ${field.Type}, Null: ${field.Null}, Default: ${field.Type})`
+      description: `${field.Field}(Type: ${field.Type}, Null: ${field.Null}, Default: ${field.Default})`
     }
   }
 
   getTables(): Promise<string[]> {
     const sql = `
-      SELECT table_name 
-      FROM information_schema.tables
-      WHERE table_schema = '${this.setting.database}'
+      SELECT c.relname as table_name FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+       WHERE n.nspname = 'public'
+         AND c.relkind IN ('r','v','m','f')
     `
     return new Promise((resolve, reject) => {
       if (!this.connection) {
@@ -78,14 +77,28 @@ export default class MysqlClient {
           reject(new Error(err.message))
           return
         }
-        const tables = results.map((v: any) => v[`table_name`])
+        const tables = results.rows.map((v: any) => v[`table_name`])
         resolve(tables)
       })
     })
   }
 
   getColumns(tableName: string): Promise<RawField[]> {
-    const sql = `SHOW FULL FIELDS FROM ${tableName}`
+    const sql = `
+    SELECT
+      a.attname as Field,
+      format_type(a.atttypid, a.atttypmod) as Type,
+      pg_get_expr(d.adbin, d.adrelid) as Default,
+      a.attnotnull as Null,
+      col_description(a.attrelid, a.attnum) AS Comment
+    FROM pg_attribute a
+      LEFT JOIN pg_attrdef d ON a.attrelid = d.adrelid AND a.attnum = d.adnum
+      LEFT JOIN pg_type t ON a.atttypid = t.oid
+      LEFT JOIN pg_collation c ON a.attcollation = c.oid AND a.attcollation <> t.typcollation
+    WHERE a.attrelid = '${tableName}'::regclass
+      AND a.attnum > 0 AND NOT a.attisdropped
+    ORDER BY a.attnum
+    `
     return new Promise((resolve, reject) => {
       if (!this.connection) {
         reject(new Error("Don't have database connection."))
@@ -96,7 +109,16 @@ export default class MysqlClient {
           reject(new Error(err.message))
           return
         }
-        resolve(JSON.parse(JSON.stringify(results)))
+        const rows: RawField[] = results.rows.map(v => {
+          return {
+            Field: v.field,
+            Type: v.type,
+            Null: v.null ? 'Yes' : 'No',
+            Default: v.default,
+            Comment: v.comment
+          }
+        })
+        resolve(rows)
       })
     })
   }

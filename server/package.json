@@ -9,8 +9,10 @@
     "test": "tsc && ava dist/test"
   },
   "dependencies": {
+    "@types/pg": "^7.4.10",
     "log4js": "^2.5.3",
     "mysql": "^2.15.0",
+    "pg": "^7.4.3",
     "vscode-languageserver": "^4.1.2",
     "yargs": "^11.0.0"
   },
