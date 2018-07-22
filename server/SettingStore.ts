@@ -4,7 +4,7 @@ import * as EventEmitter from 'events'
 
 const logger = log4js.getLogger()
 
-export type Setting = {
+export type Settings = {
   host: string | null,
   port: number | null,
   user: string | null,
@@ -13,7 +13,7 @@ export type Setting = {
 }
 
 export default class SettingStore extends EventEmitter {
-  private state: Setting = {
+  private state: Settings = {
     host: null,
     port: null,
     user: null,
@@ -65,7 +65,7 @@ export default class SettingStore extends EventEmitter {
     })
   }
 
-  setSetting(setting: Partial<Setting>) {
+  setSetting(setting: Partial<Settings>) {
     this.state = Object.assign({}, this.state, setting)
     this.emit('change', this.state)
   }

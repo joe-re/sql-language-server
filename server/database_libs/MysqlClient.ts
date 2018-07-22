@@ -1,38 +1,21 @@
 import * as mysql from 'mysql'
-import { Setting } from '../SettingStore'
+import { Settings } from '../SettingStore'
+import AbstractClient from './AbstractClient'
 
-type RawField = {
-  Field: string,
-  Type: string,
-  Collation: null | string,
-  Null: 'Yes' | 'No',
-  Default: any,
-  Extra: string,
-  Privilleges: string,
-  Comment: string
-}
-export type Column = {
-  columnName: string,
-  description: string
-}
-export type Table = {
-  database: string | null,
-  tableName: string,
-  columns: Column[]
-}
-export type Schema = Table[]
-export default class MysqlClient {
+export default class MysqlClient extends AbstractClient {
   connection: mysql.Connection | null = null
 
-  constructor(private setting: Setting) {}
+  constructor(settings: Settings) {
+    super(settings)
+  }
 
   connect() {
     this.connection = mysql.createConnection({
-      host: this.setting.host || 'localhost',
-      password: this.setting.password || '',
-      user: this.setting.user || 'root',
-      port: this.setting.port || 3306,
-      database: this.setting.database || undefined
+      host: this.settings.host || 'localhost',
+      password: this.settings.password || '',
+      user: this.settings.user || 'root',
+      port: this.settings.port || 3306,
+      database: this.settings.database || undefined
     })
   }
 
@@ -43,30 +26,11 @@ export default class MysqlClient {
     this.connection = null
   }
 
-  async getSchema(): Promise<Schema> {
-    const tables = await this.getTables()
-    const schema = await Promise.all(
-      tables.map((v) => this.getColumns(v).then(columns => ({
-        database: this.setting.database,
-        tableName: v,
-        columns: columns.map(v => this.toColumnFromRawField(v)) }
-      )))
-    )
-    return schema
-  }
-
-  toColumnFromRawField(field: RawField): Column {
-    return {
-      columnName: field.Field,
-      description: `${field.Field}(Type: ${field.Type}, Null: ${field.Null}, Default: ${field.Type})`
-    }
-  }
-
   getTables(): Promise<string[]> {
     const sql = `
       SELECT table_name 
       FROM information_schema.tables
-      WHERE table_schema = '${this.setting.database}'
+      WHERE table_schema = '${this.settings.database}'
     `
     return new Promise((resolve, reject) => {
       if (!this.connection) {

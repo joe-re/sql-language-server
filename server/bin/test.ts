@@ -16,6 +16,6 @@ const client = new PostgresClient({
   password: null
 })
 
-client.connect()
-client.getSchema().then(() => client.disconnect())
+client.getSchema()
+  .then((v) => { console.log(v)})
 

@@ -1,35 +1,22 @@
 import { Client } from 'pg'
-import { Setting } from '../SettingStore'
+import { Settings } from '../SettingStore'
+import AbstractClient, { RawField } from './AbstractClient'
 
-type RawField = {
-  Field: string,
-  Type: string,
-  Null: string,
-  Default: any,
-  Comment: string
-}
-export type Column = {
-  columnName: string,
-  description: string
-}
-export type Table = {
-  database: string | null,
-  tableName: string,
-  columns: Column[]
-}
-export type Schema = Table[]
-export default class PosgresClient {
+export default class PosgresClient extends AbstractClient {
   connection: Client | null = null
 
-  constructor(private setting: Setting) {}
+  constructor(settings: Settings) {
+    super(settings)
+
+  }
 
   connect() {
     const client = new Client({
-      user: this.setting.user || '',
-      host: this.setting.host || '',
-      database: this.setting.database || '',
-      password: this.setting.password || '',
-      port: this.setting.port || 5432,
+      user: this.settings.user || '',
+      host: this.settings.host || '',
+      database: this.settings.database || '',
+      password: this.settings.password || '',
+      port: this.settings.port || 5432,
     })
     client.connect()
     this.connection = client
@@ -40,25 +27,6 @@ export default class PosgresClient {
       this.connection.end()
     }
     this.connection = null
-  }
-
-  async getSchema(): Promise<Schema> {
-    const tables = await this.getTables()
-    const schema = await Promise.all(
-      tables.map((v) => this.getColumns(v).then(columns => ({
-        database: this.setting.database,
-        tableName: v,
-        columns: columns.map(v => this.toColumnFromRawField(v)) }
-      )))
-    )
-    return schema
-  }
-
-  toColumnFromRawField(field: RawField): Column {
-    return {
-      columnName: field.Field,
-      description: `${field.Field}(Type: ${field.Type}, Null: ${field.Null}, Default: ${field.Default})`
-    }
   }
 
   getTables(): Promise<string[]> {
@@ -86,11 +54,11 @@ export default class PosgresClient {
   getColumns(tableName: string): Promise<RawField[]> {
     const sql = `
     SELECT
-      a.attname as Field,
-      format_type(a.atttypid, a.atttypmod) as Type,
-      pg_get_expr(d.adbin, d.adrelid) as Default,
-      a.attnotnull as Null,
-      col_description(a.attrelid, a.attnum) AS Comment
+      a.attname as field,
+      format_type(a.atttypid, a.atttypmod) as type,
+      pg_get_expr(d.adbin, d.adrelid) as default,
+      a.attnotnull as null,
+      col_description(a.attrelid, a.attnum) AS comment
     FROM pg_attribute a
       LEFT JOIN pg_attrdef d ON a.attrelid = d.adrelid AND a.attnum = d.adnum
       LEFT JOIN pg_type t ON a.atttypid = t.oid
@@ -109,16 +77,7 @@ export default class PosgresClient {
           reject(new Error(err.message))
           return
         }
-        const rows: RawField[] = results.rows.map(v => {
-          return {
-            Field: v.field,
-            Type: v.type,
-            Null: v.null ? 'Yes' : 'No',
-            Default: v.default,
-            Comment: v.comment
-          }
-        })
-        resolve(rows)
+        resolve(results.rows)
       })
     })
   }
