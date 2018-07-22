@@ -31,9 +31,9 @@ export default abstract class AbstractClient {
   abstract getColumns(tableName: string): Promise<RawField[]>
 
   async getSchema(): Promise<Schema> {
-    this.connect()
     let schema: Schema = []
     try {
+      this.connect()
       const tables = await this.getTables()
       schema = await Promise.all(
         tables.map((v) => this.getColumns(v).then(columns => ({
@@ -42,10 +42,12 @@ export default abstract class AbstractClient {
           columns: columns.map(v => this.toColumnFromRawField(v)) }
         )))
       )
+      this.disconnect()
     } catch (e) {
+      this.disconnect()
       logger.error(e)
+      throw e
     }
-    this.disconnect()
     return schema
   }
 

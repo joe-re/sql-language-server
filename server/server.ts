@@ -6,7 +6,8 @@ import createDiagnostics from './createDiagnostics'
 import createConnection from './createConnection'
 import { argv } from 'yargs'
 import SettingStore from './SettingStore'
-import MysqlClient, { Schema } from './database_libs/MysqlClient'
+import { Schema } from './database_libs/AbstractClient'
+import getDatabaseClient from './database_libs/getDatabaseClient'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
 type Args = {
@@ -32,16 +33,14 @@ connection.onInitialize((params): InitializeResult => {
 		SettingStore.getInstance().setSettingFromFile(`${params.rootPath}/.sqllsrc.json`)
 	}
 	SettingStore.getInstance().on('change', async () => {
-		const client = new MysqlClient(SettingStore.getInstance().getSetting())
 		try {
-		  client.connect()
+  		const client = getDatabaseClient(SettingStore.getInstance().getSetting())
 			schema = await client.getSchema()
 			logger.debug('get schema')
 			logger.debug(JSON.stringify(schema))
 		} catch (e) {
 			logger.error(e)
 		}
-		client.disconnect()
 	})
   return {
     capabilities: {

@@ -1,6 +1,6 @@
 import * as mysql from 'mysql'
 import { Settings } from '../SettingStore'
-import AbstractClient from './AbstractClient'
+import AbstractClient, { RawField } from './AbstractClient'
 
 export default class MysqlClient extends AbstractClient {
   connection: mysql.Connection | null = null

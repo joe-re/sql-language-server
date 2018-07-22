@@ -5,6 +5,7 @@ import * as EventEmitter from 'events'
 const logger = log4js.getLogger()
 
 export type Settings = {
+  adapter: 'mysql' | 'postgresql',
   host: string | null,
   port: number | null,
   user: string | null,
@@ -14,6 +15,7 @@ export type Settings = {
 
 export default class SettingStore extends EventEmitter {
   private state: Settings = {
+    adapter: 'mysql',
     host: null,
     port: null,
     user: null,
