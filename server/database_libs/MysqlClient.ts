@@ -10,6 +10,7 @@ export default class MysqlClient extends AbstractClient {
   }
 
   connect() {
+    console.log(JSON.stringify(this.settings))
     this.connection = mysql.createConnection({
       host: this.settings.host || 'localhost',
       password: this.settings.password || '',
