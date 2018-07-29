@@ -5,7 +5,7 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
 
 export function activate(context: ExtensionContext) {
   let serverModule = context.asAbsolutePath(path.join('server', 'dist', 'server.js'))
-  let execArgs = ['--method', 'node-ipc']
+  let execArgs = ['--method', 'node-ipc', '--debug']
   let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
 
   let serverOptions: ServerOptions = {

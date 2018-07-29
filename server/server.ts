@@ -17,7 +17,6 @@ type Args = {
 
 let connection: IConnection = createConnection((argv as Args).method || 'node-ipc')
 initializeLogging(connection)
-connection.console.log('server!')
 const logger = log4js.getLogger()
 
 let documents: TextDocuments = new TextDocuments();
