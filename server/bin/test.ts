@@ -1,11 +1,20 @@
 import getDatabaseClient from '../database_libs/getDatabaseClient'
 
+// const client = getDatabaseClient({
+//   adapter: 'postgresql',
+//   host: 'localhost',
+//   port: 5432,
+//   user: null,
+//   database: 'postgres-migration_development',
+//   password: null
+// })
+
 const client = getDatabaseClient({
-  adapter: 'postgresql',
+  adapter: 'mysql',
   host: 'localhost',
-  port: 5432,
-  user: null,
-  database: 'postgres-migration_development',
+  port: 3306,
+  user: "root",
+  database: 'mysql-migration_development',
   password: null
 })
 

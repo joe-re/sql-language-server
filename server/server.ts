@@ -1,5 +1,4 @@
 import { IConnection, TextDocuments, InitializeResult, TextDocumentPositionParams, CompletionItem } from 'vscode-languageserver';
-import * as log4js from 'log4js';
 import cache from './cache'
 import complete from './complete'
 import createDiagnostics from './createDiagnostics'
@@ -8,20 +7,17 @@ import { argv } from 'yargs'
 import SettingStore from './SettingStore'
 import { Schema } from './database_libs/AbstractClient'
 import getDatabaseClient from './database_libs/getDatabaseClient'
+import initializeLogging from './initializeLogging'
+import * as log4js from 'log4js'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
 type Args = {
 	method?: ConnectionMethod
 }
 
-log4js.configure({
-  appenders: { server: { type: 'file', filename: `${__dirname}/sql-language-server.log` } },
-  categories: { default: { appenders: ['server'], level: 'debug' } }
-});
-
-const logger = log4js.getLogger()
-
 let connection: IConnection = createConnection((argv as Args).method || 'node-ipc')
+initializeLogging(connection)
+const logger = log4js.getLogger()
 
 let documents: TextDocuments = new TextDocuments();
 documents.listen(connection);
