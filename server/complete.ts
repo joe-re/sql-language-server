@@ -1,6 +1,6 @@
 import { Parser, AstReader } from '@joe-re/node-sql-parser'
 import * as log4js from 'log4js';
-import { Schema, Table, Column } from './database_libs/MysqlClient'
+import { Schema, Table, Column } from './database_libs/AbstractClient'
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 
 const logger = log4js.getLogger()
