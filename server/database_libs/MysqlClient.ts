@@ -10,7 +10,6 @@ export default class MysqlClient extends AbstractClient {
   }
 
   connect() {
-    console.log(JSON.stringify(this.settings))
     this.connection = mysql.createConnection({
       host: this.settings.host || 'localhost',
       password: this.settings.password || '',
@@ -61,7 +60,14 @@ export default class MysqlClient extends AbstractClient {
           reject(new Error(err.message))
           return
         }
-        resolve(JSON.parse(JSON.stringify(results)))
+        const columns: RawField[] = results.map((v: any) => ({
+          field: v.Field,
+          type: v.Type,
+          null: v.Null,
+          default: v.Default,
+          comment: v.Comment
+        }))
+        resolve(columns)
       })
     })
   }

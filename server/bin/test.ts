@@ -19,5 +19,5 @@ const client = getDatabaseClient({
 })
 
 client.getSchema()
-  .then((v) => { console.log(v)})
+  .then((v) => { console.log(JSON.stringify(v)) })
 
