@@ -4,9 +4,9 @@ import { workspace, ExtensionContext } from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
 
 export function activate(context: ExtensionContext) {
-  let serverModule = context.asAbsolutePath(path.join('server', 'dist', 'server.js'))
-  let execArgs = ['--method', 'node-ipc', '--debug']
-  let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+  let serverModule = context.asAbsolutePath(path.join('server', 'dist', 'bin', 'cli.js'))
+  let execArgs = ['up', '--method', 'node-ipc']
+  let debugOptions = { execArgv: ['--debug', '--nolazy', '--inspect=6009'] }
 
   let serverOptions: ServerOptions = {
     run : { module: serverModule, transport: TransportKind.ipc, args: execArgs },
@@ -21,7 +21,7 @@ export function activate(context: ExtensionContext) {
     }
   }
 
-  let disposable = new LanguageClient('sqlLanguageServer', 'SQL Language Server', serverOptions, clientOptions).start();
+  let disposable = new LanguageClient('sqlLanguageServer', 'SQL Language Server', serverOptions, clientOptions).start()
 
-  context.subscriptions.push(disposable);
+  context.subscriptions.push(disposable)
 }

@@ -1,5 +1,5 @@
 import { createConnection as _createConnection, IPCMessageReader, IPCMessageWriter, IConnection } from 'vscode-languageserver';
-import { ConnectionMethod } from './server'
+import { ConnectionMethod } from './createServer'
 import * as log4js from 'log4js';
 const logger = log4js.getLogger()
 

@@ -1,13 +1,13 @@
 import * as log4js from 'log4js';
-import { IConnection } from 'vscode-languageserver'
 import * as path from 'path'
 import * as os from 'os'
+import { argv } from 'yargs'
 
 const MAX_LOG_SIZE = 1024 * 1024
 const MAX_LOG_BACKUPS = 10
 const LOG_FILE_PATH = path.join(os.tmpdir(), 'sql-language-server.log')
 
-export default function initializeLogging(connection: IConnection) {
+export default function initializeLogging() {
   log4js.configure({
     appenders: {
       server: {
@@ -17,18 +17,11 @@ export default function initializeLogging(connection: IConnection) {
         ackups: MAX_LOG_BACKUPS
       }
     },
-    categories: { default: { appenders: ['server'], level: process.argv.includes('--debug') ? 'debug' : 'warn' } }
+    categories: { default: { appenders: ['server'], level: (argv as any).debug ? 'debug' : 'warn' } }
   })
-  connection.console.log(LOG_FILE_PATH)
 
   const logger = log4js.getLogger()
   process.on('uncaughtException', e => logger.error('uncaughtException', e))
   process.on('unhandledRejection', e => logger.error('unhandledRejection', e))
-
-  global.console.log = connection.console.log.bind(connection.console)
-  global.console.error = connection.console.error.bind(connection.console)
-
-  console.log(os.tmpdir())
-  connection.console.log(os.tmpdir())
   return logger
 }
