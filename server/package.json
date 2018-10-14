@@ -9,6 +9,7 @@
     "test": "tsc && ava dist/test"
   },
   "dependencies": {
+    "@joe-re/node-sql-parser": "^0.0.1",
     "@types/pg": "^7.4.10",
     "log4js": "^2.5.3",
     "mysql": "^2.15.0",

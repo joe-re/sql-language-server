@@ -49,6 +49,11 @@
   dependencies:
     arrify "^1.0.1"
 
+"@joe-re/node-sql-parser@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@joe-re/node-sql-parser/-/node-sql-parser-0.0.1.tgz#b0de0632708faeab26a182c90772890da2626ec9"
+  integrity sha512-wAAOPs1VJTChWDH7x2N9Gt8JvayjyhECtur5qmbE5oCvlNQSpftvkQMrezP15iRkreQkd5GT/q8N+qO7fx/+kQ==
+
 "@ladjs/time-require@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@ladjs/time-require/-/time-require-0.1.4.tgz#5c615d75fd647ddd5de9cf6922649558856b21a1"
