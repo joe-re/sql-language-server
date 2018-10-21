@@ -6,7 +6,8 @@
   "scripts": {
     "compile": "tsc -p .",
     "watch": "tsc --watch",
-    "test": "tsc && ava dist/test"
+    "test": "tsc && ava dist/test",
+    "prepublish": "yarn run compile"
   },
   "dependencies": {
     "@joe-re/node-sql-parser": "^0.0.1",
