@@ -76,3 +76,7 @@ $ sql-language-server up --method stdio
   - database: string
 
 Please restart sql-language-server process after create .sqlrc.json.
+
+### TODO
+
+Now only support select statement, we are planning to support other statements in the furure.
