@@ -10,7 +10,7 @@
   "license": "MIT",
   "publisher": "joe-re",
   "scripts": {
-    "postinstall": "node ./node_modules/vscode/bin/install",
+    "postinstall": "node install.js",
     "compile": "npm run compile:client && npm run compile:server",
     "compile:client": "cd ./packages/client && yarn run compile",
     "compile:server": "cd ./packages/server && yarn run compile",
@@ -20,7 +20,7 @@
     "vscode:prepublish": "yarn run compile"
   },
   "engines": {
-    "vscode": "^1.24.0"
+    "vscode": "^1.26.0"
   },
   "activationEvents": [
     "onLanguage:sql"
