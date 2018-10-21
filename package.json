@@ -1,10 +1,15 @@
 {
   "name": "sql-language-server",
+  "displayName": "SQL Language Server",
+  "description": "SQL Language Server Extension for VSC",
   "version": "0.0.2",
   "main": "./packages/client/out/extension",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joe-re/sql-language-server.git"
+    "url": "https://github.com/joe-re/sql-language-server"
+  },
+  "bugs": {
+    "url": "https://github.com/joe-re/sql-language-server"
   },
   "author": "joe-re <joe.tialtngo@gmail.com>",
   "license": "MIT",
