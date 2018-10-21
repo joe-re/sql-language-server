@@ -1,6 +1,6 @@
 {
   "name": "sql-language-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "./packages/client/out/extension",
   "repository": {
     "type": "git",
