@@ -5,7 +5,7 @@ import createServer from '../createServer'
 const cli = yargs
   .usage('SQL Language Server Command Line Interface')
   .command('up', 'run sql-language-server', {
-    methods: {
+    method: {
       alias: 'm',
       type: 'string',
       default: 'node-ipc',
