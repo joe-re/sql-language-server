@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "lib": [ "dom", "es2015", "es2016" ],
+    "strict": false,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "outDir": "./out"
+  },
+  "exclude": ["node_modules", "server", "test"]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "sql-language-server_vsc",
+  "version": "0.0.1",
+  "main": "./out/extension",
+  "author": "joe-re <joe.tialtngo@gmail.com>",
+  "license": "MIT",
+  "publisher": "joe-re",
+  "scripts": {
+    "postinstall": "node ../../node_modules/vscode/bin/install",
+    "compile": "tsc -p .",
+    "watch": "tsc --watch"
+  },
+  "engines": {
+    "vscode": "^1.24.0"
+  },
+  "activationEvents": [
+    "onLanguage:sql"
+  ],
+  "dependencies": {
+    "vscode": "^1.1.18",
+    "vscode-languageclient": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^10.0.3",
+    "typescript": "^2.8.3"
+  }
+}
