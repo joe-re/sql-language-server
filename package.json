@@ -2,6 +2,10 @@
   "name": "sql-language-server",
   "version": "0.0.1",
   "main": "./packages/client/out/extension",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joe-re/sql-language-server.git"
+  },
   "author": "joe-re <joe.tialtngo@gmail.com>",
   "license": "MIT",
   "publisher": "joe-re",
@@ -12,7 +16,8 @@
     "compile:server": "cd ./packages/server && yarn run compile",
     "watch": "run-p watch:client watch:server",
     "watch:client": "cd ./packages/client && yarn run watch",
-    "watch:server": "cd ./packages/server && yarn run watch"
+    "watch:server": "cd ./packages/server && yarn run watch",
+    "vscode:prepublish": "yarn run compile"
   },
   "engines": {
     "vscode": "^1.24.0"

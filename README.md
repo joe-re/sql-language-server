@@ -13,7 +13,7 @@ Install vsc extension.
 ### Other Editors
 
 ```
-yarn global add sql-language-server
+npm i -g sql-language-server
 ```
 
 #### Neovim example([LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim))
@@ -62,8 +62,8 @@ $ sql-language-server up --method stdio
   "host": "localhost",
   "port": 3306,
   "user": "username",
-  "password": passwprd,
-  "database": "mysql-_development"
+  "password": "password",
+  "database": "mysql-development"
 }
 ```
 
