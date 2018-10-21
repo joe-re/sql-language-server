@@ -8,7 +8,7 @@ SQL Language Server
 
 ### Visual Studio Code
 
-Install vsc extension.
+Install [vsc extension](https://marketplace.visualstudio.com/items?itemName=joe-re.sql-language-server).
 
 ### Other Editors
 
