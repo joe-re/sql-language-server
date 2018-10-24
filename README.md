@@ -4,7 +4,7 @@ SQL Language Server
 
 ![completion](https://user-images.githubusercontent.com/4954534/47268897-36b70500-d589-11e8-98b2-65cffdcd60b8.gif)
 
-## Instllation & How to setup
+## Installation & How to setup
 
 ### Visual Studio Code
 
