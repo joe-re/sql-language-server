@@ -6,3 +6,4 @@ packages/server/dist/*
 **/*/*.js
 **/*/package-lock.json
 **/*/yarn.lock
+yarn.lock
