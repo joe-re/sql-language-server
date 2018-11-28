@@ -16,10 +16,10 @@
     "onLanguage:sql"
   ],
   "dependencies": {
-    "vscode": "^1.1.18",
     "vscode-languageclient": "^4.2.1"
   },
   "devDependencies": {
+    "vscode": "^1.1.18",
     "@types/node": "^8.10.0",
     "typescript": "^2.8.3"
   }
