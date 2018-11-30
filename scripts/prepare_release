@@ -1,6 +1,4 @@
 #! /bin/bash -e
 
-rm -rf node_modules
-
 cd packages/client/ && npm install --production && cd ../../
 cd packages/server/ && npm install --production && cd ../../
