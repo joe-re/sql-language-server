@@ -16,7 +16,7 @@ type Args = {
 }
 
 export default function createServer() {
-	let connection: IConnection = createConnection((argv as Args).method || 'node-ipc')
+  let connection: IConnection = createConnection((argv as Args).method || 'node-ipc')
   initializeLogging()
   const logger = log4js.getLogger()
   
@@ -75,8 +75,8 @@ export default function createServer() {
   connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
     return item;
   })
-	
-	connection.listen()
-	logger.info('start server')
-	return connection
+
+  connection.listen()
+  logger.info('start server')
+  return connection
 }
