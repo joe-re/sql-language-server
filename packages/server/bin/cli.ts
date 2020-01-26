@@ -19,9 +19,7 @@ const cli = yargs
       describe: 'Enable debug logging'
     }
   }, () => {
-    const connection = createServer()
-    connection.console.log('start sql-language-server')
-    console.log('start sql-language-server')
+    createServer()
     process.stdin.resume()
   })
   .example('$0 up --method stdio', ': start up sql-language-server - communicate via stdio')

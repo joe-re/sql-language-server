@@ -261,7 +261,7 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
   }
   const lastToken = getLastToken(target)
   logger.debug(`lastToken: ${lastToken}`)
-  console.log(JSON.stringify(candidates))
+  logger.debug(JSON.stringify(candidates))
   candidates = candidates.filter(v => v.label.startsWith(lastToken))
   return { candidates, error }
 }
