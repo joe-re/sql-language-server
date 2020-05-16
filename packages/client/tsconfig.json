@@ -7,7 +7,7 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "sourceMap": true,
-    "outDir": "./out"
+    "outDir": "out"
   },
-  "exclude": ["node_modules", "server", "test"]
+  "exclude": ["node_modules"]
 }
