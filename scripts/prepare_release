@@ -1,4 +1,0 @@
-#! /bin/bash -e
-
-cd packages/client/ && npm install --production && cd ../../
-cd packages/server/ && npm install --production && cd ../../
