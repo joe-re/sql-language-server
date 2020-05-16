@@ -19,11 +19,11 @@ export default function createServer() {
   let connection: IConnection = createConnection((argv as Args).method || 'node-ipc')
   initializeLogging()
   const logger = log4js.getLogger()
-  
+
   let documents: TextDocuments = new TextDocuments()
   documents.listen(connection);
   let schema: Schema = []
-  
+
   connection.onInitialize((params): InitializeResult => {
   	logger.debug(`onInitialize: ${params.rootPath}`)
   	if (params.rootPath) {
