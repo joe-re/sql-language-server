@@ -12,7 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@joe-re/node-sql-parser": "^0.1.0",
+    "@joe-re/node-sql-parser": "^0.1.1",
     "@types/pg": "^7.4.10",
     "jest": "^26.0.1",
     "log4js": "^2.5.3",

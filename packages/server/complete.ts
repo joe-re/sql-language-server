@@ -1,59 +1,20 @@
-import { Parser, AstReader } from '@joe-re/node-sql-parser'
+import {
+  parse,
+  parseFromClause,
+  SelectStatement,
+  AstReader,
+  FromTableNode,
+  ColumnRefNode,
+  IncompleteSubqueryNode,
+  FromClauseParserResult
+} from '@joe-re/node-sql-parser'
 import * as log4js from 'log4js';
 import { Schema, Table, Column } from './database_libs/AbstractClient'
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
 
-const logger = log4js.getLogger()
-
-type Location = {
-  start: { offset: number, line: number, column: number },
-  end: { offset: number, line: number, column: number },
-}
-type ColumnRefNode = {
-  type: 'column_ref',
-  table: string,
-  column: string,
-  location: Location
-}
-
-type ColumnExpr = { expr: ColumnRefNode, as: string | null } | string
-type SelectStatement = {
-  type: 'select',
-  distinct: null | boolean,
-  columns: ColumnExpr[],
-  from: FromNode[]
-}
-
-type Subquery = {
-  type: 'subquery',
-  as: 'string' | null,
-  subquery: SelectStatement,
-  location: Location
-}
-type IncompleteSubquery = {
-  type: 'incomplete_subquery',
-  as: 'string' | null,
-  text: string,
-  location: Location
-}
-type FromTableNode = {
-  type: 'table',
-  db: string,
-  table: string,
-  as: string | null,
-  location: Location,
-  join?: 'INNER JOIN' | 'LEFT JOIN',
-  on?: any
-}
-type FromClauseParserResult = {
-  before: string,
-  from: { tables: FromNode[] },
-  after: string
-}
-
-type FromNode = FromTableNode | Subquery | IncompleteSubquery
-
 type Pos = { line: number, column: number }
+
+const logger = log4js.getLogger()
 
 const CLAUSES: CompletionItem[] = [
   { label: 'WHERE', kind: CompletionItemKind.Text },
@@ -82,7 +43,7 @@ function getColumnRefByPos(columns: ColumnRefNode[], pos: { line: number, column
   )
 }
 
-function getFromNodeByPos(fromNodes: FromNode[], pos: { line: number, column: number }) {
+function getFromNodeByPos(fromNodes: FromTableNode[], pos: { line: number, column: number }) {
   return fromNodes.find(v =>
     (v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
     (v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column)
@@ -115,8 +76,8 @@ function getCandidatesFromColumnRefNode(columnRefNode: ColumnRefNode, schema: Sc
 
 function isCursorOnFromClause(sql: string, pos: Pos) {
   try {
-    const ast = Parser.parse(sql)
-    return !!getFromNodeByPos(ast.from.tables || [], pos)
+    const ast = parse(sql)
+    return !!getFromNodeByPos(ast.from?.tables || [], pos)
   } catch (_e) {
     return false
   }
@@ -124,7 +85,7 @@ function isCursorOnFromClause(sql: string, pos: Pos) {
 
 function getCandidatedFromIncompleteSubquery(params: {
   sql: string,
-  incompleteSubquery: IncompleteSubquery,
+  incompleteSubquery: IncompleteSubqueryNode,
   pos: Pos,
   schema: Schema
 }): CompletionItem[] {
@@ -132,7 +93,7 @@ function getCandidatedFromIncompleteSubquery(params: {
   const { schema, incompleteSubquery, pos } = params
   const parsedFromClause = getFromNodesFromClause(incompleteSubquery.text)
   try {
-    Parser.parse(incompleteSubquery.text);
+    parse(incompleteSubquery.text);
   } catch (e) {
     if (e.name !== 'SyntaxError') {
       throw e
@@ -147,9 +108,12 @@ function getCandidatedFromIncompleteSubquery(params: {
   return candidates
 }
 
-function createTablesFromFromNodes(fromNodes: FromNode[]): Schema {
+function createTablesFromFromNodes(fromNodes: FromTableNode[]): Schema {
   return fromNodes.reduce((p: any, c) => {
     if (c.type !== 'subquery') {
+      return p
+    }
+    if (!Array.isArray(c.subquery.columns)) {
       return p
     }
     const columns = c.subquery.columns.map(v => {
@@ -160,7 +124,7 @@ function createTablesFromFromNodes(fromNodes: FromNode[]): Schema {
   }, [])
 }
 
-function getCandidatesFromError(target: string, schema: Schema, pos: Pos, e: any, fromNodes: FromNode[]): CompletionItem[] {
+function getCandidatesFromError(target: string, schema: Schema, pos: Pos, e: any, fromNodes: FromTableNode[]): CompletionItem[] {
   let candidates = extractExpectedLiterals(e.expected)
   const candidatesLiterals = candidates.map(v => v.label)
   if (candidatesLiterals.includes("'") || candidatesLiterals.includes('"')) {
@@ -192,7 +156,7 @@ function getCandidatesFromError(target: string, schema: Schema, pos: Pos, e: any
 
 function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
   try {
-    return Parser.parseFromClause(sql)
+    return parseFromClause(sql) as any
   } catch (_e) {
     // no-op
     return null
@@ -213,14 +177,15 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
   logger.debug(`target: ${target}`)
   try {
     candidates = CLAUSES.concat([])
-    const ast = Parser.parse(target);
+    const ast: SelectStatement = parse(target);
     const ar = new AstReader(ast)
     logger.debug(`ast: ${JSON.stringify(ar.getAst())}`)
     if (!ar.getAst().distinct) {
       candidates.push({ label: 'DISTINCT', kind: CompletionItemKind.Text })
     }
-    if (Array.isArray(ar.getAst().columns)) {
-      const selectColumnRefs = ar.getAst().columns.map((v: any) => v.expr).filter((v: any) => !!v)
+    const columns = ar.getAst().columns
+    if (Array.isArray(columns)) {
+      const selectColumnRefs = columns.map((v: any) => v.expr).filter((v: any) => !!v)
       const whereColumnRefs = ar.getAst().where || []
       const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
       logger.debug(JSON.stringify(columnRef))
@@ -230,7 +195,7 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
     }
 
     if (Array.isArray(ar.getAst().from?.tables)) {
-      const fromTable = getFromNodeByPos(ar.getAst().from.tables || [], pos)
+      const fromTable = getFromNodeByPos(ar.getAst().from?.tables || [], pos)
       if (fromTable && fromTable.type === 'table') {
         candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
           .concat([{ label: 'INNER JOIN' }, { label: 'LEFT JOIN' }])
@@ -246,7 +211,7 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
       throw e
     }
     const parsedFromClause = getFromNodesFromClause(sql)
-    const fromNodes = parsedFromClause && parsedFromClause.from?.tables || []
+    const fromNodes = parsedFromClause?.from?.tables || []
     const fromNodeOnCursor = getFromNodeByPos(fromNodes || [], pos)
     if (fromNodeOnCursor && fromNodeOnCursor.type === 'incomplete_subquery') {
       candidates = getCandidatedFromIncompleteSubquery({
