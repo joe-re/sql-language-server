@@ -9,7 +9,8 @@
   "scripts": {
     "compile": "tsc -p .",
     "watch": "tsc --watch",
-    "test": "jest"
+    "test": "jest",
+    "prepublish": "yarn run compile"
   },
   "dependencies": {
     "@joe-re/node-sql-parser": "^0.1.1",
