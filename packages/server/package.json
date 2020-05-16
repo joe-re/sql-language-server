@@ -1,9 +1,9 @@
 {
   "name": "sql-language-server",
-  "version": "0.2.0",
+  "version": "0.2.4",
   "main": "index.js",
   "bin": {
-    "sql-language-server": "./dist/bin/cli.js"
+    "sql-language-server": "./dist/cli.js"
   },
   "license": "MIT",
   "scripts": {
@@ -13,6 +13,7 @@
     "prepublish": "yarn run compile"
   },
   "files": [
+    "package.json",
     "dist"
   ],
   "dependencies": {
