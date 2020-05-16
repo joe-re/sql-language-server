@@ -47,7 +47,7 @@ type FromTableNode = {
 }
 type FromClauseParserResult = {
   before: string,
-  from: FromNode[],
+  from: { tables: FromNode[] },
   after: string
 }
 
@@ -116,7 +116,7 @@ function getCandidatesFromColumnRefNode(columnRefNode: ColumnRefNode, schema: Sc
 function isCursorOnFromClause(sql: string, pos: Pos) {
   try {
     const ast = Parser.parse(sql)
-    return !!getFromNodeByPos(ast.from || [], pos)
+    return !!getFromNodeByPos(ast.from.tables || [], pos)
   } catch (_e) {
     return false
   }
@@ -228,8 +228,9 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
         candidates = candidates.concat(getCandidatesFromColumnRefNode(columnRef, schema))
       }
     }
-    if (Array.isArray(ar.getAst().from)) {
-      const fromTable = getFromNodeByPos(ar.getAst().from || [], pos)
+
+    if (Array.isArray(ar.getAst().from?.tables)) {
+      const fromTable = getFromNodeByPos(ar.getAst().from.tables || [], pos)
       if (fromTable && fromTable.type === 'table') {
         candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
           .concat([{ label: 'INNER JOIN' }, { label: 'LEFT JOIN' }])
@@ -245,7 +246,7 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
       throw e
     }
     const parsedFromClause = getFromNodesFromClause(sql)
-    const fromNodes = parsedFromClause && parsedFromClause.from || []
+    const fromNodes = parsedFromClause && parsedFromClause.from?.tables || []
     const fromNodeOnCursor = getFromNodeByPos(fromNodes || [], pos)
     if (fromNodeOnCursor && fromNodeOnCursor.type === 'incomplete_subquery') {
       candidates = getCandidatedFromIncompleteSubquery({

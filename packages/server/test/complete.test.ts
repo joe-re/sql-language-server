@@ -77,7 +77,7 @@ describe('ColumnName completion', () => {
 })
 
 describe('From clause', () => {
-  test("from clause: complete TableName", () => {
+  test("from clause: complete TableName:single line", () => {
     const result = complete('SELECT TABLE1.COLUMN1 FROM T', { line: 0, column: 28 }, SIMPLE_SCHEMA)
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('TABLE1')
