@@ -3,7 +3,6 @@ node_modules
 packages/client/out/*
 packages/server/dist/*
 **/*/*.log
-**/*/*.js
 **/*/package-lock.json
 **/*/yarn.lock
 yarn.lock
