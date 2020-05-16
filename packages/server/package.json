@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@joe-re/node-sql-parser": "^0.1.1",
+    "@types/node": "12.12.6",
     "@types/pg": "^7.4.10",
     "jest": "^26.0.1",
     "log4js": "^2.5.3",

@@ -3,12 +3,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strict": true,
-    "target": "es6",
+    "target": "es2017",
     "module": "commonjs",
+    "lib": [ "es2018", "es2019" ],
     "moduleResolution": "node",
     "sourceMap": true,
     "esModuleInterop": true,
-    "lib" : [ "es2016" ],
     "outDir": "dist"
   },
   "exclude": [
