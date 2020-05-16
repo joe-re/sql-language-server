@@ -1,4 +1,4 @@
-import { Parser } from '@joe-re/node-sql-parser'
+import { parse } from '@joe-re/node-sql-parser'
 import * as log4js from 'log4js';
 import { PublishDiagnosticsParams, DiagnosticSeverity } from 'vscode-languageserver'
 
@@ -8,7 +8,7 @@ export default function createDiagnostics(uri: string, sql: string): PublishDiag
   logger.debug(`createDiagnostics`)
   let diagnostics = []
   try {
-    const ast = Parser.parse(sql)
+    const ast = parse(sql)
     logger.debug(`ast: ${JSON.stringify(ast)}`)
   } catch (e) {
     logger.debug('parse error')
