@@ -2,7 +2,7 @@
   "name": "sql-language-server",
   "displayName": "SQL Language Server",
   "description": "SQL Language Server Extension for VSC",
-  "version": "0.0.8",
+  "version": "0.2.0",
   "main": "./packages/client/out/extension",
   "repository": {
     "type": "git",
@@ -15,7 +15,6 @@
   "license": "MIT",
   "publisher": "joe-re",
   "scripts": {
-    "postinstall": "node ./scripts/install.js",
     "compile": "npm run compile:client && npm run compile:server",
     "compile:client": "cd ./packages/client && yarn run compile",
     "compile:server": "cd ./packages/server && yarn run compile",
@@ -25,7 +24,7 @@
     "vscode:prepublish": "yarn run compile"
   },
   "engines": {
-    "vscode": "^1.26.0"
+    "vscode": "^1.45.1"
   },
   "activationEvents": [
     "onLanguage:sql"
@@ -36,8 +35,5 @@
   ],
   "devDependencies": {
     "npm-run-all": "^4.1.3"
-  },
-  "dependencies": {
-    "vscode": "^1.1.37"
   }
 }

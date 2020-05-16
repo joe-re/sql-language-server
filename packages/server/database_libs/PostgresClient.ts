@@ -1,9 +1,9 @@
-import { Client } from 'pg'
+import PG from 'pg'
 import { Settings } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
 
 export default class PosgresClient extends AbstractClient {
-  connection: Client | null = null
+  connection: PG.Client | null = null
 
   constructor(settings: Settings) {
     super(settings)
@@ -11,7 +11,7 @@ export default class PosgresClient extends AbstractClient {
   }
 
   connect() {
-    const client = new Client({
+    const client = new PG.Client({
       user: this.settings.user || '',
       host: this.settings.host || '',
       database: this.settings.database || '',
