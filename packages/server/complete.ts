@@ -8,9 +8,9 @@ import {
   IncompleteSubqueryNode,
   FromClauseParserResult
 } from '@joe-re/node-sql-parser'
-import * as log4js from 'log4js';
+import log4js from 'log4js'
 import { Schema, Table, Column } from './database_libs/AbstractClient'
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver';
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
 
 type Pos = { line: number, column: number }
 

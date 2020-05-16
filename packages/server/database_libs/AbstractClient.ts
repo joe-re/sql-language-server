@@ -1,5 +1,5 @@
 import { Settings } from '../SettingStore'
-import * as log4js from 'log4js';
+import log4js from 'log4js';
 
 const logger = log4js.getLogger()
 

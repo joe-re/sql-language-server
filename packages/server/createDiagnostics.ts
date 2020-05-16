@@ -1,6 +1,7 @@
 import { parse } from '@joe-re/node-sql-parser'
-import * as log4js from 'log4js';
-import { PublishDiagnosticsParams, DiagnosticSeverity } from 'vscode-languageserver'
+import log4js from 'log4js';
+import { PublishDiagnosticsParams } from 'vscode-languageserver'
+import { DiagnosticSeverity }from 'vscode-languageserver-types'
 
 const logger = log4js.getLogger()
 

@@ -3,12 +3,12 @@ import cache from './cache'
 import complete from './complete'
 import createDiagnostics from './createDiagnostics'
 import createConnection from './createConnection'
-import { argv } from 'yargs'
+import yargs from 'yargs'
 import SettingStore from './SettingStore'
 import { Schema } from './database_libs/AbstractClient'
 import getDatabaseClient from './database_libs/getDatabaseClient'
 import initializeLogging from './initializeLogging'
-import * as log4js from 'log4js'
+import log4js from 'log4js'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
 type Args = {
@@ -16,7 +16,7 @@ type Args = {
 }
 
 export default function createServer() {
-  let connection: IConnection = createConnection((argv as Args).method || 'node-ipc')
+  let connection: IConnection = createConnection((yargs.argv as Args).method || 'node-ipc')
   initializeLogging()
   const logger = log4js.getLogger()
 
