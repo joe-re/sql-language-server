@@ -7,7 +7,6 @@ export default class PosgresClient extends AbstractClient {
 
   constructor(settings: Settings) {
     super(settings)
-
   }
 
   connect() {

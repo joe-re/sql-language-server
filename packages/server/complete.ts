@@ -66,12 +66,12 @@ function toCompletionItemFromColumn(column: Column): CompletionItem {
   }
 }
 
-function getCandidatesFromColumnRefNode(columnRefNode: ColumnRefNode, schema: Schema): CompletionItem[] {
-  const tableCandidates = schema.filter(v => v.tableName.startsWith(columnRefNode.table)).map(v => toCompletionItemFromTable(v))
+function getTableAndColumnCondidates(tablePrefix: string, schema: Schema, option?: { withoutTable?: boolean }): CompletionItem[] {
+  const tableCandidates = schema.filter(v => v.tableName.startsWith(tablePrefix)).map(v => toCompletionItemFromTable(v))
   const columnCandidates = Array.prototype.concat.apply([],
     schema.filter(v => tableCandidates.map(v => v.label).includes(v.tableName)).map(v => v.columns)
   ).map((v: Column) => toCompletionItemFromColumn(v))
-  return tableCandidates.concat(columnCandidates)
+  return option?.withoutTable ? columnCandidates: tableCandidates.concat(columnCandidates)
 }
 
 function isCursorOnFromClause(sql: string, pos: Pos) {
@@ -125,7 +125,12 @@ function createTablesFromFromNodes(fromNodes: FromTableNode[]): Schema {
 }
 
 function getCandidatesFromError(target: string, schema: Schema, pos: Pos, e: any, fromNodes: FromTableNode[]): CompletionItem[] {
-  let candidates = extractExpectedLiterals(e.expected)
+  switch(e.message) {
+    case 'EXPECTED COLUMN NAME': {
+      return getTableAndColumnCondidates('', schema, { withoutTable: true })
+    }
+  }
+  let candidates = extractExpectedLiterals(e.expected || [])
   const candidatesLiterals = candidates.map(v => v.label)
   if (candidatesLiterals.includes("'") || candidatesLiterals.includes('"')) {
     return []
@@ -167,7 +172,6 @@ function getRidOfAfterCursorString(sql: string, pos: Pos) {
   return sql.split('\n').filter((_v, idx) => pos.line >= idx).map((v, idx) => idx === pos.line ? v.slice(0, pos.column) : v).join('\n')
 }
 
-
 export default function complete(sql: string, pos: Pos, schema: Schema = []) {
   logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   let candidates: CompletionItem[] = []
@@ -190,7 +194,7 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
       const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
       logger.debug(JSON.stringify(columnRef))
       if (columnRef) {
-        candidates = candidates.concat(getCandidatesFromColumnRefNode(columnRef, schema))
+        candidates = candidates.concat(getTableAndColumnCondidates(columnRef.table, schema))
       }
     }
 
