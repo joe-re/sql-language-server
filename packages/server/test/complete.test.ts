@@ -31,6 +31,12 @@ describe('keyword completion', () => {
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('INSERT')
   })
+
+  test("complete 'INTO' keyword", () => {
+    const result = complete('INSERT I', { line: 0, column: 8 })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('INTO')
+  })
 })
 
 const SIMPLE_SCHEMA = [
