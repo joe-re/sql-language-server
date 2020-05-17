@@ -1,0 +1,26 @@
+{
+  "author": "joe-re<joe.tialtngo@gmail.com>",
+  "name": "@joe-re/sql-parser",
+  "description": "sql parser for nodejs",
+  "version": "0.2.0",
+  "typings": "index.d.ts",
+  "scripts": {
+    "build": "npm run generateParser && npm run generateFromClauseParser",
+    "generateParser": "pegjs -o ./base/parser.js parser.pegjs",
+    "generateFromClauseParser": "pegjs -o ./base/fromClauseParser.js  --allowed-start-rules extract_from_clause parser.pegjs"
+  },
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "pegjs": "=0.10.0"
+  },
+  "readmeFilename": "README.md",
+  "main": "index.js",
+  "keywords": [
+    "SQL",
+    "Parer"
+  ],
+  "license": "GPLv2"
+}

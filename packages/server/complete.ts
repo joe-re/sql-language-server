@@ -2,12 +2,11 @@ import {
   parse,
   parseFromClause,
   SelectStatement,
-  AstReader,
   FromTableNode,
   ColumnRefNode,
   IncompleteSubqueryNode,
   FromClauseParserResult
-} from '@joe-re/node-sql-parser'
+} from '@joe-re/sql-parser'
 import log4js from 'log4js'
 import { Schema, Table, Column } from './database_libs/AbstractClient'
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
@@ -182,15 +181,14 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
   try {
     candidates = CLAUSES.concat([])
     const ast: SelectStatement = parse(target);
-    const ar = new AstReader(ast)
-    logger.debug(`ast: ${JSON.stringify(ar.getAst())}`)
-    if (!ar.getAst().distinct) {
+    logger.debug(`ast: ${JSON.stringify(ast)}`)
+    if (!ast.distinct) {
       candidates.push({ label: 'DISTINCT', kind: CompletionItemKind.Text })
     }
-    const columns = ar.getAst().columns
+    const columns = ast.columns
     if (Array.isArray(columns)) {
       const selectColumnRefs = columns.map((v: any) => v.expr).filter((v: any) => !!v)
-      const whereColumnRefs = ar.getAst().where || []
+      const whereColumnRefs = ast.where || []
       const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
       logger.debug(JSON.stringify(columnRef))
       if (columnRef) {
@@ -198,8 +196,8 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
       }
     }
 
-    if (Array.isArray(ar.getAst().from?.tables)) {
-      const fromTable = getFromNodeByPos(ar.getAst().from?.tables || [], pos)
+    if (Array.isArray(ast.from?.tables)) {
+      const fromTable = getFromNodeByPos(ast.from?.tables || [], pos)
       if (fromTable && fromTable.type === 'table') {
         candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
           .concat([{ label: 'INNER JOIN' }, { label: 'LEFT JOIN' }])
