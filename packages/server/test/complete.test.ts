@@ -25,6 +25,31 @@ describe('keyword completion', () => {
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('DISTINCT')
   })
+
+  test("complete 'INESRT' keyword", () => {
+    const result = complete('I', { line: 0, column: 1 })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('INSERT')
+  })
+
+  test("complete 'INTO' keyword", () => {
+    const result = complete('INSERT I', { line: 0, column: 8 })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('INTO')
+  })
+
+  test("complete 'INTO' keyword", () => {
+    const result = complete('INSERT I', { line: 0, column: 8 })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('INTO')
+  })
+
+  test("complete 'VALUES' keyword", () => {
+    const sql = 'INSERT INTO FOO ( BAR ) V'
+    const result = complete('INSERT INTO FOO (BAR) V', { line: 0, column: sql.length })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('VALUES')
+  })
 })
 
 const SIMPLE_SCHEMA = [
@@ -290,5 +315,22 @@ describe('From clause subquery', () => {
     const result = complete(sql, { line: 0, column: 11 }, COMPLEX_SCHEMA)
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('sub_id')
+  })
+})
+
+describe('INSERT statement', () => {
+  test('complete table name', () => {
+    const sql = 'INSERT INTO T'
+    const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('TABLE1')
+  })
+
+  test('complete column name', () => {
+    const sql = 'INSERT INTO TABLE1 (C'
+    const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(2)
+    expect(result.candidates[0].label).toEqual('COLUMN1')
+    expect(result.candidates[1].label).toEqual('COLUMN2')
   })
 })

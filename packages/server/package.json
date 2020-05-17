@@ -17,7 +17,7 @@
     "dist"
   ],
   "dependencies": {
-    "@joe-re/node-sql-parser": "^0.1.1",
+    "@joe-re/node-sql-parser": "^0.2.0",
     "@types/node": "12.12.6",
     "@types/pg": "^7.4.10",
     "jest": "^26.0.1",
