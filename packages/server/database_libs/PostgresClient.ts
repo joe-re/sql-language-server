@@ -1,13 +1,9 @@
 import { Settings } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
-import { Client } from 'pg'
-// TODO: Need investigatation
-// For some reason @rollup/plugin-node-resolve can't resolve pg's dependency correctly.
-// So use commonjs for it as workaround.
-const PG = require('pg')
+import PG from 'pg'
 
 export default class PosgresClient extends AbstractClient {
-  connection: Client | null = null
+  connection: PG.Client | null = null
 
   constructor(settings: Settings) {
     super(settings)
@@ -15,7 +11,7 @@ export default class PosgresClient extends AbstractClient {
   }
 
   connect() {
-    const client: Client = new PG.Client({
+    const client: PG.Client = new PG.Client({
       user: this.settings.user || '',
       host: this.settings.host || '',
       database: this.settings.database || '',

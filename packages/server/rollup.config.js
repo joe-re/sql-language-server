@@ -27,7 +27,8 @@ export default {
       }
     }),
     commonjs({
-      include: ["node_modules/**/*", "../../node_modules/**/*"]
+      include: ["node_modules/**/*", "../../node_modules/**/*"],
+      ignore: ['pg-native' , './native']
     })
   ]
 };
