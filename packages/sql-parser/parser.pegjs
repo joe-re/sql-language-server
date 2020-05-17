@@ -405,6 +405,21 @@ update_stmt
         where : w
       }
     }
+  / KW_UPDATE    __
+    t:table_name __
+    j:table_ref* __
+    KW_SET       __
+    l:set_list   __
+    w:where_clause? {
+      return {
+        type  : 'update',
+        db    : '',
+        table : t,
+        join  : j,
+        set   : l,
+        where : w
+      }
+    }
 
 set_list
   = head:set_item tail:(__ COMMA __ set_item)*  {

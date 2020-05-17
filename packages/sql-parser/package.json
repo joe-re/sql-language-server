@@ -5,6 +5,7 @@
   "version": "0.2.0",
   "typings": "index.d.ts",
   "scripts": {
+    "test": "jest",
     "build": "npm run generateParser && npm run generateFromClauseParser",
     "generateParser": "pegjs -o ./base/parser.js parser.pegjs",
     "generateFromClauseParser": "pegjs -o ./base/fromClauseParser.js  --allowed-start-rules extract_from_clause parser.pegjs"
@@ -14,6 +15,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "jest": "^26.0.1",
     "pegjs": "=0.10.0"
   },
   "readmeFilename": "README.md",
