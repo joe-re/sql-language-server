@@ -1,6 +1,6 @@
 {
   "name": "sql-language-server",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "main": "index.js",
   "bin": {
     "sql-language-server": "./dist/cli.js"
@@ -17,7 +17,6 @@
     "dist"
   ],
   "dependencies": {
-    "@joe-re/node-sql-parser": "^0.2.0",
     "@types/node": "12.12.6",
     "@types/pg": "^7.4.10",
     "jest": "^26.0.1",

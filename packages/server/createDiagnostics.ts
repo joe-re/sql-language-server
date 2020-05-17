@@ -1,4 +1,4 @@
-import { parse } from '@joe-re/node-sql-parser'
+import { parse } from '@joe-re/sql-parser'
 import log4js from 'log4js';
 import { PublishDiagnosticsParams } from 'vscode-languageserver'
 import { DiagnosticSeverity }from 'vscode-languageserver-types'
