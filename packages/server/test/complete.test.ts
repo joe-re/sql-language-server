@@ -25,6 +25,12 @@ describe('keyword completion', () => {
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('DISTINCT')
   })
+
+  test("complete 'INESRT' keyword", () => {
+    const result = complete('I', { line: 0, column: 1 })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('INSERT')
+  })
 })
 
 const SIMPLE_SCHEMA = [
