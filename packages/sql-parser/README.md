@@ -1,3 +1,3 @@
-## node-sql-parser
+## sql-parser
 
 SQL parser for node-js
