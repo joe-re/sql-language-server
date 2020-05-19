@@ -445,6 +445,7 @@ set_item
         value : v
       }
     }
+  / !{error('EXPECTED COLUMN NAME')}
 
 replace_insert_stmt
   = ri:replace_insert       __
