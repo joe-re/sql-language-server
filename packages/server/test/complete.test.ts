@@ -50,6 +50,20 @@ describe('keyword completion', () => {
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('VALUES')
   })
+
+  test("complete 'UPDATE' keyword", () => {
+    const sql = 'U'
+    const result = complete(sql, { line: 0, column: sql.length })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('UPDATE')
+  })
+
+  test("complete 'SET' keyword", () => {
+    const sql = 'UPDATE FOO S'
+    const result = complete(sql, { line: 0, column: sql.length })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('SET')
+  })
 })
 
 const SIMPLE_SCHEMA = [
@@ -328,6 +342,23 @@ describe('INSERT statement', () => {
 
   test('complete column name', () => {
     const sql = 'INSERT INTO TABLE1 (C'
+    const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(2)
+    expect(result.candidates[0].label).toEqual('COLUMN1')
+    expect(result.candidates[1].label).toEqual('COLUMN2')
+  })
+})
+
+describe('UPDATE statement', () => {
+  test('complete table name', () => {
+    const sql = 'UPDATE T'
+    const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('TABLE1')
+  })
+
+  test('complete column name', () => {
+    const sql = 'UPDATE TABLE1 SET C'
     const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('COLUMN1')
