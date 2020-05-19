@@ -50,6 +50,20 @@ describe('keyword completion', () => {
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('VALUES')
   })
+
+  test("complete 'UPDATE' keyword", () => {
+    const sql = 'U'
+    const result = complete(sql, { line: 0, column: sql.length })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('UPDATE')
+  })
+
+  test("complete 'SET' keyword", () => {
+    const sql = 'UPDATE FOO S'
+    const result = complete(sql, { line: 0, column: sql.length })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('SET')
+  })
 })
 
 const SIMPLE_SCHEMA = [
