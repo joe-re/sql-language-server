@@ -34,6 +34,8 @@ export type BinaryExpressionNode = {
   location: NodeRange 
 }
 
+export type AST = SelectStatement | DeleteStatement
+
 export type SelectStatement = {
   type: 'select'
   keyword: KeywordNode
@@ -56,6 +58,15 @@ export type WhereClause = {
   type: 'where',
   keyword: KeywordNode,
   expression: BinaryExpressionNode,
+  location: NodeRange
+}
+
+export type DeleteStatement = {
+  type: 'delete'
+  keyword: KeywordNode
+  db: string
+  table: TableNode
+  where: WhereClause | null
   location: NodeRange
 }
 
@@ -108,8 +119,4 @@ type FromClauseParserResult = {
 }
 
 export function parseFromClause(sql: string): FromClauseParserResult
-export function parse(sql: string): SelectStatement
-export class AstReader {
-  constructor (ast: any)
-  getAst: () => SelectStatement
-}
+export function parse(sql: string): AST

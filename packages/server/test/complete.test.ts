@@ -64,6 +64,13 @@ describe('keyword completion', () => {
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('SET')
   })
+
+  test("complete 'DELETE' keyword", () => {
+    const sql = 'D'
+    const result = complete(sql, { line: 0, column: sql.length })
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('DELETE')
+  })
 })
 
 const SIMPLE_SCHEMA = [
