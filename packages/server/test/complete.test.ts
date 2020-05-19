@@ -348,3 +348,20 @@ describe('INSERT statement', () => {
     expect(result.candidates[1].label).toEqual('COLUMN2')
   })
 })
+
+describe('UPDATE statement', () => {
+  test('complete table name', () => {
+    const sql = 'UPDATE T'
+    const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('TABLE1')
+  })
+
+  test('complete column name', () => {
+    const sql = 'UPDATE TABLE1 SET C'
+    const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(2)
+    expect(result.candidates[0].label).toEqual('COLUMN1')
+    expect(result.candidates[1].label).toEqual('COLUMN2')
+  })
+})
