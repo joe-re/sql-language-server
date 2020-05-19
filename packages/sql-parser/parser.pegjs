@@ -103,7 +103,7 @@
 }
 
 start 
-  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt ) {
+  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) {
       return {
         ast   : ast,
         param : params
@@ -1189,3 +1189,42 @@ mem_chain
  KW_RETURN = 'return'i
 
  KW_ASSIGN = ':='
+
+delete_stmt
+  = val:delete_keyword    __
+    KW_FROM      __
+    t:delete_table __
+    w:where_clause? {
+      return {
+        type    : 'delete',
+        table   : t,
+        where   : w
+      }
+    }
+
+delete_keyword
+  = val: KW_DELETE {
+    return {
+      type: 'keyword',
+      value: val && val[0],
+      location: location()
+    }
+  }
+
+delete_table
+  = db:db_name __ DOT __ t:table_name {
+      return  {
+        type: 'table',
+        db    : db,
+        table : t,
+        location: location()
+      }
+    }
+  / t:table_name {
+      return  {
+        type: 'table',
+        db    : '',
+        table : t,
+        location: location()
+      }
+    }
