@@ -372,3 +372,20 @@ describe('UPDATE statement', () => {
     expect(result.candidates[1].label).toEqual('COLUMN2')
   })
 })
+
+describe('DELETE statement', () => {
+  test('complete table name', () => {
+    const sql = 'DELETE FROM T'
+    const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('TABLE1')
+  })
+
+  test('complete table name', () => {
+    const sql = 'DELETE FROM TABLE1 WHERE C'
+    const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(2)
+    expect(result.candidates[0].label).toEqual('COLUMN1')
+    expect(result.candidates[1].label).toEqual('COLUMN2')
+  })
+})

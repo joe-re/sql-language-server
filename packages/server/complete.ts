@@ -5,7 +5,9 @@ import {
   FromTableNode,
   ColumnRefNode,
   IncompleteSubqueryNode,
-  FromClauseParserResult
+  FromClauseParserResult,
+  DeleteStatement,
+  NodeRange
 } from '@joe-re/sql-parser'
 import log4js from 'log4js'
 import { Schema, Table, Column } from './database_libs/AbstractClient'
@@ -42,11 +44,13 @@ function getColumnRefByPos(columns: ColumnRefNode[], pos: { line: number, column
   )
 }
 
+function isPosInLocation(location: NodeRange, pos: Pos) {
+  return (location.start.line === pos.line + 1 && location.start.column <= pos.column) &&
+    (location.end.line === pos.line + 1 && location.end.column >= pos.column)
+}
+
 function getFromNodeByPos(fromNodes: FromTableNode[], pos: { line: number, column: number }) {
-  return fromNodes.find(v =>
-    (v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
-    (v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column)
-  )
+  return fromNodes.find(v => isPosInLocation(v.location, pos))
 }
 
 function toCompletionItemFromTable(table: Table): CompletionItem {
@@ -65,17 +69,24 @@ function toCompletionItemFromColumn(column: Column): CompletionItem {
   }
 }
 
-function getTableAndColumnCondidates(tablePrefix: string, schema: Schema, option?: { withoutTable?: boolean }): CompletionItem[] {
+function getTableAndColumnCondidates(tablePrefix: string, schema: Schema, option?: { withoutTable?: boolean, withoutColumn?: boolean }): CompletionItem[] {
   const tableCandidates = schema.filter(v => v.tableName.startsWith(tablePrefix)).map(v => toCompletionItemFromTable(v))
   const columnCandidates = Array.prototype.concat.apply([],
     schema.filter(v => tableCandidates.map(v => v.label).includes(v.tableName)).map(v => v.columns)
   ).map((v: Column) => toCompletionItemFromColumn(v))
-  return option?.withoutTable ? columnCandidates: tableCandidates.concat(columnCandidates)
+  const candidates: CompletionItem[] = []
+  if (!option?.withoutTable) {
+    candidates.push(...tableCandidates)
+  }
+  if (!option?.withoutColumn) {
+    candidates.push(...columnCandidates)
+  }
+  return candidates
 }
 
 function isCursorOnFromClause(sql: string, pos: Pos) {
   try {
-    const ast = parse(sql)
+    const ast = parse(sql) as SelectStatement
     return !!getFromNodeByPos(ast.from?.tables || [], pos)
   } catch (_e) {
     return false
@@ -171,6 +182,15 @@ function getRidOfAfterCursorString(sql: string, pos: Pos) {
   return sql.split('\n').filter((_v, idx) => pos.line >= idx).map((v, idx) => idx === pos.line ? v.slice(0, pos.column) : v).join('\n')
 }
 
+function completeDeleteStatement (ast: DeleteStatement, pos: Pos, schema: Schema): CompletionItem[] {
+  if (isPosInLocation(ast.table.location, pos)) {
+    return getTableAndColumnCondidates('', schema, { withoutColumn: true })
+  } else if (ast.where && isPosInLocation(ast.where.expression.location, pos)) {
+    return getTableAndColumnCondidates('', schema, { withoutTable: true })
+  }
+  return []
+}
+
 export default function complete(sql: string, pos: Pos, schema: Schema = []) {
   logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   let candidates: CompletionItem[] = []
@@ -180,29 +200,33 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
   logger.debug(`target: ${target}`)
   try {
     candidates = CLAUSES.concat([])
-    const ast: SelectStatement = parse(target);
+    const ast = parse(target);
     logger.debug(`ast: ${JSON.stringify(ast)}`)
-    if (!ast.distinct) {
-      candidates.push({ label: 'DISTINCT', kind: CompletionItemKind.Text })
-    }
-    const columns = ast.columns
-    if (Array.isArray(columns)) {
-      const selectColumnRefs = columns.map((v: any) => v.expr).filter((v: any) => !!v)
-      const whereColumnRefs = ast.where || []
-      const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
-      logger.debug(JSON.stringify(columnRef))
-      if (columnRef) {
-        candidates = candidates.concat(getTableAndColumnCondidates(columnRef.table, schema))
+    if (ast.type === 'delete') {
+      candidates = completeDeleteStatement(ast, pos, schema)
+    } else {
+      if (!ast.distinct) {
+        candidates.push({ label: 'DISTINCT', kind: CompletionItemKind.Text })
       }
-    }
+      const columns = ast.columns
+      if (Array.isArray(columns)) {
+        const selectColumnRefs = columns.map((v: any) => v.expr).filter((v: any) => !!v)
+        const whereColumnRefs = ast.where || []
+        const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
+        logger.debug(JSON.stringify(columnRef))
+        if (columnRef) {
+          candidates = candidates.concat(getTableAndColumnCondidates(columnRef.table, schema))
+        }
+      }
 
-    if (Array.isArray(ast.from?.tables)) {
-      const fromTable = getFromNodeByPos(ast.from?.tables || [], pos)
-      if (fromTable && fromTable.type === 'table') {
-        candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
-          .concat([{ label: 'INNER JOIN' }, { label: 'LEFT JOIN' }])
-        if (fromTable.join && !fromTable.on) {
-          candidates.push({ label: 'ON' })
+      if (Array.isArray(ast.from?.tables)) {
+        const fromTable = getFromNodeByPos(ast.from?.tables || [], pos)
+        if (fromTable && fromTable.type === 'table') {
+          candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
+            .concat([{ label: 'INNER JOIN' }, { label: 'LEFT JOIN' }])
+          if (fromTable.join && !fromTable.on) {
+            candidates.push({ label: 'ON' })
+          }
         }
       }
     }
