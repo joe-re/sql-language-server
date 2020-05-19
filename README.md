@@ -81,7 +81,8 @@ Please restart sql-language-server process after create .sqlrc.json.
 
 - [x] SELECT
 - [x] INSERT
-- [ ] UPDATE
-- [ ] DELETE
-- [ ] Beautify 
+- [x] UPDATE
+- [x] DELETE
+- [ ] Beautify
 - [ ] Lint
+- [ ] ssh port forwarding
