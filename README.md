@@ -60,22 +60,72 @@ $ sql-language-server up --method stdio
 {
   "adapter": "mysql",
   "host": "localhost",
-  "port": 3306,
+  "port": 3307,
   "user": "username",
   "password": "password",
-  "database": "mysql-development"
+  "database": "mysql-development",
+  "ssh": {
+    "user": "ubuntu",
+    "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+    "dbHost": "127.0.0.1",
+    "port": 3306,
+    "identityFile": "~/.ssh/id_rsa",
+    "passphrase": "123456"
+  }
 }
 ```
 
-- Details
-  - adapter: "mysql" | "postgres"
-  - host: string
-  - port: number
-  - user: string
-  - password: string
-  - database: string
-
 Please restart sql-language-server process after create .sqlrc.json.
+
+#### Parameters
+
+| Key      | Description                 | value                   | required | default                           |
+| -------- | --------------------------- | ----------------------- | -------- | --------------------------------- |
+| adapter  | Database type               | `"mysql" | "postgres"`  | true     |                                   |
+| host     | Database host               | string                  | true     |                                   |
+| port     | Database port               | string                  | false    | mysql:3306, postgres:5432         |
+| user     | Database user               | string                  | true     | mysql:"root", postgres:"postgres" |
+| password | Database password           | string                  | false    |                                   |
+| database | Database name               | string                  | false    |                                   |
+| ssh      | Settings for port fowarding | \*see below SSH section | false    |                                   |
+
+##### SSH
+
+| Key          | Description                              | value  | required | default                   |
+| ------------ | ---------------------------------------- | ------ | -------- | ------------------------- |
+| remoteHost   | The host address you want to connect to  | string | true     |                           |
+| remotePort   | Port number of the server for ssh        | number | false    | 22                        |
+| user         | User name on the server                  | string | false    |                           |
+| dbHost       | Database host on the server              | string | false    | 127.0.0.1                 |
+| dbPort       | Databse port on the server               | number | false    | mysql:3306, postgres:5432 |
+| identitiFile | Identity file for ssh                    | string | false    | ~/.ssh/config/id_rsa      |
+| passphrase   | Passphrase to allow to use identity file | string | false    |                           |
+
+#### Inject envitonment variables
+
+${ssm:VARIABLE_NAME} syntax allows you to replace configuration value with environt variable.
+This is useful when you don't write actual file on configuration file.
+
+##### example
+
+```json
+{
+  "adapter": "mysql",
+  "host": "localhost",
+  "port": 3307,
+  "user": "username",
+  "password": "${env:DB_PASSWORD}",
+  "database": "mysql-development",
+  "ssh": {
+    "user": "ubuntu",
+    "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+    "dbHost": "127.0.0.1",
+    "port": 3306,
+    "identityFile": "~/.ssh/id_rsa",
+    "passphrase": "${env:SSH_PASSPHRASE}"
+  }
+}
+```
 
 ### TODO
 
@@ -83,6 +133,6 @@ Please restart sql-language-server process after create .sqlrc.json.
 - [x] INSERT
 - [x] UPDATE
 - [x] DELETE
+- [x] ssh port forwarding
 - [ ] Beautify
 - [ ] Lint
-- [ ] ssh port forwarding

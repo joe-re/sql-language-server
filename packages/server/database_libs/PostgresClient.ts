@@ -9,6 +9,10 @@ export default class PosgresClient extends AbstractClient {
     super(settings)
   }
 
+  get DefaultPort() { return 5432 }
+  get DefaultHost() { return '127.0.0.1' }
+  get DefaultUser() { return 'postgres' }
+
   connect() {
     const client: PG.Client = new PG.Client({
       user: this.settings.user || '',
