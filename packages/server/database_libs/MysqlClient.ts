@@ -9,13 +9,17 @@ export default class MysqlClient extends AbstractClient {
     super(settings)
   }
 
+  get DefaultPort() { return 3306 }
+  get DefaultHost() { return '127.0.0.1' }
+  get DefaultUser() { return 'root' }
+
   connect() {
     this.connection = mysql.createConnection({
-      host: this.settings.host || 'localhost',
+      host: this.settings.host || this.DefaultHost,
       password: this.settings.password || '',
-      user: this.settings.user || 'root',
-      port: this.settings.port || 3306,
-      database: this.settings.database || undefined
+      user: this.settings.user || this.DefaultUser,
+      port: this.settings.port || this.DefaultPort,
+      database: this.settings.database || ''
     })
   }
 

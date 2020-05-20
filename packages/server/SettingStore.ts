@@ -4,13 +4,23 @@ import EventEmitter from 'events'
 
 const logger = log4js.getLogger()
 
+export type SSHConfig = {
+  remoteHost: string
+  remotePort: number
+  dbHost?: string
+  dbPort?: number
+  user?: string
+  passphrase?: string
+  identityFile?: string
+}
 export type Settings = {
   adapter: 'mysql' | 'postgresql',
   host: string | null,
   port: number | null,
   user: string | null,
   database: string | null,
-  password: string | null
+  password: string | null,
+  ssh: SSHConfig | null
 }
 
 export default class SettingStore extends EventEmitter {
@@ -20,7 +30,8 @@ export default class SettingStore extends EventEmitter {
     port: null,
     user: null,
     database: null,
-    password: null
+    password: null,
+    ssh: null
   }
   private static instance: SettingStore;
 

@@ -1,5 +1,7 @@
 import { Settings } from '../SettingStore'
 import log4js from 'log4js';
+import { SSHConnection } from 'node-ssh-forward'
+import { readFileSync } from 'fs'
 
 const logger = log4js.getLogger()
 
@@ -29,11 +31,34 @@ export default abstract class AbstractClient {
   abstract disconnect(): void
   abstract getTables(): Promise<string[]>
   abstract getColumns(tableName: string): Promise<RawField[]>
+  abstract DefaultPort: number
+  abstract DefaultHost: string
+  abstract DefaultUser: string
 
   async getSchema(): Promise<Schema> {
     let schema: Schema = []
+    const sshConnection =
+      this.settings.ssh ? new SSHConnection({
+        endHost: this.settings.ssh.remoteHost,
+        username: this.settings.ssh.user,
+        privateKey: readFileSync(this.settings.ssh.identityFile || `${process.env.HOME}/.ssh/id_rsa`),
+        passphrase: this.settings.ssh.passphrase || ''
+      }) : null
+    if (sshConnection) {
+      await sshConnection.forward({
+        fromPort: this.settings.port || this.DefaultPort,
+        toPort: this.settings.ssh?.dbPort || this.DefaultPort,
+        toHost: this.settings.ssh?.dbHost || '127.0.0.1'
+      }).then(v => {
+        if (v) {
+          logger.error('Failed to ssh remote server')
+          logger.error(v)
+        }
+        return []
+      })
+    }
+    this.connect()
     try {
-      this.connect()
       const tables = await this.getTables()
       schema = await Promise.all(
         tables.map((v) => this.getColumns(v).then(columns => ({
@@ -42,11 +67,14 @@ export default abstract class AbstractClient {
           columns: columns.map(v => this.toColumnFromRawField(v)) }
         )))
       )
-      this.disconnect()
     } catch (e) {
-      this.disconnect()
       logger.error(e)
       throw e
+    } finally {
+      this.disconnect()
+      if (sshConnection) {
+        sshConnection.shutdown()
+      }
     }
     return schema
   }
