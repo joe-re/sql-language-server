@@ -101,6 +101,32 @@ Please restart sql-language-server process after create .sqlrc.json.
 | identitiFile | Identity file for ssh                    | string | false    | ~/.ssh/config/id_rsa      |
 | passphrase   | Passphrase to allow to use identity file | string | false    |                           |
 
+#### Inject envitonment variables
+
+${ssm:VARIABLE_NAME} syntax allows you to replace configuration value with environt variable.
+This is useful when you don't write actual file on configuration file.
+
+##### example
+
+```json
+{
+  "adapter": "mysql",
+  "host": "localhost",
+  "port": 3307,
+  "user": "username",
+  "password": "${env:DB_PASSWORD}",
+  "database": "mysql-development",
+  "ssh": {
+    "user": "ubuntu",
+    "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+    "dbHost": "127.0.0.1",
+    "port": 3306,
+    "identityFile": "~/.ssh/id_rsa",
+    "passphrase": "${env:SSH_PASSPHRASE}"
+  }
+}
+```
+
 ### TODO
 
 - [x] SELECT

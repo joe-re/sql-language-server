@@ -6,7 +6,7 @@ const logger = log4js.getLogger()
 
 export type SSHConfig = {
   remoteHost: string
-  remotePort: number
+  remotePort?: number
   dbHost?: string
   dbPort?: number
   user?: string
@@ -79,7 +79,22 @@ export default class SettingStore extends EventEmitter {
   }
 
   setSetting(setting: Partial<Settings>) {
-    this.state = Object.assign({}, this.state, setting)
+    const replaceEnv = (v: { [key: string]: any }) => {
+      for (const k in v) {
+        if (v[k] && typeof v[k] === 'object') {
+          replaceEnv(v[k])
+        } else if (typeof v[k] === 'string') {
+          const matched = (v[k] as string).match(/\${env:(.*?)}/)
+          if (matched) {
+            v[k] = (v[k] as string).replace(`\${env:${matched[1]}}`, process.env[matched[1]] || '')
+          }
+        }
+      }
+    }
+    const newSetting = Object.assign({}, setting)
+    newSetting.ssh = newSetting.ssh ? Object.assign({}, newSetting.ssh) : null
+    replaceEnv(newSetting)
+    this.state = Object.assign({}, this.state, newSetting)
     this.emit('change', this.state)
   }
 }
