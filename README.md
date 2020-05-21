@@ -52,26 +52,49 @@ $ sql-language-server up --method stdio
 
 ### Connect to database
 
-#### Create .sqllsrc.json on your project root
+#### Using Configuration Files
+
+There are two ways to use configuration files.
+
+- Set personal configuration file(~/.config/sql-language-server/sqllsrc.json)
+- Set project configuration file on your project root(\${YOUR_PROJECT/.sqllsrc.json})
+
+#### Example for personal configuration file
 
 - Examples
 
 ```json
 {
-  "adapter": "mysql",
-  "host": "localhost",
-  "port": 3307,
-  "user": "username",
-  "password": "password",
-  "database": "mysql-development",
-  "ssh": {
-    "user": "ubuntu",
-    "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
-    "dbHost": "127.0.0.1",
-    "port": 3306,
-    "identityFile": "~/.ssh/id_rsa",
-    "passphrase": "123456"
-  }
+  "connections": [
+    {
+      "name": "sql-language-server",
+      "adapter": "mysql",
+      "host": "localhost",
+      "port": 3307,
+      "user": "username",
+      "password": "password",
+      "database": "mysql-development",
+      "projectPaths": ["/Users/joe-re/src/sql-language-server"],
+      "ssh": {
+        "user": "ubuntu",
+        "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+        "dbHost": "127.0.0.1",
+        "port": 3306,
+        "identityFile": "~/.ssh/id_rsa",
+        "passphrase": "123456"
+      }
+    },
+    {
+      "name": "postgres-project",
+      "adapter": "prostgres",
+      "host": "localhost",
+      "port": 5432,
+      "user": "postgres",
+      "password": "pg_pass",
+      "database": "pg_test",
+      "projectPaths": ["/Users/joe-re/src/postgres_ptoject"]
+    }
+  ]
 }
 ```
 
@@ -79,15 +102,17 @@ Please restart sql-language-server process after create .sqlrc.json.
 
 #### Parameters
 
-| Key      | Description                 | value                   | required | default                           |
-| -------- | --------------------------- | ----------------------- | -------- | --------------------------------- |
-| adapter  | Database type               | `"mysql" | "postgres"`  | true     |                                   |
-| host     | Database host               | string                  | true     |                                   |
-| port     | Database port               | string                  | false    | mysql:3306, postgres:5432         |
-| user     | Database user               | string                  | true     | mysql:"root", postgres:"postgres" |
-| password | Database password           | string                  | false    |                                   |
-| database | Database name               | string                  | false    |                                   |
-| ssh      | Settings for port fowarding | \*see below SSH section | false    |                                   |
+| Key          | Description                                                                                                               | value                   | required | default                           |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------- | ----------------------- | -------- | --------------------------------- |
+| name         | Connection name(free-form text)                                                                                           |                         | true     |                                   |
+| adapter      | Database type                                                                                                             | `"mysql" | "postgres"`  | true     |                                   |
+| host         | Database host                                                                                                             | string                  | true     |                                   |
+| port         | Database port                                                                                                             | string                  | false    | mysql:3306, postgres:5432         |
+| user         | Database user                                                                                                             | string                  | true     | mysql:"root", postgres:"postgres" |
+| password     | Database password                                                                                                         | string                  | false    |                                   |
+| database     | Database name                                                                                                             | string                  | false    |                                   |
+| projectPaths | Project path that you want to apply(if you don't set it configuration will not apply automatically when lsp's started up) | string[]                | false    | []                                |
+| ssh          | Settings for port fowarding                                                                                               | \*see below SSH section | false    |                                   |
 
 ##### SSH
 
@@ -101,9 +126,78 @@ Please restart sql-language-server process after create .sqlrc.json.
 | identitiFile | Identity file for ssh                    | string | false    | ~/.ssh/config/id_rsa      |
 | passphrase   | Passphrase to allow to use identity file | string | false    |                           |
 
+#### Personal confuguration file
+
+Personal configuration file is located on `~/.config/sql-language-server/.sqllsrc.json`.
+sql-language-server will try to read when it's started.
+
+#### Project confuguration file
+
+Project configuration file is located on `${YOUR_PROJECT_ROOT}/.sqllsrc.json`.
+
+All setting items are similarly to personal configuration file, with some exceptions:
+
+- Specify under `connection` property element directly(you don't need to set array)
+- You don't need to set project path.(if you set it it will be ignored)
+- It's merged to personal configuration if you have it.
+
+Example:
+```json
+{
+  "name": "postgres-project",
+  "adapter": "prostgres",
+  "host": "localhost",
+  "port": 5432,
+  "user": "postgres",
+  "database": "pg_test"
+}
+```
+
+And also if you have set personal configuration and both of them's names are matched, it's merged automatically.
+
+Personal configuration example:
+```json
+{
+  connections: [{
+    "name": "postgres-project",
+    "password": "password",
+    "ssh": {
+      "user": "ubuntu",
+      "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+      "dbHost": "127.0.0.1",
+      "port": 5432,
+      "identityFile": "~/.ssh/id_rsa",
+      "passphrase": "123456"
+    }
+  }]
+}
+```
+
+It will merge them as following:
+
+```json
+{
+  "name": "postgres-project",
+  "adapter": "prostgres",
+  "host": "localhost",
+  "port": 5432,
+  "user": "postgres",
+  "database": "pg_test",
+  "password": "password",
+  "ssh": {
+    "user": "ubuntu",
+    "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+    "dbHost": "127.0.0.1",
+    "port": 5432,
+    "identityFile": "~/.ssh/id_rsa",
+    "passphrase": "123456"
+  }
+}
+```
+
 #### Inject envitonment variables
 
-${ssm:VARIABLE_NAME} syntax allows you to replace configuration value with environt variable.
+\${ssm:VARIABLE_NAME} syntax allows you to replace configuration value with environt variable.
 This is useful when you don't write actual file on configuration file.
 
 ##### example

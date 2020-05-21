@@ -49,13 +49,13 @@ export default class SettingStore extends EventEmitter {
     return Object.assign({}, this.state)
   }
 
-  setSettingFromFile(path: string) {
+  setSettingFromFile(path: string): Promise<Settings | null> {
     return new Promise((resolve, reject) => {
       fs.stat(path, (err, _stat) => {
         if (err) {
           if (err.code && err.code === 'ENOENT') {
-             logger.debug("there isn't config file.")
-             resolve()
+             logger.debug(`there isn't config file. ${path}`)
+             resolve(null)
              return
           }
           logger.error(err.message)
