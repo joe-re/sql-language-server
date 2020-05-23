@@ -38,7 +38,7 @@ export default abstract class AbstractClient {
   async getSchema(): Promise<Schema> {
     let schema: Schema = []
     const sshConnection =
-      this.settings.ssh ? new SSHConnection({
+      this.settings.ssh?.remoteHost ? new SSHConnection({
         endHost: this.settings.ssh.remoteHost,
         username: this.settings.ssh.user,
         privateKey: readFileSync(this.settings.ssh.identityFile || `${process.env.HOME}/.ssh/id_rsa`),

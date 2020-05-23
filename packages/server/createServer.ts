@@ -25,10 +25,7 @@ export default function createServer() {
   let schema: Schema = []
 
   connection.onInitialize((params): InitializeResult => {
-  	logger.debug(`onInitialize: ${params.rootPath}`)
-  	if (params.rootPath) {
-  		SettingStore.getInstance().setSettingFromFile(`${params.rootPath}/.sqllsrc.json`)
-  	}
+    logger.debug(`onInitialize: ${params.rootPath}`)
   	SettingStore.getInstance().on('change', async () => {
   		try {
     		const client = getDatabaseClient(SettingStore.getInstance().getSetting())
@@ -39,6 +36,13 @@ export default function createServer() {
   			logger.error(e)
   		}
   	})
+  	if (params.rootPath) {
+       SettingStore.getInstance().setSettingFromFile(
+        `${process.env.HOME}/.config/sql-language-server/.sqllsrc.json`,
+        `${params.rootPath}/.sqllsrc.json`,
+        params.rootPath || ''
+      )
+  	}
     return {
       capabilities: {
         textDocumentSync: documents.syncKind,
