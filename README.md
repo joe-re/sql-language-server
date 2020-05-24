@@ -197,8 +197,8 @@ It will merge them as following:
 
 #### Inject envitonment variables
 
-\${ssm:VARIABLE_NAME} syntax allows you to replace configuration value with environt variable.
-This is useful when you don't write actual file on configuration file.
+${env:VARIABLE_NAME} syntax allows you to replace configuration value with enviroment variable.
+This is useful when you don't write actual value on configuration file.
 
 ##### example
 
