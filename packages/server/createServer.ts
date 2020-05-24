@@ -1,4 +1,11 @@
-import { IConnection, TextDocuments, InitializeResult, TextDocumentPositionParams, CompletionItem } from 'vscode-languageserver';
+import {
+  IConnection,
+  TextDocuments,
+  InitializeResult,
+  TextDocumentPositionParams,
+  CompletionItem
+} from 'vscode-languageserver'
+import { TextDocument } from 'vscode-languageserver-textdocument' 
 import cache from './cache'
 import complete from './complete'
 import createDiagnostics from './createDiagnostics'
@@ -19,8 +26,7 @@ export default function createServer() {
   let connection: IConnection = createConnection((yargs.argv as Args).method || 'node-ipc')
   initializeLogging()
   const logger = log4js.getLogger()
-
-  let documents: TextDocuments = new TextDocuments()
+  let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = []
 
@@ -31,7 +37,11 @@ export default function createServer() {
     		const client = getDatabaseClient(SettingStore.getInstance().getSetting())
   			schema = await client.getSchema()
   			logger.debug('get schema')
-  			logger.debug(JSON.stringify(schema))
+        logger.debug(JSON.stringify(schema))
+        connection.sendNotification('sqlLanguageServer.finishSetup', {
+          personalConfig: SettingStore.getInstance().getPersonalConfig(),
+          config: SettingStore.getInstance().getSetting()
+        })
   		} catch (e) {
   			logger.error(e)
   		}
@@ -45,15 +55,18 @@ export default function createServer() {
   	}
     return {
       capabilities: {
-        textDocumentSync: documents.syncKind,
+        textDocumentSync: 1, // 1 = Full
         completionProvider: {
           resolveProvider: true,
           triggerCharacters: ['.'],
+        },
+        executeCommandProvider: {
+          commands: ['sqlLanguageServer.switchDatabaseConnection']
         }
       }
     }
   })
-  
+
   connection.onDidChangeTextDocument((params) => {
     logger.debug(`didChangeTextDocument: ${params.textDocument.uri}`)
     cache.set(params.textDocument.uri, params.contentChanges[0].text)
@@ -77,10 +90,25 @@ export default function createServer() {
   })
   
   connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-    return item;
+    return item
+  })
+
+  connection.onExecuteCommand((request) => {
+    logger.debug(`received executeCommand request: ${request.command}, ${request.arguments}`)
+    if (request.command === 'switchDatabaseConnection') {
+      try{
+        SettingStore.getInstance().changeConnection(
+          request.arguments && request.arguments[0] || ''
+        )
+      } catch (e) {
+        connection.sendNotification('sqlLanguageServer.error', {
+          message: e.message
+        })
+      }
+    }
   })
 
   connection.listen()
-  logger.info('start server')
+  logger.info('start sql-languager-server')
   return connection
 }

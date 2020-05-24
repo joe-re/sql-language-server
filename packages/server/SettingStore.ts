@@ -45,6 +45,7 @@ function readFile(filePath: string) {
 }
 
 export default class SettingStore extends EventEmitter {
+  private personalConfig: PersonalConfig = { connections: []}
   private state: Settings = {
     name: null,
     adapter: null,
@@ -72,10 +73,29 @@ export default class SettingStore extends EventEmitter {
     return Object.assign({}, this.state)
   }
 
-  async setSettingFromFile(personalConfigPath: string, projectConfigPath: string, projectPath: string): Promise<Settings | null> {
+  getPersonalConfig() {
+    return this.personalConfig
+  }
+
+  async changeConnection(connectionName: string) {
+    const config = this.personalConfig.connections.find(v => v.name === connectionName)
+    if (!config) {
+      const errorMessage = `not find connection name: ${connectionName}`
+      logger.error(`not find connection name: ${connectionName}`)
+      throw new Error(errorMessage)
+    }
+    this.setSetting(config)
+  }
+
+  async setSettingFromFile(
+    personalConfigPath: string,
+    projectConfigPath: string,
+    projectPath: string
+  ): Promise<Settings | null> {
     let personalConfig = { connections: [] } as PersonalConfig, projectConfig = {} as Settings
     if (fileExists(personalConfigPath)) {
       personalConfig = JSON.parse(readFile(personalConfigPath))
+      this.personalConfig = personalConfig
     } else {
       logger.debug(`There isn't personal config file. ${personalConfigPath}`)
     }

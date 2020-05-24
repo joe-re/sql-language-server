@@ -80,3 +80,16 @@ describe('setSettingFromFile', () => {
     })
   })
 })
+
+describe('changeConnection', () => {
+  it('should change database connection', async () => {
+    await SettingStore.getInstance().setSettingFromFile(
+      `${__dirname}/fixtures/personalConfigFile.json`,
+      'no_project_config',
+      '/Users/sql-language-server/project2'
+    )
+    expect(SettingStore.getInstance().getSetting().name).toEqual('project2')
+    SettingStore.getInstance().changeConnection('project1')
+    expect(SettingStore.getInstance().getSetting().name).toEqual('project1')
+  })
+})
