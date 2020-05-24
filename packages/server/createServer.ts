@@ -55,7 +55,7 @@ export default function createServer() {
   	}
     return {
       capabilities: {
-        textDocumentSync: 1, // 1 = Full
+        textDocumentSync: 1,
         completionProvider: {
           resolveProvider: true,
           triggerCharacters: ['.'],

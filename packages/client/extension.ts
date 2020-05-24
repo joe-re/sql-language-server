@@ -13,6 +13,7 @@ export function activate(context: ExtensionContext) {
   let execArgs = ['up', '--method', 'node-ipc']
   let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
   let connectionNames = []
+  let connectedConnectionName = ''
 
   let serverOptions: ServerOptions = {
     run : { module: serverModule, transport: TransportKind.ipc, args: execArgs },
@@ -37,13 +38,19 @@ export function activate(context: ExtensionContext) {
       Window.showWarningMessage("Need to set personal config file at first.")
       return
     }
-    const selected = await Window.showQuickPick(connectionNames);
+    const items = connectionNames.map(v => {
+      if (connectedConnectionName === v) {
+        return { label: `* ${v}`, value: v }
+      }
+      return { label: `  ${v}`, value: v}
+    })
+    const selected = await Window.showQuickPick(items)
     if (!selected) {
       return
     }
     const params: ExecuteCommandParams = {
       command: 'switchDatabaseConnection',
-      arguments: [selected]
+      arguments: [selected.value]
     }
     client.sendRequest('workspace/executeCommand', params)
   })
@@ -55,6 +62,7 @@ export function activate(context: ExtensionContext) {
         params.personalConfig?.connections?.
           map((v: { name: string}) => v.name).
           filter((v: string) => !!v)
+      connectedConnectionName = params.config?.name || ''
     })
     client.onNotification('sqlLanguageServer.error', (params) => {
       Window.showErrorMessage(params.message)
