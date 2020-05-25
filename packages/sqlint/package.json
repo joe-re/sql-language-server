@@ -1,0 +1,17 @@
+{
+  "name": "sqlint",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "joe-re<joe.tialtngo@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "jest": "^26.0.1"
+  },
+  "devDependencies": {
+    "ts-jest": "^26.0.0",
+    "typescript": "^3.9.3"
+  }
+}
