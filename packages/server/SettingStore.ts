@@ -14,24 +14,48 @@ export type SSHConfig = {
   identityFile?: string
 }
 export type Settings = {
-  adapter: 'mysql' | 'postgresql',
+  name: string | null,
+  adapter: 'mysql' | 'postgresql' | null,
   host: string | null,
   port: number | null,
   user: string | null,
   database: string | null,
   password: string | null,
+  projectPaths: string[],
   ssh: SSHConfig | null
 }
 
+type PersonalConfig = {
+  connections: Settings[]
+}
+
+function fileExists(path: string) {
+  try {
+    return fs.statSync(path).isFile()
+  } catch (error) {
+    if (error && error.code === "ENOENT") {
+        return false;
+    }
+    throw error;
+  }
+}
+
+function readFile(filePath: string) {
+  return fs.readFileSync(filePath, "utf8").replace(/^\ufeff/u, "");
+}
+
 export default class SettingStore extends EventEmitter {
+  private personalConfig: PersonalConfig = { connections: []}
   private state: Settings = {
-    adapter: 'mysql',
+    name: null,
+    adapter: null,
     host: null,
     port: null,
     user: null,
     database: null,
     password: null,
-    ssh: null
+    ssh: null,
+    projectPaths: []
   }
   private static instance: SettingStore;
 
@@ -49,33 +73,50 @@ export default class SettingStore extends EventEmitter {
     return Object.assign({}, this.state)
   }
 
-  setSettingFromFile(path: string) {
-    return new Promise((resolve, reject) => {
-      fs.stat(path, (err, _stat) => {
-        if (err) {
-          if (err.code && err.code === 'ENOENT') {
-             logger.debug("there isn't config file.")
-             resolve()
-             return
-          }
-          logger.error(err.message)
-          reject(err)
-          return
-        }
-        fs.readFile(path, { encoding: 'utf8' }, (err, data) => {
-          if (err) {
-            logger.error(err.message)
-            reject(err)
-            return
-          }
-          this.setSetting(JSON.parse(data))
-          logger.debug(`read settings from ${path}`)
-          logger.debug(JSON.stringify(this.getSetting()))
-          resolve(this.getSetting())
-          return
-        })
-      })
-    })
+  getPersonalConfig() {
+    return this.personalConfig
+  }
+
+  async changeConnection(connectionName: string) {
+    const config = this.personalConfig.connections.find(v => v.name === connectionName)
+    if (!config) {
+      const errorMessage = `not find connection name: ${connectionName}`
+      logger.error(`not find connection name: ${connectionName}`)
+      throw new Error(errorMessage)
+    }
+    this.setSetting(config)
+  }
+
+  async setSettingFromFile(
+    personalConfigPath: string,
+    projectConfigPath: string,
+    projectPath: string
+  ): Promise<Settings | null> {
+    let personalConfig = { connections: [] } as PersonalConfig, projectConfig = {} as Settings
+    if (fileExists(personalConfigPath)) {
+      personalConfig = JSON.parse(readFile(personalConfigPath))
+      this.personalConfig = personalConfig
+    } else {
+      logger.debug(`There isn't personal config file. ${personalConfigPath}`)
+    }
+    if (fileExists(projectConfigPath)) {
+      projectConfig = JSON.parse(readFile(projectConfigPath))
+    } else {
+      logger.debug(`There isn't project config file., ${projectConfigPath}`)
+    }
+    const extractedPersonalConfig = projectConfig.name
+      ? personalConfig.connections.find((v: Settings) => v.name === projectConfig.name)
+      : personalConfig.connections.find((v: Settings) => v.projectPaths?.includes(projectPath))
+    if (!extractedPersonalConfig) {
+      logger.debug(`Failed to extract personal config, { path: ${projectPath}, projectName: ${projectConfig.name} }`)
+    }
+
+    const sshConfig = { ...extractedPersonalConfig?.ssh || {}, ...projectConfig?.ssh || {} } as SSHConfig
+    const config = { ...extractedPersonalConfig, ...projectConfig }
+    config.ssh = sshConfig
+    logger.debug(`Set config: ${JSON.stringify(config)}`)
+    this.setSetting(config)
+    return this.getSetting()
   }
 
   setSetting(setting: Partial<Settings>) {
@@ -95,6 +136,7 @@ export default class SettingStore extends EventEmitter {
     newSetting.ssh = newSetting.ssh ? Object.assign({}, newSetting.ssh) : null
     replaceEnv(newSetting)
     this.state = Object.assign({}, this.state, newSetting)
+    logger.debug('setting store, emit "change"')
     this.emit('change', this.state)
   }
 }

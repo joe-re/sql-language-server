@@ -27,8 +27,17 @@
     "vscode": "^1.45.1"
   },
   "activationEvents": [
-    "onLanguage:sql"
+    "onLanguage:sql",
+    "extension.switchDatabaseConnection"
   ],
+  "contributes": {
+    "commands": [
+      {
+          "command": "extension.switchDatabaseConnection",
+          "title": "SQLLanguageServer: Switch database connection"
+      }
+    ]
+  },
   "private": true,
   "workspaces": [
     "packages/*"

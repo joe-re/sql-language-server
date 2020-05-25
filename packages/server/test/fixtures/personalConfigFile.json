@@ -1,0 +1,35 @@
+{
+  "connections": [
+    {
+      "name": "project1",
+      "adapter": "mysql",
+      "host": "localhost",
+      "port": 3307,
+      "user": "username",
+      "password": "password",
+      "database": "mysql-development",
+      "projectPaths": ["/Users/sql-language-server/project1"],
+      "ssh": {
+        "user": "ubuntu",
+        "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+        "dbHost": "127.0.0.1",
+        "port": 3306,
+        "identityFile": "~/.ssh/id_rsa",
+        "passphrase": "123456"
+      }
+    },
+    {
+      "name": "project2",
+      "password": "pg_pass",
+      "projectPaths": ["/Users/sql-language-server/project2"],
+      "ssh": {
+        "user": "ubuntu",
+        "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+        "dbHost": "127.0.0.1",
+        "port": 5432,
+        "identityFile": "~/.ssh/id_rsa",
+        "passphrase": "123456"
+      }
+    }
+  ]
+}
