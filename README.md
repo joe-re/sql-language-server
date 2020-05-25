@@ -221,6 +221,22 @@ This is useful when you don't write actual value on configuration file.
 }
 ```
 
+#### Switch database connection
+
+If you have multiple connection information on personal config file, you can swtich database connection.
+
+![2020-05-25_15-23-01](https://user-images.githubusercontent.com/4954534/82788937-02f63c80-9e9c-11ea-948d-e27ee0090463.gif)
+
+
+[VSC extension](https://marketplace.visualstudio.com/items?itemName=joe-re.sql-language-server) provides `Switch database connection` command.
+
+Raw RPC param is:
+```
+method: workspace/executeCommand
+command: switchDataBaseConnection
+arguments: string(project name)
+```
+
 ### TODO
 
 - [x] SELECT
