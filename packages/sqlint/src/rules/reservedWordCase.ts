@@ -1,5 +1,5 @@
 import { KeywordNode } from '@joe-re/sql-parser'
-import { Rule, RuleConfig, Context } from './index'
+import { Rule, RuleConfig } from './index'
 
 type Option = 'upper' | 'lower'
 const DefaultOption = 'upper'

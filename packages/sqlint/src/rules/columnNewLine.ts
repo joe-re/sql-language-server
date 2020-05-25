@@ -1,5 +1,5 @@
 import { SelectStatement } from '@joe-re/sql-parser'
-import { Rule, RuleConfig, Context } from './index'
+import { Rule, RuleConfig } from './index'
 
 type Options = { allowMultipleColumnsPerLine: boolean }
 const META = {

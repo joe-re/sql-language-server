@@ -1,5 +1,5 @@
 import { SelectStatement, BinaryExpressionNode } from '@joe-re/sql-parser'
-import { Rule, RuleConfig, Context } from './index'
+import { Rule, RuleConfig } from './index'
 
 type Options = { allowMultipleColumnsPerLine: boolean }
 const META = {
@@ -9,7 +9,7 @@ const META = {
 
 export const whereClauseNewLine: Rule<SelectStatement, RuleConfig<Options>> = {
   meta: META,
-  create: (context: Context) => {
+  create: (context) => {
     if (!context.node.where) {
       return
     }

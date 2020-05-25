@@ -1,0 +1,6 @@
+{
+  "invalidProp": "bar",
+  "rules": {
+    "column-new-line": "error"
+  }
+}

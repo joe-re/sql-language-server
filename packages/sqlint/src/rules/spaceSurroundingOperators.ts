@@ -1,5 +1,5 @@
 import { BinaryExpressionNode } from '@joe-re/sql-parser'
-import { Rule, RuleConfig, Context } from './index'
+import { Rule, RuleConfig } from './index'
 
 type Option = 'always' | 'never'
 const DefaultOption = 'always'

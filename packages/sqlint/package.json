@@ -8,7 +8,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "jest": "^26.0.1"
+    "ajv": "^6.12.2",
+    "jest": "^26.0.1",
+    "js-yaml": "^3.14.0"
   },
   "devDependencies": {
     "ts-jest": "^26.0.0",

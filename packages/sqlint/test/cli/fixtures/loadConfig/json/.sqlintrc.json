@@ -1,0 +1,5 @@
+{
+  "rules": {
+    "column-new-line": "error"
+  }
+}
