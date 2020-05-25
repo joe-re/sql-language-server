@@ -158,7 +158,7 @@ And also if you have set personal configuration and both of them's names are mat
 Personal configuration example:
 ```json
 {
-  connections: [{
+  "connections": [{
     "name": "postgres-project",
     "password": "password",
     "ssh": {
