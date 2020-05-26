@@ -1,7 +1,7 @@
 import { Config, ErrorLevel } from '../rules'
 import { fileExists, readFile } from './utils'
 import * as yaml from 'js-yaml'
-import * as Ajv from 'ajv'
+import Ajv from 'ajv'
 import schemaConf from '../../schema.conf'
 
 enum FileType {
@@ -37,7 +37,7 @@ function validateSchema(config: Object) {
   const ajv = new Ajv({ verbose: true, schemaId: 'auto', missingRefs: 'ignore' })
   const validate = ajv.compile(schemaConf)
   if (!validate(config)) {
-    throw new Error(`SQLint configuration is invalid:\n${formatErrors(validate.errors)}`)
+    throw new Error(`SQLint configuration is invalid:\n${formatErrors(validate.errors || [])}`)
   }
   return true
 }

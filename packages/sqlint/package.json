@@ -13,6 +13,8 @@
     "js-yaml": "^3.14.0"
   },
   "devDependencies": {
+    "@types/ajv": "^1.0.0",
+    "@types/js-yaml": "^3.12.4",
     "ts-jest": "^26.0.0",
     "typescript": "^3.9.3"
   }
