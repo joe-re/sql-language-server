@@ -20,14 +20,16 @@ export const reservedWordCase: Rule<KeywordNode, RuleConfig<Option>> = {
       return {
         message: META.messages.upper,
         location: context.node.location,
-        rulename: META.name
+        rulename: META.name,
+        errorLevel: context.config.level
       }
     }
     if (option === 'lower' && /[A-Z]/.test(context.node.value)) {
       return {
         message: META.messages.lower,
         location: context.node.location,
-        rulename: META.name
+        rulename: META.name,
+        errorLevel: context.config.level
       }
     }
   }

@@ -28,7 +28,8 @@ export const whereClauseNewLine: Rule<SelectStatement, RuleConfig<Options>> = {
       return {
         message: 'Multiple where clause must go on a new line.',
         location: invalidClause.location,
-        rulename: META.name
+        rulename: META.name,
+        errorLevel: context.config.level
       }
     }
   }

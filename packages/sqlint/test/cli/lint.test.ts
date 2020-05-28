@@ -1,12 +1,12 @@
 import { lint } from '../../src/cli/lint'
+import chalk from 'chalk'
 
 describe('lint', () => {
   describe('format stylish', () => {
     test('get formatted message', () => {
       const result = lint(`${__dirname}/fixtures/lint`, 'stylish', `${__dirname}/fixtures/lint`)
-      expect(result.length).toEqual(2)
-      expect(result[0]).toEqual('1:0 reserved word must be uppercase')
-      expect(result[1]).toEqual('1:9 reserved word must be uppercase')
+      expect(result).toContain(`${chalk.dim('1:0')} ${chalk.red('error')} reserved word must be uppercase`)
+      expect(result).toContain(`${chalk.dim('1:9')} ${chalk.red('error')} reserved word must be uppercase`)
     })
   })
   describe('format json', () => {

@@ -1,8 +1,9 @@
 import { Config, ErrorLevel } from '../rules'
-import { fileExists, readFile } from './utils'
+import { fileExists, readFile, directoryExists } from './utils'
 import * as yaml from 'js-yaml'
 import Ajv from 'ajv'
 import schemaConf from '../../schema.conf'
+import { extname } from 'path'
 
 enum FileType {
   JSON = 'json',
@@ -76,16 +77,29 @@ function convertToConfig(rawConfig: RawConfig): Config {
   }, { rules: {} } as Config)
 }
 
-export function loadConfig(directory: string): Config {
-  const file = configFiles.find(v => fileExists(`${directory}/${v.name}`))
-  if (!file) {
+export function loadConfig(directoryOrFile: string): Config {
+  let filePath = '';
+  if (fileExists(directoryOrFile)) {
+    filePath = directoryOrFile
+  } else if (directoryExists(directoryOrFile)) {
+    const file = configFiles.find(v => fileExists(`${directoryOrFile}/${v.name}`))
+    if (file) filePath = `${directoryOrFile}/${file.name}`
+  }
+  if (!filePath) {
     return defaultConfig
   }
-  const fileContent = readFile(`${directory}/${file.name}`)
+  const fileContent = readFile(filePath)
   let config: RawConfig;
-  switch(file.type) {
-    case FileType.JSON: config = JSON.parse(fileContent); break
-    case FileType.YAML: config = yaml.safeLoad(fileContent); break
+  switch(extname(filePath)) {
+    case '.json':
+      config = JSON.parse(fileContent)
+      break
+    case '.yaml':
+    case '.yml':
+      config = yaml.safeLoad(fileContent)
+      break
+    default:
+      config = JSON.parse(fileContent)
   }
   validateSchema(config)
   return convertToConfig(config)

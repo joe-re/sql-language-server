@@ -11,7 +11,7 @@ export function fileExists(path: string) {
   }
 }
 
-function directoryExists(path: string) {
+export function directoryExists(path: string) {
   try {
     return fs.statSync(path).isDirectory()
   } catch (error) {

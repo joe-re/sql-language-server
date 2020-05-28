@@ -38,7 +38,8 @@ export const spaceSurroundingOperators: Rule<BinaryExpressionNode, RuleConfig<Op
         return {
           message: META.messages.always,
           location: { start, end },
-          rulename: META.name
+          rulename: META.name,
+          errorLevel: context.config.level
         }
       }
     } else if (option === 'never') {
@@ -59,7 +60,8 @@ export const spaceSurroundingOperators: Rule<BinaryExpressionNode, RuleConfig<Op
         return {
           message: META.messages.never,
           location: { start, end },
-          rulename: META.name
+          rulename: META.name,
+          errorLevel: context.config.level
         }
       }
     }

@@ -9,7 +9,8 @@ import { parse, NodeRange } from '@joe-re/sql-parser'
 export type Diagnostic = {
   message: string,
   location: NodeRange,
-  rulename: string
+  rulename: string,
+  errorLevel: ErrorLevel
 }
 
 export type Rule<NodeType = any, RuleConfig = any> = {
