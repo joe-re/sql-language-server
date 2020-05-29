@@ -51,3 +51,7 @@ export function getFileList(path: string): string[] {
 export function readFile(filePath: string) {
   return fs.readFileSync(filePath, "utf8").replace(/^\ufeff/u, "");
 }
+
+export function writeFile(filePath: string, content: string) {
+  return fs.writeFileSync(filePath, content, 'utf8')
+}

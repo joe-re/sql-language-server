@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { getFileList, readFile } from './utils'
+import { getFileList, readFile, writeFile } from './utils'
 import { execute, Diagnostic, ErrorLevel } from '../rules'
 import { loadConfig } from './loadConfig';
 
@@ -43,7 +43,9 @@ function formatStylish(result: LintResult[]): string {
   return output
 }
 
-export function lint (path: string, formatType: FormatType, configDirectoryPath?: string) {
+export function lint (
+  path: string,
+  formatType: FormatType, configDirectoryPath?: string, outputFile?: string) {
   const files = getFileList(path)
   if (files.length === 0) {
     throw new Error(`No files matching '${path}' were found.`)
@@ -53,9 +55,14 @@ export function lint (path: string, formatType: FormatType, configDirectoryPath?
     const diaglostics = execute(readFile(v), config)
     return { filepath: v, diagnostics: diaglostics }
   }).flat()
+  let output = ''
   switch(formatType) {
-    case 'stylish': return formatStylish(result)
-    case 'json': return JSON.stringify(result)
+    case 'stylish': output = formatStylish(result); break
+    case 'json': output = JSON.stringify(result); break
     default: throw new Error(`unsupported formatType: ${formatType}`)
   }
+  if (outputFile) {
+    writeFile(outputFile, output)
+  }
+  return output
 }

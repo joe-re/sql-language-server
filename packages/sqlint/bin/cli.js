@@ -15,10 +15,17 @@ const cli = yargs
       type: 'boolean',
       default: false,
       describe: 'Enable debug logging'
+    },
+    'output': {
+      alias: 'o',
+      type: 'string',
+      describe: 'Specify file to write report to'
     }
   }, () => {
-    const result = commands.lint(yargs.argv._[1], 'stylish', yargs.argv.config)
-    console.log(result)
+    commands.lint(yargs.argv._[1], 'stylish', yargs.argv.config, yargs.argv.output)
+    if (!yargs.argv.output) {
+      console.log(result)
+    }
   })
   .example('$0 lint ./sql/a.sql', 'lint the specified sql file')
   .help('h')
