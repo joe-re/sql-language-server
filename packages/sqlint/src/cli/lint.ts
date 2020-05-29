@@ -45,7 +45,10 @@ function formatStylish(result: LintResult[]): string {
 
 export function lint (
   path: string,
-  formatType: FormatType, configDirectoryPath?: string, outputFile?: string) {
+  formatType: FormatType,
+  configDirectoryPath?: string,
+  outputFile?: string,
+) {
   const files = getFileList(path)
   if (files.length === 0) {
     throw new Error(`No files matching '${path}' were found.`)

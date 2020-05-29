@@ -20,9 +20,16 @@ const cli = yargs
       alias: 'o',
       type: 'string',
       describe: 'Specify file to write report to'
+    },
+    'format': {
+      alias: 'f',
+      type: 'string',
+      choices: ['stylish', 'json'],
+      describe: 'Select a output format',
+      default: 'stylish'
     }
   }, () => {
-    commands.lint(yargs.argv._[1], 'stylish', yargs.argv.config, yargs.argv.output)
+    const result = commands.lint(yargs.argv._[1], yargs.argv.format, yargs.argv.config, yargs.argv.output)
     if (!yargs.argv.output) {
       console.log(result)
     }
