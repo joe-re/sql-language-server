@@ -1,6 +1,20 @@
 const yargs = require('yargs')
 const commands = require('../dist/src/cli')
 
+function readStdin() {
+  return new Promise((resolve, reject) => {
+    let content = ''
+    let chunk = ''
+    process.stdin.setEncoding('utf8').on('readable', () => {
+      while((chunk = process.stdin.read()) !== null) {
+        content += chunk
+      }
+    })
+    .on('end', () => resolve(content))
+    .on('error', reject)
+  })
+}
+
 const cli = yargs
   .usage('SQLint: Lint tool for SQL')
   .command('lint [options] [file]', 'lint sql files', {
@@ -27,9 +41,20 @@ const cli = yargs
       choices: ['stylish', 'json'],
       describe: 'Select a output format',
       default: 'stylish'
+    },
+    'stdin': {
+      type: 'boolean',
+      describe: 'Lint code provide on <STDIN>',
+      default: false
     }
-  }, () => {
-    const result = commands.lint(yargs.argv._[1], yargs.argv.format, yargs.argv.config, yargs.argv.output)
+  }, async () => {
+    const result = commands.lint({
+      path: yargs.argv._[1],
+      formatType: yargs.argv.format,
+      configDirectoryPath: yargs.argv.config,
+      outputFile: yargs.argv.output,
+      text: await readStdin()
+    })
     if (!yargs.argv.output) {
       console.log(result)
     }

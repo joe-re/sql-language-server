@@ -3,15 +3,23 @@ import chalk from 'chalk'
 
 describe('lint', () => {
   describe('format stylish', () => {
-    test('get formatted message', () => {
-      const result = lint(`${__dirname}/fixtures/lint`, 'stylish', `${__dirname}/fixtures/lint`)
+    it('should get formatted message', () => {
+      const result = lint({
+        path: `${__dirname}/fixtures/lint`,
+        formatType: 'stylish',
+        configDirectoryPath: `${__dirname}/fixtures/lint`
+      })
       expect(result).toContain(`${chalk.dim('1:0')} ${chalk.red('error')} reserved word must be uppercase`)
       expect(result).toContain(`${chalk.dim('1:9')} ${chalk.red('error')} reserved word must be uppercase`)
     })
   })
   describe('format json', () => {
-    test('get formatted message', () => {
-      const result = lint(`${__dirname}/fixtures/lint`, 'json', `${__dirname}/fixtures/lint`) as string
+    it('should get formatted message', () => {
+      const result = lint({
+        path: `${__dirname}/fixtures/lint`,
+        formatType: 'json',
+        configDirectoryPath: `${__dirname}/fixtures/lint`
+      }) as string
       const parsed = JSON.parse(result)
       expect(parsed.length).toEqual(1)
       expect(parsed[0].filepath).toContain('sqlint/test/cli/fixtures/lint/errorSql.sql')
@@ -32,6 +40,20 @@ describe('lint', () => {
         message: 'reserved word must be uppercase',
         rulename: 'reserved-word-case'
       })
+    })
+  })
+
+  describe('input text', () => {
+    it('should do lint input text', () => {
+      const result = lint({
+        text: 'select * from bar',
+        formatType: 'json',
+        configDirectoryPath: `${__dirname}/fixtures/lint`
+      })
+      const parsed = JSON.parse(result)
+      expect(parsed.length).toEqual(1)
+      expect(parsed[0].diagnostics.length).toEqual(2)
+      expect(parsed[0].filepath).toEqual('text')
     })
   })
 })

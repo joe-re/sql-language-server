@@ -44,20 +44,26 @@ function formatStylish(result: LintResult[]): string {
 }
 
 export function lint (
-  path: string,
-  formatType: FormatType,
-  configDirectoryPath?: string,
-  outputFile?: string,
+  params: {
+    path?: string,
+    formatType: FormatType,
+    configDirectoryPath?: string,
+    outputFile?: string,
+    text?: string
+  }
 ) {
-  const files = getFileList(path)
-  if (files.length === 0) {
+  const { path, formatType, configDirectoryPath, outputFile, text } = params
+  const files = path ? getFileList(path) : []
+  if (files.length === 0 && !text) {
     throw new Error(`No files matching '${path}' were found.`)
   }
   const config = loadConfig(configDirectoryPath || process.cwd())
-  const result: LintResult[] = files.map(v => {
-    const diaglostics = execute(readFile(v), config)
-    return { filepath: v, diagnostics: diaglostics }
-  }).flat()
+  const result: LintResult[] = text
+    ? [{ filepath: 'text', diagnostics: execute(text, config) }]
+    : files.map(v => {
+      const diaglostics = execute(readFile(v), config)
+      return { filepath: v, diagnostics: diaglostics }
+    }).flat()
   let output = ''
   switch(formatType) {
     case 'stylish': output = formatStylish(result); break
