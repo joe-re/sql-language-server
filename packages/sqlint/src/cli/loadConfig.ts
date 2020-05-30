@@ -5,14 +5,10 @@ import Ajv from 'ajv'
 import schemaConf from '../../schema.conf'
 import { extname } from 'path'
 
-enum FileType {
-  JSON = 'json',
-  YAML = 'yaml'
-}
 const configFiles = [
-  { name: '.sqlintrc.json', type: FileType.JSON },
-  { name: '.sqlintrc.yaml', type: FileType.YAML },
-  { name: '.sqlintrc.yml', type: FileType.YAML },
+  { name: '.sqlintrc.json' },
+  { name: '.sqlintrc.yaml' },
+  { name: '.sqlintrc.yml' },
 ]
 
 const defaultConfig: Config = {
@@ -84,6 +80,12 @@ export function loadConfig(directoryOrFile: string): Config {
   } else if (directoryExists(directoryOrFile)) {
     const file = configFiles.find(v => fileExists(`${directoryOrFile}/${v.name}`))
     if (file) filePath = `${directoryOrFile}/${file.name}`
+  } else {
+    // try to lookup personal config file
+    const file = configFiles.find(v =>
+      fileExists(`${process.env.HOME}/.config/sql-language-server/${v.name}`)
+    )
+    if (file) filePath = `${process.env.HOME}/.config/sql-language-server/${file.name}`
   }
   if (!filePath) {
     return defaultConfig

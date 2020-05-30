@@ -53,7 +53,7 @@ const cli = yargs
       formatType: yargs.argv.format,
       configDirectoryPath: yargs.argv.config,
       outputFile: yargs.argv.output,
-      text: await readStdin()
+      text: yargs.argv.stdin ? await readStdin() : null
     })
     if (!yargs.argv.output) {
       console.log(result)
