@@ -19,6 +19,14 @@ describe('loadConfig', () => {
   })
 
   describe('no config file', () => {
+    let home: string;
+    beforeAll(() => {
+      home = process.env.HOME || ''
+      process.env.HOME = 'no_home_dir'
+    })
+    afterAll(() => {
+      process.env.HOME = home
+    })
     test('it should load default config', () => {
       const result = loadConfig('no_exists')
       expect(result).toMatchObject({

@@ -48,27 +48,28 @@ type RawConfig = {
 function convertToConfig(rawConfig: RawConfig): Config {
   return Object.entries(rawConfig.rules).reduce((p, c) => {
     let level = 0
-    if (typeof c[1] === 'number') {
-      level = c[1]
-    }
-    if (typeof c[1] === 'string') {
-      switch(c[1]) {
-        case 'error': {
-          level = 2
-          break
-        }
-        case 'warning': {
-          level = 1
-          break
-        }
-        case 'off': {
-          level = 0
-          break
-        }
-        default: throw new Error(`unknown error type: ${c[1]}`)
+    let option = null
+    const getLevel = (v: any) => {
+      if (typeof v === 'number') {
+        return v
       }
+      if (typeof v === 'string') {
+        switch(v) {
+          case 'error': return 2
+          case 'warning': return 1
+          case 'off': level = 0
+          default: throw new Error(`unknown error type: ${c[1]}`)
+        }
+      }
+      return 0
     }
-    p.rules[c[0]] = { level }
+    if (Array.isArray(c[1])) {
+      level = getLevel(c[1][0])
+      option = c[1][1]
+    } else {
+      level = getLevel(c[1])
+    }
+    p.rules[c[0]] = { level, option }
     return p
   }, { rules: {} } as Config)
 }
