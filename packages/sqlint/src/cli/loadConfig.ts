@@ -80,7 +80,8 @@ export function loadConfig(directoryOrFile: string): Config {
   } else if (directoryExists(directoryOrFile)) {
     const file = configFiles.find(v => fileExists(`${directoryOrFile}/${v.name}`))
     if (file) filePath = `${directoryOrFile}/${file.name}`
-  } else {
+  }
+  if (!filePath) {
     // try to lookup personal config file
     const file = configFiles.find(v =>
       fileExists(`${process.env.HOME}/.config/sql-language-server/${v.name}`)
