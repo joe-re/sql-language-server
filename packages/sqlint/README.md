@@ -25,6 +25,29 @@ You can use [sql-language-server](https://github.com/joe-re/sql-language-server)
 
 ![sqlint-on-editor](https://user-images.githubusercontent.com/4954534/83353304-3c3f1880-a384-11ea-8266-4d7048461b56.png)
 
+## CLI
+
+Example
+```
+$ sqlint .
+```
+
+```
+Options:
+  --version     Show version number                                    [boolean]
+  -h            Show help                                              [boolean]
+  --config, -c  Configuration file path                                 [string]
+  --output, -o  Specify file to write report to                         [string]
+  --format, -f  Select a output format
+                      [string] [choices: "stylish", "json"] [default: "stylish"]
+  --stdin       Lint code provide on <STDIN>          [boolean] [default: false]
+```
+
+Use stdin example:
+```
+$ cat ./test/cli/fixtures/lint/errorSql.sql | sqlint --stdin
+```
+
 ## Configuration
 
 ### Example
