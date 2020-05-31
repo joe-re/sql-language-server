@@ -1,7 +1,10 @@
 {
   "name": "sqlint",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "dist/src/index",
+  "bin": {
+    "sqlint": "bin/cli.js"
+  },
   "author": "joe-re<joe.tialtngo@gmail.com>",
   "license": "MIT",
   "scripts": {

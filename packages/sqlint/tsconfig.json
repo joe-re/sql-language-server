@@ -9,10 +9,12 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "esModuleInterop": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "declaration": true
   },
   "exclude": [
     "node_modules",
-    "test"
+    "test",
+    "dist"
   ]
 }

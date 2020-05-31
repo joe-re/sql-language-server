@@ -3,7 +3,7 @@ import { getFileList, readFile, writeFile } from './utils'
 import { execute, Diagnostic, ErrorLevel } from '../rules'
 import { loadConfig } from './loadConfig';
 
-type LintResult = {
+export type LintResult = {
   filepath: string,
   diagnostics: Diagnostic[]
 }
@@ -47,17 +47,17 @@ export function lint (
   params: {
     path?: string,
     formatType: FormatType,
-    configDirectoryPath?: string,
+    configPath?: string,
     outputFile?: string,
     text?: string
   }
 ) {
-  const { path, formatType, configDirectoryPath, outputFile, text } = params
+  const { path, formatType, configPath, outputFile, text } = params
   const files = path ? getFileList(path) : []
   if (files.length === 0 && !text) {
     throw new Error(`No files matching '${path}' were found.`)
   }
-  const config = loadConfig(configDirectoryPath || process.cwd())
+  const config = loadConfig(configPath || process.cwd())
   const result: LintResult[] = text
     ? [{ filepath: 'text', diagnostics: execute(text, config) }]
     : files.map(v => {

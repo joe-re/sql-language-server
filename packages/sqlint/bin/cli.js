@@ -21,7 +21,6 @@ const cli = yargs
     config: {
       alias: 'c',
       type: 'string',
-      default: '.sqlintrc.json',
       describe: 'Configuration file path'
     },
     'debug': {
@@ -51,7 +50,7 @@ const cli = yargs
     const result = commands.lint({
       path: yargs.argv._[1],
       formatType: yargs.argv.format,
-      configDirectoryPath: yargs.argv.config,
+      configPath: yargs.argv.config,
       outputFile: yargs.argv.output,
       text: yargs.argv.stdin ? await readStdin() : null
     })

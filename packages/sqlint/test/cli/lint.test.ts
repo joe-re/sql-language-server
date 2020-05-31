@@ -7,7 +7,7 @@ describe('lint', () => {
       const result = lint({
         path: `${__dirname}/fixtures/lint`,
         formatType: 'stylish',
-        configDirectoryPath: `${__dirname}/fixtures/lint`
+        configPath: `${__dirname}/fixtures/lint`
       })
       expect(result).toContain(`${chalk.dim('1:0')} ${chalk.red('error')} reserved word must be uppercase`)
       expect(result).toContain(`${chalk.dim('1:9')} ${chalk.red('error')} reserved word must be uppercase`)
@@ -18,7 +18,7 @@ describe('lint', () => {
       const result = lint({
         path: `${__dirname}/fixtures/lint`,
         formatType: 'json',
-        configDirectoryPath: `${__dirname}/fixtures/lint`
+        configPath: `${__dirname}/fixtures/lint`
       }) as string
       const parsed = JSON.parse(result)
       expect(parsed.length).toEqual(1)
@@ -48,7 +48,7 @@ describe('lint', () => {
       const result = lint({
         text: 'select * from bar',
         formatType: 'json',
-        configDirectoryPath: `${__dirname}/fixtures/lint`
+        configPath: `${__dirname}/fixtures/lint`
       })
       const parsed = JSON.parse(result)
       expect(parsed.length).toEqual(1)
