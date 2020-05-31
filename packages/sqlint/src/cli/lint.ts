@@ -15,11 +15,12 @@ function pluralize(word: string, count: number) {
 type FormatType = 'stylish' | 'json'
 
 function formatStylish(result: LintResult[]): string {
+  const targetResult = result.filter(v => v.diagnostics.length > 0)
   let output = '\n', errorCount = 0, warningCount = 0
-  if (result.length === 0) {
+  if (targetResult.length === 0) {
     return output
   }
-  result.forEach(v => {
+  targetResult.forEach(v => {
     output += chalk.underline(v.filepath) + '\n'
     v.diagnostics.forEach(v2 => {
       const position = chalk.dim(`${v2.location.start.line}:${v2.location.start.offset}`)

@@ -17,17 +17,11 @@ function readStdin() {
 
 const cli = yargs
   .usage('SQLint: Lint tool for SQL')
-  .command('lint [options] [file]', 'lint sql files', {
+  .command('* [options] [file]', 'lint sql files', {
     config: {
       alias: 'c',
       type: 'string',
       describe: 'Configuration file path'
-    },
-    'debug': {
-      alias: 'd',
-      type: 'boolean',
-      default: false,
-      describe: 'Enable debug logging'
     },
     'output': {
       alias: 'o',
@@ -48,7 +42,7 @@ const cli = yargs
     }
   }, async () => {
     const result = commands.lint({
-      path: yargs.argv._[1],
+      path: yargs.argv._[0],
       formatType: yargs.argv.format,
       configPath: yargs.argv.config,
       outputFile: yargs.argv.output,
@@ -62,7 +56,7 @@ const cli = yargs
   .help('h')
   .argv
 
-if (cli._.length === 0) {
+if (yargs.argv._.length === 0) {
   yargs.showHelp()
 }
 
