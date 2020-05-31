@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const yargs = require('yargs')
 const commands = require('../dist/src/cli')
 
@@ -41,6 +43,10 @@ const cli = yargs
       default: false
     }
   }, async () => {
+    if (yargs.argv._.length === 0) {
+      yargs.showHelp()
+      process.exit(1)
+    }
     const result = commands.lint({
       path: yargs.argv._[0],
       formatType: yargs.argv.format,
@@ -56,9 +62,6 @@ const cli = yargs
   .help('h')
   .argv
 
-if (yargs.argv._.length === 0) {
-  yargs.showHelp()
-}
 
 process.stdin.on('close', () => {
   process.exit(0);
