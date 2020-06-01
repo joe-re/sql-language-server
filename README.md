@@ -237,6 +237,13 @@ command: switchDataBaseConnection
 arguments: string(project name)
 ```
 
+#### Lint
+
+You can use lint rules that are provided [sqlint](https://github.com/joe-re/sql-language-server/blob/master/packages/sqlint/README.md).
+Please refer this to know how to use and how to configure to make them be matched your case.
+
+![sqlint-on-editor](https://user-images.githubusercontent.com/4954534/83353304-3c3f1880-a384-11ea-8266-4d7048461b56.png)
+
 ### TODO
 
 - [x] SELECT
@@ -244,5 +251,5 @@ arguments: string(project name)
 - [x] UPDATE
 - [x] DELETE
 - [x] ssh port forwarding
+- [x] Lint
 - [ ] Beautify
-- [ ] Lint

@@ -1,16 +1,36 @@
 import { parse } from '@joe-re/sql-parser'
 import log4js from 'log4js';
-import { PublishDiagnosticsParams } from 'vscode-languageserver'
+import { PublishDiagnosticsParams, Diagnostic } from 'vscode-languageserver'
 import { DiagnosticSeverity }from 'vscode-languageserver-types'
+import { lint, ErrorLevel } from 'sqlint'
+import { LintResult } from 'sqlint/src/cli/lint'
 
 const logger = log4js.getLogger()
 
+function doLint(sql: string): Diagnostic[] {
+  const result: LintResult[] = JSON.parse(lint({ configPath: process.cwd(), formatType: 'json', text: sql }))
+  const diagnostics = result.map(v => v.diagnostics).flat()
+  return diagnostics.map(v => {
+    return {
+      range: {
+        start: { line: v.location.start.line - 1, character: v.location.start.column - 1 },
+        end:  { line: v.location.end.line - 1, character: v.location.end.column - 1 }
+      },
+      message: v.message,
+      severity: v.errorLevel === ErrorLevel.Error ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
+      source: 'sql',
+      relatedInformation: []
+    }
+  })
+}
+
 export default function createDiagnostics(uri: string, sql: string): PublishDiagnosticsParams {
   logger.debug(`createDiagnostics`)
-  let diagnostics = []
+  let diagnostics: Diagnostic[] = []
   try {
     const ast = parse(sql)
     logger.debug(`ast: ${JSON.stringify(ast)}`)
+    diagnostics = doLint(sql)
   } catch (e) {
     logger.debug('parse error')
     logger.debug(e)
@@ -29,6 +49,6 @@ export default function createDiagnostics(uri: string, sql: string): PublishDiag
       relatedInformation: []
     })
   }
-  logger.debug(JSON.stringify(diagnostics))
+  logger.debug(`diagnostics: ${JSON.stringify(diagnostics)}`)
   return { uri: uri, diagnostics }
 }

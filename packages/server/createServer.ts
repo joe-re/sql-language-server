@@ -47,7 +47,7 @@ export default function createServer() {
   		}
   	})
   	if (params.rootPath) {
-       SettingStore.getInstance().setSettingFromFile(
+      SettingStore.getInstance().setSettingFromFile(
         `${process.env.HOME}/.config/sql-language-server/.sqllsrc.json`,
         `${params.rootPath}/.sqllsrc.json`,
         params.rootPath || ''
