@@ -74,7 +74,7 @@ It'll be applied when it can't find a project configuration file.
 
 #### Project confuguration file
 
-Project configuration file is located on `${YOUR_PROJECT_ROOT}/.sqllsrc.json`.
+Project configuration file is located on `${YOUR_PROJECT_ROOT}/.sqlintrc.json`.
 
 
 #### Rule Configuration
