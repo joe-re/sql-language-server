@@ -5,17 +5,19 @@ import { columnNewLine } from './columnNewLine'
 import { alignColumnToTheFirst } from './alignColumnToTheFirst'
 import { whereClauseNewLine } from './whereClauseNewLine'
 import { parse, NodeRange } from '@joe-re/sql-parser'
+import { Fixer, FixDescription } from '../fixer'
 
 export type Diagnostic = {
-  message: string,
-  location: NodeRange,
-  rulename: string,
-  errorLevel: ErrorLevel
+  message: string
+  location: NodeRange
+  rulename: string
+  errorLevel: ErrorLevel,
+  fix?: (fixer: Fixer) => FixDescription | FixDescription[]
 }
 
 export type Rule<NodeType = any, RuleConfig = any> = {
   meta: {
-    name: string,
+    name: string
     type: string
   },
   create: (c: Context<NodeType, RuleConfig>) => Diagnostic | undefined
@@ -36,8 +38,13 @@ export type RuleConfig<T = void> = {
   option?: T
 }
 
+type OffsetRange = {
+  start: { offset: number }
+  end: { offset: number }
+}
+
 export type Context<NODE = any, CONFIG = any> = {
-  getSQL(range?: NodeRange, option?: { before?: number, after?: number }): string
+  getSQL(range?: OffsetRange, option?: { before?: number, after?: number }): string
   node: NODE
   config: CONFIG
 }
