@@ -21,7 +21,14 @@ export const reservedWordCase: Rule<KeywordNode, RuleConfig<Option>> = {
         message: META.messages.upper,
         location: context.node.location,
         rulename: META.name,
-        errorLevel: context.config.level
+        errorLevel: context.config.level,
+        fix: (fixer) =>  {
+          return fixer.replaceText(
+            context.node.location.start.offset,
+            context.node.location.end.offset,
+            context.node.value.toUpperCase()
+          )
+        }
       }
     }
     if (option === 'lower' && /[A-Z]/.test(context.node.value)) {
@@ -29,7 +36,14 @@ export const reservedWordCase: Rule<KeywordNode, RuleConfig<Option>> = {
         message: META.messages.lower,
         location: context.node.location,
         rulename: META.name,
-        errorLevel: context.config.level
+        errorLevel: context.config.level,
+        fix: (fixer) => {
+          return fixer.replaceText(
+            context.node.location.start.offset,
+            context.node.location.end.offset,
+            context.node.value.toLowerCase()
+          )
+        }
       }
     }
   }

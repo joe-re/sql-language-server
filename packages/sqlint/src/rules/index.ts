@@ -20,7 +20,7 @@ export type Rule<NodeType = any, RuleConfig = any> = {
     name: string
     type: string
   },
-  create: (c: Context<NodeType, RuleConfig>) => Diagnostic | undefined
+  create: (c: Context<NodeType, RuleConfig>) => Diagnostic | undefined,
 }
 
 export enum ErrorLevel {
@@ -94,7 +94,7 @@ function walk(node: any, diagnostics: any[] = []) {
   return diagnostics
 }
 
-function createContext(sql: string, node: any, config: any): Context {
+export function createContext(sql: string, node: any, config: any): Context {
   return {
     getSQL: function(range, options) {
       if (!range) {

@@ -25,11 +25,12 @@ export function createFixer(): Fixer {
   }
 }
 
-export function applyFixes(sql: string, fixes: FixDescription[]) {
-  if (fixes.length === 0) {
+export function applyFixes(sql: string, fixes: FixDescription | FixDescription[]) {
+  const _fixes = Array.isArray(fixes) ? fixes : [fixes]
+  if (_fixes.length === 0) {
     return null
   }
-  const sortedFixes = fixes.concat([]).sort((a, b) =>
+  const sortedFixes = _fixes.concat([]).sort((a, b) =>
     a.range.startOffset - b.range.startOffset || a.range.endOffset - b.range.endOffset
   )
   return sortedFixes.reduce((p, c) => {
