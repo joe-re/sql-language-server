@@ -1,14 +1,13 @@
 import { applyFixes, createFixer } from '../src/fixer'
-import { createContext } from '../src/rules'
 
 describe('applyFixes', () => {
   it('should replace with new text', () => {
     const result = applyFixes('SELECT * FROM table WHERE a=1', [{
-      range: { startOffset: 27, endOffset: 28 },
-      text: ' ='
+      range: { startOffset: 27, endOffset: 27 },
+      text: ' '
     }, {
-      range: { startOffset: 29, endOffset: 30 },
-      text: ' 1'
+      range: { startOffset: 29, endOffset: 29 },
+      text: ' '
     }])
     expect(result).toEqual('SELECT * FROM table WHERE a = 1')
   })
@@ -16,14 +15,13 @@ describe('applyFixes', () => {
 
 describe('fixer', () => {
   const message = 'message'
-  const ctx = createContext('message', jest.fn(), jest.fn())
-  const fixer = createFixer(ctx)
+  const fixer = createFixer()
 
-  describe('insertTextBefore', () => {
+  describe('insertText', () => {
     it('should insert specified text before offset', () => {
-      const result = fixer.insertTextBefore(1, 'insert')
-      expect(result.text).toEqual('minsert')
-      expect(result.range).toEqual({ startOffset: 0, endOffset: 1 })
+      const result = fixer.insertText(1, 'insert')
+      expect(result.text).toEqual('insert')
+      expect(result.range).toEqual({ startOffset: 1, endOffset: 1 })
       expect(applyFixes(message, [result])).toEqual('minsertessage')
     })
   })

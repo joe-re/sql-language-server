@@ -1,26 +1,19 @@
-import { Context } from "./rules"
-
 export type FixDescription = {
   range: { startOffset: number, endOffset: number }
   text: string
 }
 
 export type Fixer = {
-  insertTextBefore(offset: number, text: string): FixDescription
+  insertText(offset: number, text: string): FixDescription
   replaceText(startOffset: number, endOffset: number, text: string): FixDescription
 }
 
-export function createFixer(context: Context): Fixer {
+export function createFixer(): Fixer {
   return {
-    insertTextBefore(offset, text) {
-      const startOffset = Math.max(offset - text.length, 0)
-      const newText = context.getSQL({
-         start: { offset: startOffset },
-         end: { offset: offset }
-      }) + text
+    insertText(offset, text) {
       return {
-        range: { startOffset: startOffset, endOffset: offset },
-        text: newText
+        range: { startOffset: offset, endOffset: offset },
+        text: text
       }
     },
     replaceText(startOffset, endOffset, text) {
