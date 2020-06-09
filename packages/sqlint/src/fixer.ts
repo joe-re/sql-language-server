@@ -7,18 +7,26 @@ export type FixDescription = {
 
 export type Fixer = {
   insertTextBefore(offset: number, text: string): FixDescription
+  replaceText(startOffset: number, endOffset: number, text: string): FixDescription
 }
 
 export function createFixer(context: Context): Fixer {
   return {
     insertTextBefore(offset, text) {
+      const startOffset = Math.max(offset - text.length, 0)
       const newText = context.getSQL({
-         start: { offset: offset - text.length },
+         start: { offset: startOffset },
          end: { offset: offset }
       }) + text
       return {
-        range: { startOffset: offset - text.length, endOffset: offset },
+        range: { startOffset: startOffset, endOffset: offset },
         text: newText
+      }
+    },
+    replaceText(startOffset, endOffset, text) {
+      return {
+        range: { startOffset, endOffset },
+        text
       }
     }
   }
