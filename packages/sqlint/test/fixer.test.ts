@@ -6,7 +6,7 @@ describe('applyFixes', () => {
       range: { startOffset: 27, endOffset: 27 },
       text: ' '
     }, {
-      range: { startOffset: 29, endOffset: 29 },
+      range: { startOffset: 28, endOffset: 28 },
       text: ' '
     }])
     expect(result).toEqual('SELECT * FROM table WHERE a = 1')

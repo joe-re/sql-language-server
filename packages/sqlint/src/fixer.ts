@@ -31,7 +31,7 @@ export function applyFixes(sql: string, fixes: FixDescription | FixDescription[]
     return null
   }
   const sortedFixes = _fixes.concat([]).sort((a, b) =>
-    a.range.startOffset - b.range.startOffset || a.range.endOffset - b.range.endOffset
+    b.range.startOffset - a.range.startOffset || b.range.endOffset - a.range.endOffset
   )
   return sortedFixes.reduce((p, c) => {
     const before = p.slice(0, c.range.startOffset)

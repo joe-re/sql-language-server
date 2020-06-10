@@ -1,17 +1,10 @@
 import { execute } from '../../src/rules'
-import { createFixer, Fixer, FixDescription, applyFixes } from '../../src/fixer'
+import { applyFixes } from '../testUtil'
 
 test('valid case', () => {
   const result = execute('SELECT * FROM foo', { rules: { 'reserved-word-case': { level: 2, option: 'upper' } } })
   expect(result).toEqual([])
 })
-
-function doFix(sql: string, fix?: (f: Fixer) => FixDescription | FixDescription[]) {
-  if (!fix) {
-    throw new Error("it's not defined fix")
-  }
-  return applyFixes(sql, fix(createFixer()))
-}
 
 describe('option: upper', () => {
   test('select keyword must be uppercase', () => {
@@ -21,7 +14,7 @@ describe('option: upper', () => {
     expect(result[0].message).toEqual('reserved word must be uppercase')
     expect(result[0].location.start).toEqual({line: 1, offset: 0,  column: 1 })
     expect(result[0].location.end).toEqual({ line: 1, offset: 6, column: 7 })
-    expect(doFix(sql, result[0].fix)).toEqual('SELECT * FROM foo')
+    expect(applyFixes(sql, [result[0].fix!])).toEqual('SELECT * FROM foo')
   })
 
   test('from keyword must be uppercase', () => {
@@ -49,7 +42,7 @@ describe('option: lower', () => {
     expect(result[0].message).toEqual('reserved word must be lowercase')
     expect(result[0].location.start).toEqual({line: 1, offset: 0,  column: 1 })
     expect(result[0].location.end).toEqual({ line: 1, offset: 6, column: 7 })
-    expect(doFix(sql, result[0].fix)).toEqual('select * from foo')
+    expect(applyFixes(sql, [result[0].fix!])).toEqual('select * from foo')
   })
 })
 
