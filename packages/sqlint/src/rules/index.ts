@@ -4,7 +4,7 @@ import { linebreakAfterClauseKeyword } from './linebreakAfterClauseKeyword'
 import { columnNewLine } from './columnNewLine'
 import { alignColumnToTheFirst } from './alignColumnToTheFirst'
 import { whereClauseNewLine } from './whereClauseNewLine'
-import { parse, NodeRange } from '@joe-re/sql-parser'
+import { parse, NodeRange, AST } from '@joe-re/sql-parser'
 import { Fixer, FixDescription } from '../fixer'
 
 export type Diagnostic = {
@@ -20,7 +20,7 @@ export type Rule<NodeType = any, RuleConfig = any> = {
     name: string
     type: string
   },
-  create: (c: Context<NodeType, RuleConfig>) => Diagnostic | undefined,
+  create: (c: Context<NodeType, RuleConfig>) => Diagnostic | Diagnostic[] | undefined,
 }
 
 export enum ErrorLevel {
@@ -77,13 +77,13 @@ function apply(node: any) {
   let diagnostics: any[] = []
   rules.forEach(({ rule, config, sql }) => {
     if (node.type === rule.meta.type) {
-      diagnostics = diagnostics.concat(rule.create(createContext(sql, node, config)))
+      diagnostics = diagnostics.concat(rule.create(createContext(sql, node, config))).flat()
     }
   })
   return diagnostics.filter(v => !!v)
 }
 
-function walk(node: any, diagnostics: any[] = []) {
+function walk(node: AST, diagnostics: Diagnostic[] = []) {
   if (!node || typeof node !== 'object' || !node.type) {
     return diagnostics
   }
