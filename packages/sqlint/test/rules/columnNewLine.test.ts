@@ -41,12 +41,14 @@ test("Columns must go on a new line", () => {
     start: { column: 23, line: 3, offset: 34 },
     end: { column: 29, line: 3, offset: 40 }
   })
-  expect(applyFixes(sql, result.map(v => v.fix!))).toEqual(`
+  const fixed = applyFixes(sql, result.map(v => v.fix!))
+  console.log(fixed)
+  expect(fixed).toEqual(`
     SELECT
       foo.a ,
- foo.b ,
- foo.c ,
- foo.d
+      foo.b ,
+      foo.c ,
+      foo.d
     FROM
       foo
   `)
