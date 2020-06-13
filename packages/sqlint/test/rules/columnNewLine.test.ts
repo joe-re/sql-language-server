@@ -42,7 +42,6 @@ test("Columns must go on a new line", () => {
     end: { column: 29, line: 3, offset: 40 }
   })
   const fixed = applyFixes(sql, result.map(v => v.fix!))
-  console.log(fixed)
   expect(fixed).toEqual(`
     SELECT
       foo.a ,

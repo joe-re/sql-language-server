@@ -45,6 +45,8 @@ type OffsetRange = {
 
 export type Context<NODE = any, CONFIG = any> = {
   getSQL(range?: OffsetRange, option?: { before?: number, after?: number }): string
+  getAfterSQL(range: OffsetRange): string
+  getBeforeSQL(range: OffsetRange): string
   node: NODE
   config: CONFIG
 }
@@ -103,6 +105,12 @@ export function createContext(sql: string, node: any, config: any): Context {
       const start = options && options.before ? range.start.offset - options.before : range.start.offset
       const end = options && options.after ? range.end.offset + options.after : range.end.offset
       return sql.slice(start, end)
+    },
+    getAfterSQL: function(range) {
+      return sql.slice(range.end.offset)
+    },
+    getBeforeSQL: function(range) {
+      return sql.slice(0, range.start.offset)
     },
     node: node,
     config: config
