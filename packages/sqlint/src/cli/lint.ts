@@ -6,7 +6,8 @@ import { applyFixes, FixDescription } from '../fixer';
 
 export type LintResult = {
   filepath: string,
-  diagnostics: Diagnostic[]
+  diagnostics: Diagnostic[],
+  fixedText?: string
 }
 
 function pluralize(word: string, count: number) {
@@ -61,23 +62,18 @@ export function lint (
     throw new Error(`No files matching '${path}' were found.`)
   }
   const config = loadConfig(configPath || process.cwd())
-  const result: LintResult[] = text
+
+  let result: LintResult[] = text
     ? [{ filepath: 'text', diagnostics: execute(text, config) }]
     : files.map(v => {
       const diaglostics = execute(readFile(v), config)
       return { filepath: v, diagnostics: diaglostics }
     }).flat()
+
   let output = ''
-  switch(formatType) {
-    case 'stylish': output = formatStylish(result); break
-    case 'json': output = JSON.stringify(result); break
-    default: throw new Error(`unsupported formatType: ${formatType}`)
-  }
-  if (outputFile) {
-    writeFile(outputFile, output)
-  }
+
   if (params.fix) {
-    const fixes = result.map(v => {
+    const fixedResult = result.map(v => {
       const MAX_AUTOFIX_LOOP = 3
       function getFixDescriptions(diagnostics: Diagnostic[]): FixDescription[] {
         return diagnostics.map(v => v.fix).flat()
@@ -94,10 +90,25 @@ export function lint (
         }
         return fix(fixed, newDescriptions, --loop)
       }
-      const fixed = fix(params.text || readFile(v.filepath), getFixDescriptions(v.diagnostics))
-      return { fixed }
+      const fixedText = fix(params.text || readFile(v.filepath), getFixDescriptions(v.diagnostics))
+      const diagnostics = execute(fixedText, config)
+      return { filepath: v.filepath, diagnostics, fixedText }
     })
-    console.log(fixes)
+    if (!text) {
+      fixedResult.forEach(v => {
+        writeFile(v.filepath, v.fixedText)
+      })
+    }
+    result = fixedResult
   }
+  switch(formatType) {
+    case 'stylish': output = formatStylish(result); break
+    case 'json': output = JSON.stringify(result); break
+    default: throw new Error(`unsupported formatType: ${formatType}`)
+  }
+  if (outputFile) {
+    writeFile(outputFile, output)
+  }
+
   return output
 }
