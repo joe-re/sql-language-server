@@ -20,8 +20,6 @@ export const reservedWordCase: Rule<KeywordNode, RuleConfig<Option>> = {
       return {
         message: META.messages.upper,
         location: context.node.location,
-        rulename: META.name,
-        errorLevel: context.config.level,
         fix: (fixer) =>  {
           return fixer.replaceText(
             context.node.location.start.offset,
@@ -35,8 +33,6 @@ export const reservedWordCase: Rule<KeywordNode, RuleConfig<Option>> = {
       return {
         message: META.messages.lower,
         location: context.node.location,
-        rulename: META.name,
-        errorLevel: context.config.level,
         fix: (fixer) => {
           return fixer.replaceText(
             context.node.location.start.offset,

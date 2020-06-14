@@ -31,8 +31,6 @@ export const columnNewLine: Rule<SelectStatement, RuleConfig<Options>> = {
         return {
           message: 'Columns must go on a new line.',
           location: v.column.location,
-          rulename: META.name,
-          errorLevel: context.config.level,
           fix: (fixer) => {
             // "," should be at after previousOffset so + 1 to include it
             const pos = v.previousOffset + 1

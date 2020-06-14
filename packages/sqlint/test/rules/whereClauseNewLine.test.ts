@@ -35,8 +35,7 @@ test('Multiple clauses must go on a new line', () => {
       offset: 91
     }
   })
- const fixed = applyFixes(sql, result.map(v => v.fix!))
- console.log(fixed)
+ const fixed = applyFixes(sql, result.map(v => v.fix!).flat())
  expect(fixed).toContain(`
     SELECT foo.a, foo.b
     FROM foo

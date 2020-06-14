@@ -43,8 +43,6 @@ export const alignWhereClauseToTheFirst: Rule<SelectStatement, RuleConfig> = {
       return {
         message: 'Where clauses must align to the first clause',
         location: v.location,
-        rulename: META.name,
-        errorLevel: context.config.level,
         fix: (fixer) => {
           const spaceNumber = where.expression.location.start.column - v.location.start.column
           if (spaceNumber > 0) {

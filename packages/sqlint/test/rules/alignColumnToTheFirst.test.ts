@@ -35,7 +35,7 @@ test('Columns must align to the first column', () => {
     start: { column: 5, line: 5, offset: 44},
     end: { column: 5, line: 6, offset: 54 }
   })
-  const fixed = applyFixes(sql, result.map(v => v.fix!))
+  const fixed = applyFixes(sql, result.map(v => v.fix!).flat())
   expect(fixed).toEqual(`
     SELECT
       foo.a,

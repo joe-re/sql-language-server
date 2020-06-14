@@ -5,14 +5,20 @@ import { columnNewLine } from './columnNewLine'
 import { alignColumnToTheFirst } from './alignColumnToTheFirst'
 import { whereClauseNewLine } from './whereClauseNewLine'
 import { alignWhereClauseToTheFirst } from './alignWhereClauseToTheFirst'
-import { parse, NodeRange, AST } from '@joe-re/sql-parser'
-import { Fixer, FixDescription } from '../fixer'
+import { parse, NodeRange, AST, BaseNode } from '@joe-re/sql-parser'
+import { Fixer, FixDescription, createFixer } from '../fixer'
 
 export type Diagnostic = {
   message: string
   location: NodeRange
   rulename: string
-  errorLevel: ErrorLevel,
+  errorLevel: ErrorLevel
+  fix: FixDescription | FixDescription[]
+}
+
+export type RuleResult = {
+  message: string
+  location: NodeRange
   fix?: (fixer: Fixer) => FixDescription | FixDescription[]
 }
 
@@ -21,7 +27,7 @@ export type Rule<NodeType = any, RuleConfig = any> = {
     name: string
     type: string
   },
-  create: (c: Context<NodeType, RuleConfig>) => Diagnostic | Diagnostic[] | undefined,
+  create: (c: Context<NodeType, RuleConfig>) => RuleResult | RuleResult[] | undefined,
 }
 
 export enum ErrorLevel {
@@ -52,7 +58,7 @@ export type Context<NODE = any, CONFIG = any> = {
   config: CONFIG
 }
 
-let rules:{ rule: Rule, config: any, sql: string }[] = []
+let rules:{ rule: Rule, config: RuleConfig, sql: string }[] = []
 
 export function execute(sql: string, config: Config): Diagnostic[] {
   rules = []
@@ -77,11 +83,31 @@ function registerRule(rule: Rule, config: Config, sql: string) {
   }
 }
 
-function apply(node: any) {
+function apply(node: BaseNode): Diagnostic[] {
   let diagnostics: any[] = []
   rules.forEach(({ rule, config, sql }) => {
+    if (config.level === ErrorLevel.Off) {
+      return
+    }
     if (node.type === rule.meta.type) {
-      diagnostics = diagnostics.concat(rule.create(createContext(sql, node, config))).flat()
+      let ruleResult = rule.create(createContext(sql, node, config))
+      if (!ruleResult) {
+        return
+      }
+      if (!Array.isArray(ruleResult)) {
+        ruleResult = [ruleResult]
+      }
+      const _diagnostics: Diagnostic[] = ruleResult.map(v => {
+        const fix = v.fix ? v.fix(createFixer()) : []
+        return {
+          location: v.location,
+          message: v.message,
+          errorLevel: config.level,
+          fix: Array.isArray(fix) ? fix : [fix],
+          rulename: rule.meta.name
+        }
+      })
+      diagnostics = diagnostics.concat(_diagnostics).flat()
     }
   })
   return diagnostics.filter(v => !!v)

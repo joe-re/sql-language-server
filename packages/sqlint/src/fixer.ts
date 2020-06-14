@@ -28,7 +28,7 @@ export function createFixer(): Fixer {
 export function applyFixes(sql: string, fixes: FixDescription | FixDescription[]) {
   const _fixes = Array.isArray(fixes) ? fixes : [fixes]
   if (_fixes.length === 0) {
-    return null
+    return sql
   }
   const sortedFixes = _fixes.concat([]).sort((a, b) =>
     b.range.startOffset - a.range.startOffset || b.range.endOffset - a.range.endOffset

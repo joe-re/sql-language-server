@@ -25,8 +25,6 @@ export const linebreakAfterClauseKeyword: Rule<KeywordNode, RuleConfig<{}>> = {
       return {
         message: `A linebreak is required after ${context.node.value} keyword`,
         location: context.node.location,
-        rulename: META.name,
-        errorLevel: context.config.level,
         fix: (fixer) => {
           const fixes = [fixer.replaceText(
             context.node.location.end.offset,

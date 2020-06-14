@@ -2,6 +2,7 @@ import chalk from 'chalk'
 import { getFileList, readFile, writeFile } from './utils'
 import { execute, Diagnostic, ErrorLevel } from '../rules'
 import { loadConfig } from './loadConfig';
+import { applyFixes, FixDescription } from '../fixer';
 
 export type LintResult = {
   filepath: string,
@@ -46,11 +47,12 @@ function formatStylish(result: LintResult[]): string {
 
 export function lint (
   params: {
-    path?: string,
-    formatType: FormatType,
-    configPath?: string,
-    outputFile?: string,
+    path?: string
+    formatType: FormatType
+    configPath?: string
+    outputFile?: string
     text?: string
+    fix?: boolean
   }
 ) {
   const { path, formatType, configPath, outputFile, text } = params
@@ -73,6 +75,29 @@ export function lint (
   }
   if (outputFile) {
     writeFile(outputFile, output)
+  }
+  if (params.fix) {
+    const fixes = result.map(v => {
+      const MAX_AUTOFIX_LOOP = 3
+      function getFixDescriptions(diagnostics: Diagnostic[]): FixDescription[] {
+        return diagnostics.map(v => v.fix).flat()
+      }
+      function fix(text: string, descriptions: FixDescription[], loop = MAX_AUTOFIX_LOOP): string {
+        if (loop === 0) {
+          return text
+        }
+        const fixed = applyFixes(text, descriptions)
+        const nextDiagnostics = execute(fixed, config)
+        const newDescriptions = getFixDescriptions(nextDiagnostics)
+        if (newDescriptions.length === 0) {
+          return fixed
+        }
+        return fix(fixed, newDescriptions, --loop)
+      }
+      const fixed = fix(params.text || readFile(v.filepath), getFixDescriptions(v.diagnostics))
+      return { fixed }
+    })
+    console.log(fixes)
   }
   return output
 }

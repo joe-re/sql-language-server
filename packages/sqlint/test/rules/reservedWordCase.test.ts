@@ -14,7 +14,7 @@ describe('option: upper', () => {
     expect(result[0].message).toEqual('reserved word must be uppercase')
     expect(result[0].location.start).toEqual({line: 1, offset: 0,  column: 1 })
     expect(result[0].location.end).toEqual({ line: 1, offset: 6, column: 7 })
-    expect(applyFixes(sql, [result[0].fix!])).toEqual('SELECT * FROM foo')
+    expect(applyFixes(sql, [result[0].fix!].flat())).toEqual('SELECT * FROM foo')
   })
 
   test('from keyword must be uppercase', () => {
@@ -42,7 +42,7 @@ describe('option: lower', () => {
     expect(result[0].message).toEqual('reserved word must be lowercase')
     expect(result[0].location.start).toEqual({line: 1, offset: 0,  column: 1 })
     expect(result[0].location.end).toEqual({ line: 1, offset: 6, column: 7 })
-    expect(applyFixes(sql, [result[0].fix!])).toEqual('select * from foo')
+    expect(applyFixes(sql, [result[0].fix!].flat())).toEqual('select * from foo')
   })
 })
 

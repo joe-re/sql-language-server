@@ -23,8 +23,6 @@ export const alignColumnToTheFirst: Rule<SelectStatement, RuleConfig> = {
           return {
             message: 'Columns must align to the first column.',
             location: v.location,
-            rulename: META.name,
-            errorLevel: context.config.level,
             fix: (fixer) => {
               const spaceNumber = first.location.start.column - v.location.start.column
               if (spaceNumber > 0) {

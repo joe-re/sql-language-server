@@ -38,8 +38,6 @@ export const spaceSurroundingOperators: Rule<BinaryExpressionNode, RuleConfig<Op
         return {
           message: META.messages.always,
           location: { start, end },
-          rulename: META.name,
-          errorLevel: context.config.level,
           fix: (fixer) => {
             const text = context.getSQL(context.node.left.location) +
               ` ${context.node.operator} ` +
@@ -70,8 +68,6 @@ export const spaceSurroundingOperators: Rule<BinaryExpressionNode, RuleConfig<Op
         return {
           message: META.messages.never,
           location: { start, end },
-          rulename: META.name,
-          errorLevel: context.config.level,
           fix: (fixer) => {
             const text = context.getSQL(context.node.left.location) +
               context.node.operator +
