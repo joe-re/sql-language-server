@@ -4,6 +4,7 @@ import { linebreakAfterClauseKeyword } from './linebreakAfterClauseKeyword'
 import { columnNewLine } from './columnNewLine'
 import { alignColumnToTheFirst } from './alignColumnToTheFirst'
 import { whereClauseNewLine } from './whereClauseNewLine'
+import { alignWhereClauseToTheFirst } from './alignWhereClauseToTheFirst'
 import { parse, NodeRange, AST } from '@joe-re/sql-parser'
 import { Fixer, FixDescription } from '../fixer'
 
@@ -61,6 +62,7 @@ export function execute(sql: string, config: Config): Diagnostic[] {
   registerRule(columnNewLine, config, sql)
   registerRule(alignColumnToTheFirst, config, sql)
   registerRule(whereClauseNewLine, config, sql)
+  registerRule(alignWhereClauseToTheFirst, config, sql)
   const ast = parse(sql)
   return walk(ast)
 }
