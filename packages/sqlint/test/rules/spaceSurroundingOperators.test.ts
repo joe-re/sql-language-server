@@ -1,4 +1,5 @@
 import { execute } from '../../src/rules'
+import { applyFixes } from '../testUtil'
 
 test('space surrounding always', () => {
   const sql = `
@@ -19,6 +20,16 @@ WHERE foo.a > 1
   expect(result[1].message).toEqual('space surrounding always')
   expect(result[1].location.start).toEqual({line: 6, offset: 61,  column: 12 })
   expect(result[1].location.end).toEqual({ line: 6, offset: 64, column: 15 })
+  const fixed = applyFixes(sql, result.map(v => v.fix!))
+  console.log(fixed)
+  expect(fixed).toEqual(`
+SELECT *
+FROM foo
+WHERE foo.a > 1
+   OR foo.b >= 2
+  AND foo.c = true
+   OR foo.d <> false
+`)
 })
 
 test('space surrounding never', () => {
@@ -40,4 +51,12 @@ WHERE foo.a > 1
   expect(result[1].message).toEqual('space surrounding never')
   expect(result[1].location.start).toEqual({line: 7, offset: 78,  column: 12 })
   expect(result[1].location.end).toEqual({ line: 7, offset: 81, column: 15 })
+  expect(applyFixes(sql, result.map(v => v.fix!))).toEqual(`
+SELECT *
+FROM foo
+WHERE foo.a>1
+   OR foo.b>=2
+  AND foo.c=true
+   OR foo.d<>false
+`)
 })
