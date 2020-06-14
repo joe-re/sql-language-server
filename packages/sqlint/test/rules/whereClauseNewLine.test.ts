@@ -18,10 +18,10 @@ test('Multiple clauses must go on a new line', () => {
   const sql = `
     SELECT foo.a, foo.b
     FROM foo
-    WHERE foo.a = 'a' AND foo.b = 'b'
+    WHERE foo.a = 'a' AND foo.b = 'b' AND foo.c = 'c'
   `
   const result = execute(sql, { rules: { 'where-clause-new-line': { level: 2 } } })
-  expect(result.length).toEqual(1)
+  expect(result.length).toEqual(2)
   expect(result[0].message).toEqual('Multiple where clause must go on a new line.')
   expect(result[0].location).toEqual({
     start: {
@@ -30,9 +30,9 @@ test('Multiple clauses must go on a new line', () => {
       offset: 48 
     },
     end: {
-      column: 22,
+      column: 54,
       line: 4,
-      offset: 59
+      offset: 91
     }
   })
  const fixed = applyFixes(sql, result.map(v => v.fix!))
@@ -40,7 +40,8 @@ test('Multiple clauses must go on a new line', () => {
  expect(fixed).toContain(`
     SELECT foo.a, foo.b
     FROM foo
-    WHERE foo.a = 'a'
-          AND foo.b = 'b'
+    WHERE foo.a = 'a' AND
+          foo.b = 'b' AND
+          foo.c = 'c'
 `)
 })

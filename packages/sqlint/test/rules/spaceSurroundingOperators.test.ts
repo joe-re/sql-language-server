@@ -21,7 +21,6 @@ WHERE foo.a > 1
   expect(result[1].location.start).toEqual({line: 6, offset: 61,  column: 12 })
   expect(result[1].location.end).toEqual({ line: 6, offset: 64, column: 15 })
   const fixed = applyFixes(sql, result.map(v => v.fix!))
-  console.log(fixed)
   expect(fixed).toEqual(`
 SELECT *
 FROM foo
