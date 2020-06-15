@@ -4,14 +4,16 @@ import { PublishDiagnosticsParams, Diagnostic } from 'vscode-languageserver'
 import { DiagnosticSeverity }from 'vscode-languageserver-types'
 import { lint, ErrorLevel } from 'sqlint'
 import { LintResult } from 'sqlint/src/cli/lint'
+import cache, { LintCache } from './cache'
 
 const logger = log4js.getLogger()
 
-function doLint(sql: string): Diagnostic[] {
+function doLint(uri: string, sql: string): Diagnostic[] {
   const result: LintResult[] = JSON.parse(lint({ configPath: process.cwd(), formatType: 'json', text: sql }))
-  const diagnostics = result.map(v => v.diagnostics).flat()
-  return diagnostics.map(v => {
-    return {
+  const lintDiagnostics = result.map(v => v.diagnostics).flat()
+  const lintCache: LintCache[] = []
+  const diagnostics = lintDiagnostics.map(v => {
+    const diagnostic = {
       range: {
         start: { line: v.location.start.line - 1, character: v.location.start.column - 1 },
         end:  { line: v.location.end.line - 1, character: v.location.end.column - 1 }
@@ -21,7 +23,11 @@ function doLint(sql: string): Diagnostic[] {
       source: 'sql',
       relatedInformation: []
     }
+    lintCache.push({ diagnostic, lint: v })
+    return diagnostic
   })
+  cache.setLintCache(uri, lintCache)
+  return diagnostics
 }
 
 export default function createDiagnostics(uri: string, sql: string): PublishDiagnosticsParams {
@@ -30,7 +36,7 @@ export default function createDiagnostics(uri: string, sql: string): PublishDiag
   try {
     const ast = parse(sql)
     logger.debug(`ast: ${JSON.stringify(ast)}`)
-    diagnostics = doLint(sql)
+    diagnostics = doLint(uri, sql)
   } catch (e) {
     logger.debug('parse error')
     logger.debug(e)
@@ -46,7 +52,7 @@ export default function createDiagnostics(uri: string, sql: string): PublishDiag
       severity: DiagnosticSeverity.Error,
       // code: number | string,
       source: 'sql',
-      relatedInformation: []
+      relatedInformation: [],
     })
   }
   logger.debug(`diagnostics: ${JSON.stringify(diagnostics)}`)
