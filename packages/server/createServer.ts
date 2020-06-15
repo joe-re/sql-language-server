@@ -6,6 +6,7 @@ import {
   CompletionItem
 } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument' 
+import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
 import cache from './cache'
 import complete from './complete'
 import createDiagnostics from './createDiagnostics'
@@ -29,6 +30,13 @@ export default function createServer() {
   let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = []
+
+  documents.onDidChangeContent((params) => {
+    logger.debug(`onDidChangeContent: ${params.document.uri}, ${params.document.version}`)
+    cache.set(params.document.uri, params.document.getText())
+    const diagnostics = createDiagnostics(params.document.uri, params.document.getText())
+    connection.sendDiagnostics(diagnostics)
+  })
 
   connection.onInitialize((params): InitializeResult => {
     logger.debug(`onInitialize: ${params.rootPath}`)
@@ -60,6 +68,7 @@ export default function createServer() {
           resolveProvider: true,
           triggerCharacters: ['.'],
         },
+        codeActionProvider: true,
         executeCommandProvider: {
           commands: ['sqlLanguageServer.switchDatabaseConnection']
         }
@@ -67,13 +76,6 @@ export default function createServer() {
     }
   })
 
-  connection.onDidChangeTextDocument((params) => {
-    logger.debug(`didChangeTextDocument: ${params.textDocument.uri}`)
-    cache.set(params.textDocument.uri, params.contentChanges[0].text)
-    const diagnostics = createDiagnostics(params.textDocument.uri, params.contentChanges[0].text)
-    connection.sendDiagnostics(diagnostics)
-  })
-  
   connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[] => {
   	let text = cache.get(docParams.textDocument.uri)
   	if (!text) {
@@ -87,6 +89,44 @@ export default function createServer() {
   	}, schema).candidates
   	logger.debug(candidates.map(v => v.label).join(","))
   	return candidates
+  })
+
+  connection.onCodeAction(params => {
+    const lintResult = cache.findLintCacheByRange(params.textDocument.uri, params.range)
+    const document = documents.get(params.textDocument.uri)
+    if (!document) {
+      return []
+    }
+    const text = document.getText()
+    if (!text) {
+      return []
+    }
+
+    function toPosition(text: string, offset: number) {
+      const lines = text.slice(0, offset).split('\n')
+      return Position.create(lines.length - 1, lines[lines.length - 1].length)
+    }
+    return lintResult.map(v => {
+      const fixes = Array.isArray(v.lint.fix) ? v.lint.fix : [v.lint.fix]
+      if (fixes.length === 0) {
+        return []
+      }
+      const action = CodeAction.create(`fix: ${v.diagnostic.message}`, {
+        documentChanges:[
+          TextDocumentEdit.create({ uri: params.textDocument.uri, version: document.version }, fixes.map(v => {
+            const edit = v.range.startOffset === v.range.endOffset
+              ? TextEdit.insert(toPosition(text, v.range.startOffset), v.text)
+              : TextEdit.replace({
+                  start: toPosition(text, v.range.startOffset),
+                  end: toPosition(text, v.range.endOffset)
+                }, v.text)
+            return edit
+          }))
+        ]
+      }, CodeActionKind.QuickFix)
+      action.diagnostics = params.context.diagnostics
+      return [action]
+    }).flat()
   })
   
   connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
