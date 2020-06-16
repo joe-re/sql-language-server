@@ -1,6 +1,7 @@
 import log4js from 'log4js';
 import * as path from 'path'
 import * as os from 'os'
+import yargs from 'yargs'
 
 const MAX_LOG_SIZE = 1024 * 1024
 const MAX_LOG_BACKUPS = 10
@@ -16,7 +17,7 @@ export default function initializeLogging() {
         ackups: MAX_LOG_BACKUPS
       }
     },
-    categories: { default: { appenders: ['server'], level: 'debug' } }
+    categories: { default: { appenders: ['server'], level: (yargs.argv as any).debug ? 'debug' : 'warn' } }
   })
 
   const logger = log4js.getLogger()
