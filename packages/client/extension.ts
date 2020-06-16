@@ -54,7 +54,21 @@ export function activate(context: ExtensionContext) {
     }
     client.sendRequest('workspace/executeCommand', params)
   })
+
+  const fixAllFixableProblem = commands.registerCommand('extension.fixAllFixableProblems', () => {
+    const textEditor = Window.activeTextEditor;
+    if (!textEditor) {
+      return
+    }
+    const params: ExecuteCommandParams = {
+      command: 'fixAllFixableProblems',
+      arguments: [textEditor.document.uri.toString()]
+    }
+    client.sendRequest('workspace/executeCommand', params)
+  })
+
   context.subscriptions.push(switchConnection)
+  context.subscriptions.push(fixAllFixableProblem)
   context.subscriptions.push(disposable)
   client.onReady().then(() => {
     client.onNotification('sqlLanguageServer.finishSetup', (params) => {

@@ -16,6 +16,7 @@ import SettingStore from './SettingStore'
 import { Schema } from './database_libs/AbstractClient'
 import getDatabaseClient from './database_libs/getDatabaseClient'
 import initializeLogging from './initializeLogging'
+import { lint, LintResult } from 'sqlint'
 import log4js from 'log4js'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
@@ -69,7 +70,10 @@ export default function createServer() {
         },
         codeActionProvider: true,
         executeCommandProvider: {
-          commands: ['sqlLanguageServer.switchDatabaseConnection']
+          commands: [
+            'sqlLanguageServer.switchDatabaseConnection',
+            'sqlLanguageServer.fixAllFixableProblems'
+          ]
         }
       }
     }
@@ -143,6 +147,36 @@ export default function createServer() {
           message: e.message
         })
       }
+    } else if (request.command === 'fixAllFixableProblems') {
+      const uri = request.arguments ? request.arguments[0] : null
+      if (!uri) {
+        connection.sendNotification('sqlLanguageServer.error', {
+          message: 'fixAllFixableProblems: Need to specify uri'
+        })
+        return
+      }
+      const document = documents.get(uri)
+      const text = document?.getText()
+      if (!text) {
+        logger.debug('Failed to get text')
+        return
+      }
+      const result: LintResult[] = JSON.parse(lint({ formatType: 'json', text, fix: true }))
+      if (result.length === 0 && result[0].fixedText) {
+        logger.debug("There's no fixable problems")
+        return
+      }
+      logger.debug('Fix all fixable problems', text, result[0].fixedText)
+      connection.workspace.applyEdit({
+        documentChanges: [
+          TextDocumentEdit.create({ uri, version: document!.version }, [
+            TextEdit.replace({
+              start: Position.create(0, 0),
+              end: Position.create(Number.MAX_VALUE, Number.MAX_VALUE)
+            }, result[0].fixedText!)
+          ])
+        ]
+      })
     }
   })
 
