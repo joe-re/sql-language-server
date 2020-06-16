@@ -33,7 +33,6 @@ export default function createServer() {
 
   documents.onDidChangeContent((params) => {
     logger.debug(`onDidChangeContent: ${params.document.uri}, ${params.document.version}`)
-    cache.set(params.document.uri, params.document.getText())
     const diagnostics = createDiagnostics(params.document.uri, params.document.getText())
     connection.sendDiagnostics(diagnostics)
   })
@@ -77,13 +76,12 @@ export default function createServer() {
   })
 
   connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[] => {
-  	let text = cache.get(docParams.textDocument.uri)
-  	if (!text) {
-  		cache.setFromUri(docParams.textDocument.uri)
-  		text = cache.get(docParams.textDocument.uri)
-  	}
+    let text = documents.get(docParams.textDocument.uri)?.getText()
+    if (!text) {
+      return []
+    }
   	logger.debug(text || '')
-  	const candidates = complete(text || '', {
+  	const candidates = complete(text, {
   		line: docParams.position.line,
   		column: docParams.position.character
   	}, schema).candidates
