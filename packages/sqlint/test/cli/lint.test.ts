@@ -58,19 +58,20 @@ describe('lint', () => {
   })
 
   describe('fix', () => {
-    const sql = 'SELECT employees.first_name, employees.email, e.first_name, e.department_id, e.manager_id, e.hire_date' +
-     ' FROM employees e' +
-     ' WHERE e.job_id = "job_id" AND e.saraly > 6000000 AND e.first_name > 100'
-    const result = lint({
-      text: sql,
-      formatType: 'json',
-      fix: true
-    })
-    const parsed = JSON.parse(result)
-    expect(parsed.length).toEqual(1)
-    expect(parsed[0].diagnostics.length).toEqual(0)
-    expect(parsed[0].filepath).toEqual('text')
-    expect(parsed[0].fixedText).toEqual(`
+    it('should be fixed correctly. case1', () => {
+      const sql = 'SELECT employees.first_name, employees.email, e.first_name, e.department_id, e.manager_id, e.hire_date' +
+       ' FROM employees e' +
+       ' WHERE e.job_id = "job_id" AND e.saraly > 6000000 AND e.first_name > 100'
+      const result = lint({
+        text: sql,
+        formatType: 'json',
+        fix: true
+      })
+      const parsed = JSON.parse(result)
+      expect(parsed.length).toEqual(1)
+      expect(parsed[0].diagnostics.length).toEqual(0)
+      expect(parsed[0].filepath).toEqual('text')
+      expect(parsed[0].fixedText).toEqual(`
 SELECT
   employees.first_name,
   employees.email,
@@ -85,5 +86,41 @@ WHERE
   e.saraly > 6000000 AND
   e.first_name > 100
 `.trim())
+    })
+
+    it('should be fixed correctly. case2', () => {
+      const sql = `
+SELECT
+  e.email,
+  e.first_name, e.hire_date
+FROM
+  employes e
+WHERE
+  e.job_id = "jobid1" AND
+  e.saraly > 6000000 AND
+  e.first_name = "joe"
+`.trim()
+      const result = lint({
+        text: sql,
+        formatType: 'json',
+        fix: true
+      })
+      const parsed = JSON.parse(result)
+      expect(parsed.length).toEqual(1)
+      expect(parsed[0].diagnostics.length).toEqual(0)
+      expect(parsed[0].filepath).toEqual('text')
+      expect(parsed[0].fixedText).toEqual(`
+SELECT
+  e.email,
+  e.first_name,
+  e.hire_date
+FROM
+  employes e
+WHERE
+  e.job_id = "jobid1" AND
+  e.saraly > 6000000 AND
+  e.first_name = "joe"
+`.trim())
+    })
   })
 })
