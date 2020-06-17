@@ -96,9 +96,7 @@ SELECT
 FROM
   employes e
 WHERE
-  e.job_id = "jobid1" AND
-  e.saraly > 6000000 AND
-  e.first_name = "joe"
+  e.job_id = "jobid1"
 `.trim()
       const result = lint({
         text: sql,
@@ -117,9 +115,7 @@ SELECT
 FROM
   employes e
 WHERE
-  e.job_id = "jobid1" AND
-  e.saraly > 6000000 AND
-  e.first_name = "joe"
+  e.job_id = "jobid1"
 `.trim())
     })
   })

@@ -12,10 +12,15 @@ export const alignColumnToTheFirst: Rule<SelectStatement, RuleConfig> = {
     if (Array.isArray(context.node.columns) && context.node.columns.length > 1) {
       const first = context.node.columns[0]
       const rest = context.node.columns.slice(1, context.node.columns.length)
+      let prev = first
       const invalidColumns = rest.filter(v => {
-        if (v.location.start.line === first.location.start.line) {
+        if (
+          v.location.start.line === first.location.start.line ||
+          v.location.start.line === prev.location.start.line
+        ) {
           return false
         }
+        prev = v
         return first.location.start.column !== v.location.start.column
       })
       if (invalidColumns.length > 0) {
