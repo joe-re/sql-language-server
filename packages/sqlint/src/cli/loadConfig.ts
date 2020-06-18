@@ -18,8 +18,7 @@ const defaultConfig: Config = {
     'linebreak-after-clause-keyword': { level: ErrorLevel.Error },
     'reserved-word-case': { level: ErrorLevel.Error, option: 'upper' },
     'space-surrounding-operators': { level: ErrorLevel.Error },
-    'where-clause-new-line': { level: ErrorLevel.Error },
-    'align-where-clause-to-the-first': { level: ErrorLevel.Error }
+    'where-clause-new-line': { level: ErrorLevel.Error }
   }
 }
 

@@ -45,7 +45,6 @@ export type SelectStatement = {
   where: WhereClause | null
   groupBy: any
   orderBy: any
-  location: NodeRange
 }
 
 export type FromClause = {

@@ -20,26 +20,16 @@ export const reservedWordCase: Rule<KeywordNode, RuleConfig<Option>> = {
       return {
         message: META.messages.upper,
         location: context.node.location,
-        fix: (fixer) =>  {
-          return fixer.replaceText(
-            context.node.location.start.offset,
-            context.node.location.end.offset,
-            context.node.value.toUpperCase()
-          )
-        }
+        rulename: META.name,
+        errorLevel: context.config.level
       }
     }
     if (option === 'lower' && /[A-Z]/.test(context.node.value)) {
       return {
         message: META.messages.lower,
         location: context.node.location,
-        fix: (fixer) => {
-          return fixer.replaceText(
-            context.node.location.start.offset,
-            context.node.location.end.offset,
-            context.node.value.toLowerCase()
-          )
-        }
+        rulename: META.name,
+        errorLevel: context.config.level
       }
     }
   }
