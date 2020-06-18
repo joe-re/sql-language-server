@@ -4,21 +4,30 @@ import { linebreakAfterClauseKeyword } from './linebreakAfterClauseKeyword'
 import { columnNewLine } from './columnNewLine'
 import { alignColumnToTheFirst } from './alignColumnToTheFirst'
 import { whereClauseNewLine } from './whereClauseNewLine'
-import { parse, NodeRange } from '@joe-re/sql-parser'
+import { alignWhereClauseToTheFirst } from './alignWhereClauseToTheFirst'
+import { parse, NodeRange, AST, BaseNode } from '@joe-re/sql-parser'
+import { Fixer, FixDescription, createFixer } from '../fixer'
 
 export type Diagnostic = {
-  message: string,
-  location: NodeRange,
-  rulename: string,
+  message: string
+  location: NodeRange
+  rulename: string
   errorLevel: ErrorLevel
+  fix: FixDescription | FixDescription[]
+}
+
+export type RuleResult = {
+  message: string
+  location: NodeRange
+  fix?: (fixer: Fixer) => FixDescription | FixDescription[]
 }
 
 export type Rule<NodeType = any, RuleConfig = any> = {
   meta: {
-    name: string,
+    name: string
     type: string
   },
-  create: (c: Context<NodeType, RuleConfig>) => Diagnostic | undefined
+  create: (c: Context<NodeType, RuleConfig>) => RuleResult | RuleResult[] | undefined,
 }
 
 export enum ErrorLevel {
@@ -36,13 +45,20 @@ export type RuleConfig<T = void> = {
   option?: T
 }
 
+type OffsetRange = {
+  start: { offset: number }
+  end: { offset: number }
+}
+
 export type Context<NODE = any, CONFIG = any> = {
-  getSQL(range?: NodeRange, option?: { before?: number, after?: number }): string
+  getSQL(range?: OffsetRange, option?: { before?: number, after?: number }): string
+  getAfterSQL(range: OffsetRange): string
+  getBeforeSQL(range: OffsetRange): string
   node: NODE
   config: CONFIG
 }
 
-let rules:{ rule: Rule, config: any, sql: string }[] = []
+let rules:{ rule: Rule, config: RuleConfig, sql: string }[] = []
 
 export function execute(sql: string, config: Config): Diagnostic[] {
   rules = []
@@ -52,6 +68,7 @@ export function execute(sql: string, config: Config): Diagnostic[] {
   registerRule(columnNewLine, config, sql)
   registerRule(alignColumnToTheFirst, config, sql)
   registerRule(whereClauseNewLine, config, sql)
+  registerRule(alignWhereClauseToTheFirst, config, sql)
   const ast = parse(sql)
   return walk(ast)
 }
@@ -66,17 +83,37 @@ function registerRule(rule: Rule, config: Config, sql: string) {
   }
 }
 
-function apply(node: any) {
+function apply(node: BaseNode): Diagnostic[] {
   let diagnostics: any[] = []
   rules.forEach(({ rule, config, sql }) => {
+    if (config.level === ErrorLevel.Off) {
+      return
+    }
     if (node.type === rule.meta.type) {
-      diagnostics = diagnostics.concat(rule.create(createContext(sql, node, config)))
+      let ruleResult = rule.create(createContext(sql, node, config))
+      if (!ruleResult) {
+        return
+      }
+      if (!Array.isArray(ruleResult)) {
+        ruleResult = [ruleResult]
+      }
+      const _diagnostics: Diagnostic[] = ruleResult.map(v => {
+        const fix = v.fix ? v.fix(createFixer()) : []
+        return {
+          location: v.location,
+          message: v.message,
+          errorLevel: config.level,
+          fix: Array.isArray(fix) ? fix : [fix],
+          rulename: rule.meta.name
+        }
+      })
+      diagnostics = diagnostics.concat(_diagnostics).flat()
     }
   })
   return diagnostics.filter(v => !!v)
 }
 
-function walk(node: any, diagnostics: any[] = []) {
+function walk(node: AST, diagnostics: Diagnostic[] = []) {
   if (!node || typeof node !== 'object' || !node.type) {
     return diagnostics
   }
@@ -87,7 +124,7 @@ function walk(node: any, diagnostics: any[] = []) {
   return diagnostics
 }
 
-function createContext(sql: string, node: any, config: any): Context {
+export function createContext(sql: string, node: any, config: any): Context {
   return {
     getSQL: function(range, options) {
       if (!range) {
@@ -96,6 +133,12 @@ function createContext(sql: string, node: any, config: any): Context {
       const start = options && options.before ? range.start.offset - options.before : range.start.offset
       const end = options && options.after ? range.end.offset + options.after : range.end.offset
       return sql.slice(start, end)
+    },
+    getAfterSQL: function(range) {
+      return sql.slice(range.end.offset)
+    },
+    getBeforeSQL: function(range) {
+      return sql.slice(0, range.start.offset)
     },
     node: node,
     config: config
