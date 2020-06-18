@@ -1,6 +1,6 @@
 {
   "name": "sqlint",
-  "version": "0.8.0",
+  "version": "0.9.1",
   "main": "dist/index",
   "bin": {
     "sqlint": "bin/cli.js"

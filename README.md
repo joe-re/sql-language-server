@@ -254,13 +254,3 @@ method: workspace/executeCommand
 command: fixAllFixableProblems
 arguments: string(document uri)
 ```
-
-### TODO
-
-- [x] SELECT
-- [x] INSERT
-- [x] UPDATE
-- [x] DELETE
-- [x] ssh port forwarding
-- [x] Lint
-- [ ] Beautify
