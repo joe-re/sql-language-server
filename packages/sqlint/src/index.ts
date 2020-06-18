@@ -1,5 +1,4 @@
 import { lint, LintResult } from './cli/lint'
-import { ErrorLevel, Diagnostic } from './rules/index'
-import { applyFixes } from './fixer'
+import { ErrorLevel } from './rules/index'
 
-export { lint, LintResult, ErrorLevel, Diagnostic, applyFixes }
+export { lint, LintResult, ErrorLevel }
