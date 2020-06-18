@@ -230,7 +230,7 @@ If you have multiple connection information on personal config file, you can swt
 
 [VSC extension](https://marketplace.visualstudio.com/items?itemName=joe-re.sql-language-server) provides `Switch database connection` command.
 
-Raw RPC param is:
+Raw RPC param:
 ```
 method: workspace/executeCommand
 command: switchDataBaseConnection
@@ -243,6 +243,17 @@ You can use lint rules that are provided [sqlint](https://github.com/joe-re/sql-
 Please refer this to know how to use and how to configure to make them be matched your case.
 
 ![sqlint-on-editor](https://user-images.githubusercontent.com/4954534/83353304-3c3f1880-a384-11ea-8266-4d7048461b56.png)
+
+Also you can use it to fix your problem if it's possible.
+
+![2020-06-18_08-24-03](https://user-images.githubusercontent.com/4954534/84964358-84a95500-b13e-11ea-9c4f-0b787306bbdf.gif)
+
+Raw RPC param:
+```
+method: workspace/executeCommand
+command: fixAllFixableProblems
+arguments: string(document uri)
+```
 
 ### TODO
 

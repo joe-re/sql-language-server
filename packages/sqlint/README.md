@@ -23,7 +23,7 @@ $ yarn add sqlint -D
 
 You can use [sql-language-server](https://github.com/joe-re/sql-language-server) to use SQLint on your editor.
 
-![sqlint-on-editor](https://user-images.githubusercontent.com/4954534/83353304-3c3f1880-a384-11ea-8266-4d7048461b56.png)
+![sqlint-on-editor](https://user-images.githubusercontent.com/4954534/84964358-84a95500-b13e-11ea-9c4f-0b787306bbdf.gif)
 
 ## CLI
 
@@ -34,6 +34,8 @@ $ sqlint .
 
 ```
 Options:
+
+Options:
   --version     Show version number                                    [boolean]
   -h            Show help                                              [boolean]
   --config, -c  Configuration file path                                 [string]
@@ -41,11 +43,21 @@ Options:
   --format, -f  Select a output format
                       [string] [choices: "stylish", "json"] [default: "stylish"]
   --stdin       Lint code provide on <STDIN>          [boolean] [default: false]
+  --fix         Automatically fix problems            [boolean] [default: false]
 ```
 
 Use stdin example:
 ```
 $ cat ./test/cli/fixtures/lint/errorSql.sql | sqlint --stdin
+```
+
+## Fixing problems
+
+`--fix` option will work to try to fix as many problems as possible.
+
+example:
+```
+$ sqlint --fix .
 ```
 
 ## Configuration
