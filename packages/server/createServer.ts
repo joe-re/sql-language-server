@@ -6,6 +6,7 @@ import {
   CompletionItem
 } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument' 
+import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
 import cache from './cache'
 import complete from './complete'
 import createDiagnostics from './createDiagnostics'
@@ -15,6 +16,7 @@ import SettingStore from './SettingStore'
 import { Schema } from './database_libs/AbstractClient'
 import getDatabaseClient from './database_libs/getDatabaseClient'
 import initializeLogging from './initializeLogging'
+import { lint, LintResult } from 'sqlint'
 import log4js from 'log4js'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
@@ -29,6 +31,12 @@ export default function createServer() {
   let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = []
+
+  documents.onDidChangeContent((params) => {
+    logger.debug(`onDidChangeContent: ${params.document.uri}, ${params.document.version}`)
+    const diagnostics = createDiagnostics(params.document.uri, params.document.getText())
+    connection.sendDiagnostics(diagnostics)
+  })
 
   connection.onInitialize((params): InitializeResult => {
     logger.debug(`onInitialize: ${params.rootPath}`)
@@ -60,33 +68,68 @@ export default function createServer() {
           resolveProvider: true,
           triggerCharacters: ['.'],
         },
+        codeActionProvider: true,
         executeCommandProvider: {
-          commands: ['sqlLanguageServer.switchDatabaseConnection']
+          commands: [
+            'sqlLanguageServer.switchDatabaseConnection',
+            'sqlLanguageServer.fixAllFixableProblems'
+          ]
         }
       }
     }
   })
 
-  connection.onDidChangeTextDocument((params) => {
-    logger.debug(`didChangeTextDocument: ${params.textDocument.uri}`)
-    cache.set(params.textDocument.uri, params.contentChanges[0].text)
-    const diagnostics = createDiagnostics(params.textDocument.uri, params.contentChanges[0].text)
-    connection.sendDiagnostics(diagnostics)
-  })
-  
   connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[] => {
-  	let text = cache.get(docParams.textDocument.uri)
-  	if (!text) {
-  		cache.setFromUri(docParams.textDocument.uri)
-  		text = cache.get(docParams.textDocument.uri)
-  	}
+    let text = documents.get(docParams.textDocument.uri)?.getText()
+    if (!text) {
+      return []
+    }
   	logger.debug(text || '')
-  	const candidates = complete(text || '', {
+  	const candidates = complete(text, {
   		line: docParams.position.line,
   		column: docParams.position.character
   	}, schema).candidates
   	logger.debug(candidates.map(v => v.label).join(","))
   	return candidates
+  })
+
+  connection.onCodeAction(params => {
+    const lintResult = cache.findLintCacheByRange(params.textDocument.uri, params.range)
+    if (!lintResult) {
+      return []
+    }
+    const document = documents.get(params.textDocument.uri)
+    if (!document) {
+      return []
+    }
+    const text = document.getText()
+    if (!text) {
+      return []
+    }
+
+    function toPosition(text: string, offset: number) {
+      const lines = text.slice(0, offset).split('\n')
+      return Position.create(lines.length - 1, lines[lines.length - 1].length)
+    }
+    const fixes = Array.isArray(lintResult.lint.fix) ? lintResult.lint.fix : [lintResult.lint.fix]
+    if (fixes.length === 0) {
+      return []
+    }
+    const action = CodeAction.create(`fix: ${lintResult.diagnostic.message}`, {
+      documentChanges:[
+        TextDocumentEdit.create({ uri: params.textDocument.uri, version: document.version }, fixes.map(v => {
+          const edit = v.range.startOffset === v.range.endOffset
+            ? TextEdit.insert(toPosition(text, v.range.startOffset), v.text)
+            : TextEdit.replace({
+                start: toPosition(text, v.range.startOffset),
+                end: toPosition(text, v.range.endOffset)
+              }, v.text)
+          return edit
+        }))
+      ]
+    }, CodeActionKind.QuickFix)
+    action.diagnostics = params.context.diagnostics
+    return [action]
   })
   
   connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
@@ -105,6 +148,36 @@ export default function createServer() {
           message: e.message
         })
       }
+    } else if (request.command === 'fixAllFixableProblems') {
+      const uri = request.arguments ? request.arguments[0] : null
+      if (!uri) {
+        connection.sendNotification('sqlLanguageServer.error', {
+          message: 'fixAllFixableProblems: Need to specify uri'
+        })
+        return
+      }
+      const document = documents.get(uri)
+      const text = document?.getText()
+      if (!text) {
+        logger.debug('Failed to get text')
+        return
+      }
+      const result: LintResult[] = JSON.parse(lint({ formatType: 'json', text, fix: true }))
+      if (result.length === 0 && result[0].fixedText) {
+        logger.debug("There's no fixable problems")
+        return
+      }
+      logger.debug('Fix all fixable problems', text, result[0].fixedText)
+      connection.workspace.applyEdit({
+        documentChanges: [
+          TextDocumentEdit.create({ uri, version: document!.version }, [
+            TextEdit.replace({
+              start: Position.create(0, 0),
+              end: Position.create(Number.MAX_VALUE, Number.MAX_VALUE)
+            }, result[0].fixedText!)
+          ])
+        ]
+      })
     }
   })
 

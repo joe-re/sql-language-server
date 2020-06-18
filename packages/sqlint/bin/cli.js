@@ -17,7 +17,7 @@ function readStdin() {
   })
 }
 
-const cli = yargs
+yargs
   .usage('SQLint: Lint tool for SQL')
   .command('* [options] [file]', 'lint sql files', {
     config: {
@@ -41,9 +41,14 @@ const cli = yargs
       type: 'boolean',
       describe: 'Lint code provide on <STDIN>',
       default: false
+    },
+    'fix': {
+      type: 'boolean',
+      describe: 'Automatically fix problems',
+      default: false
     }
   }, async () => {
-    if (yargs.argv._.length === 0) {
+    if (yargs.argv._.length === 0 && !yargs.argv.stdin) {
       yargs.showHelp()
       process.exit(1)
     }
@@ -52,7 +57,8 @@ const cli = yargs
       formatType: yargs.argv.format,
       configPath: yargs.argv.config,
       outputFile: yargs.argv.output,
-      text: yargs.argv.stdin ? await readStdin() : null
+      text: yargs.argv.stdin ? await readStdin() : null,
+      fix: yargs.argv.fix
     })
     if (!yargs.argv.output) {
       console.log(result)

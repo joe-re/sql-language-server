@@ -2,10 +2,12 @@ import chalk from 'chalk'
 import { getFileList, readFile, writeFile } from './utils'
 import { execute, Diagnostic, ErrorLevel } from '../rules'
 import { loadConfig } from './loadConfig';
+import { applyFixes, FixDescription } from '../fixer';
 
 export type LintResult = {
   filepath: string,
-  diagnostics: Diagnostic[]
+  diagnostics: Diagnostic[],
+  fixedText?: string
 }
 
 function pluralize(word: string, count: number) {
@@ -46,11 +48,12 @@ function formatStylish(result: LintResult[]): string {
 
 export function lint (
   params: {
-    path?: string,
-    formatType: FormatType,
-    configPath?: string,
-    outputFile?: string,
+    path?: string
+    formatType: FormatType
+    configPath?: string
+    outputFile?: string
     text?: string
+    fix?: boolean
   }
 ) {
   const { path, formatType, configPath, outputFile, text } = params
@@ -59,13 +62,45 @@ export function lint (
     throw new Error(`No files matching '${path}' were found.`)
   }
   const config = loadConfig(configPath || process.cwd())
-  const result: LintResult[] = text
+
+  let result: LintResult[] = text
     ? [{ filepath: 'text', diagnostics: execute(text, config) }]
     : files.map(v => {
       const diaglostics = execute(readFile(v), config)
       return { filepath: v, diagnostics: diaglostics }
     }).flat()
+
   let output = ''
+
+  if (params.fix) {
+    const fixedResult = result.map(v => {
+      const MAX_AUTOFIX_LOOP = 3
+      function getFixDescriptions(diagnostics: Diagnostic[]): FixDescription[] {
+        return diagnostics.map(v => v.fix).flat()
+      }
+      function fix(text: string, descriptions: FixDescription[], loop = MAX_AUTOFIX_LOOP): string {
+        if (loop === 0) {
+          return text
+        }
+        const fixed = applyFixes(text, descriptions)
+        const nextDiagnostics = execute(fixed, config)
+        const newDescriptions = getFixDescriptions(nextDiagnostics)
+        if (newDescriptions.length === 0) {
+          return fixed
+        }
+        return fix(fixed, newDescriptions, --loop)
+      }
+      const fixedText = fix(params.text || readFile(v.filepath), getFixDescriptions(v.diagnostics))
+      const diagnostics = execute(fixedText, config)
+      return { filepath: v.filepath, diagnostics, fixedText }
+    })
+    if (!text) {
+      fixedResult.forEach(v => {
+        writeFile(v.filepath, v.fixedText)
+      })
+    }
+    result = fixedResult
+  }
   switch(formatType) {
     case 'stylish': output = formatStylish(result); break
     case 'json': output = JSON.stringify(result); break
@@ -74,5 +109,6 @@ export function lint (
   if (outputFile) {
     writeFile(outputFile, output)
   }
+
   return output
 }

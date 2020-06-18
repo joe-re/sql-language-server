@@ -38,8 +38,16 @@ export const spaceSurroundingOperators: Rule<BinaryExpressionNode, RuleConfig<Op
         return {
           message: META.messages.always,
           location: { start, end },
-          rulename: META.name,
-          errorLevel: context.config.level
+          fix: (fixer) => {
+            const text = context.getSQL(context.node.left.location) +
+              ` ${context.node.operator} ` +
+              context.getSQL(context.node.right.location)
+            return fixer.replaceText(
+              context.node.location.start.offset,
+              context.node.location.end.offset,
+              text
+            )
+          }
         }
       }
     } else if (option === 'never') {
@@ -60,8 +68,16 @@ export const spaceSurroundingOperators: Rule<BinaryExpressionNode, RuleConfig<Op
         return {
           message: META.messages.never,
           location: { start, end },
-          rulename: META.name,
-          errorLevel: context.config.level
+          fix: (fixer) => {
+            const text = context.getSQL(context.node.left.location) +
+              context.node.operator +
+              context.getSQL(context.node.right.location)
+            return fixer.replaceText(
+              context.node.location.start.offset,
+              context.node.location.end.offset,
+              text
+            )
+          }
         }
       }
     }

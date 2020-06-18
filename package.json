@@ -27,14 +27,19 @@
     "vscode": "^1.45.1"
   },
   "activationEvents": [
-    "onLanguage:sql",
-    "extension.switchDatabaseConnection"
+    "onLanguage:sql"
   ],
   "contributes": {
     "commands": [
       {
         "command": "extension.switchDatabaseConnection",
-        "title": "SQLLanguageServer: Switch database connection"
+        "title": "Switch database connection",
+        "category": "SQLLanguageServer"
+      },
+      {
+        "command": "extension.fixAllFixableProblems",
+        "title": "Fix all auto-fixable problems",
+        "category": "SQLLanguageServer"
       }
     ]
   },
