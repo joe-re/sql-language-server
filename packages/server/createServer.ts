@@ -95,6 +95,9 @@ export default function createServer() {
 
   connection.onCodeAction(params => {
     const lintResult = cache.findLintCacheByRange(params.textDocument.uri, params.range)
+    if (!lintResult) {
+      return []
+    }
     const document = documents.get(params.textDocument.uri)
     if (!document) {
       return []
@@ -108,27 +111,25 @@ export default function createServer() {
       const lines = text.slice(0, offset).split('\n')
       return Position.create(lines.length - 1, lines[lines.length - 1].length)
     }
-    return lintResult.map(v => {
-      const fixes = Array.isArray(v.lint.fix) ? v.lint.fix : [v.lint.fix]
-      if (fixes.length === 0) {
-        return []
-      }
-      const action = CodeAction.create(`fix: ${v.diagnostic.message}`, {
-        documentChanges:[
-          TextDocumentEdit.create({ uri: params.textDocument.uri, version: document.version }, fixes.map(v => {
-            const edit = v.range.startOffset === v.range.endOffset
-              ? TextEdit.insert(toPosition(text, v.range.startOffset), v.text)
-              : TextEdit.replace({
-                  start: toPosition(text, v.range.startOffset),
-                  end: toPosition(text, v.range.endOffset)
-                }, v.text)
-            return edit
-          }))
-        ]
-      }, CodeActionKind.QuickFix)
-      action.diagnostics = params.context.diagnostics
-      return [action]
-    }).flat()
+    const fixes = Array.isArray(lintResult.lint.fix) ? lintResult.lint.fix : [lintResult.lint.fix]
+    if (fixes.length === 0) {
+      return []
+    }
+    const action = CodeAction.create(`fix: ${lintResult.diagnostic.message}`, {
+      documentChanges:[
+        TextDocumentEdit.create({ uri: params.textDocument.uri, version: document.version }, fixes.map(v => {
+          const edit = v.range.startOffset === v.range.endOffset
+            ? TextEdit.insert(toPosition(text, v.range.startOffset), v.text)
+            : TextEdit.replace({
+                start: toPosition(text, v.range.startOffset),
+                end: toPosition(text, v.range.endOffset)
+              }, v.text)
+          return edit
+        }))
+      ]
+    }, CodeActionKind.QuickFix)
+    action.diagnostics = params.context.diagnostics
+    return [action]
   })
   
   connection.onCompletionResolve((item: CompletionItem): CompletionItem => {

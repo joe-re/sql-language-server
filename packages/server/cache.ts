@@ -17,9 +17,11 @@ class Cache {
     return this._lintResult.get(uri) || []
   }
 
-  findLintCacheByRange(uri: string, range: Range): LintCache[] {
+  findLintCacheByRange(uri: string, range: Range): LintCache | null {
     const lintCacheList = this.getLintCache(uri)
-    return lintCacheList.filter(v => {
+    let minDistance = Number.MAX_VALUE
+    let result: LintCache | null = null
+    lintCacheList.filter(v => {
       if (v.diagnostic.range.start.line > range.start.line || v.diagnostic.range.end.line < range.end.line) {
         return false
       }
@@ -28,7 +30,14 @@ class Cache {
       }
       return v.diagnostic.range.start.character <= range.start.character &&
          v.diagnostic.range.end.character >= range.end.character
+    }).forEach(v => {
+      const distance = Math.abs(v.diagnostic.range.start.character - range.start.character)
+      if (distance < minDistance) {
+        minDistance = distance
+        result = v
+      }
     })
+    return result
   }
 }
 
