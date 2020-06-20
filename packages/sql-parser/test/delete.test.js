@@ -1,6 +1,6 @@
 const { parse } = require('../index')
 
-describe('Badic DELETE syayement', () => {
+describe('Basic DELETE statement', () => {
  it('should success to parse', () => {
     const sql = `
       DELETE FROM T1

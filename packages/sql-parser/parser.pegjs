@@ -1056,12 +1056,20 @@ LBRAKE    = '['
 RBRAKE    = ']'
 
 __ =
-  whitespace*
+  (whitespace / Comment)*
 
 char = .
 
 whitespace =
   [ \t\n\r]
+
+Comment =
+  SingleLineComment / MultiLineComment
+
+SingleLineComment =
+  "--" (!line_terminator char)*
+MultiLineComment =
+  "/*" (!"*/" char)* "*/"
 
 EOL 
   = EOF
