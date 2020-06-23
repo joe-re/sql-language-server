@@ -103,7 +103,7 @@
 }
 
 start 
-  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) {
+  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) __ {
       return {
         ast   : ast,
         param : params
