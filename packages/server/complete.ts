@@ -205,13 +205,13 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
     if (ast.type === 'delete') {
       candidates = completeDeleteStatement(ast, pos, schema)
     } else {
-      if (!ast.distinct) {
+      if (ast.type === 'select' && !ast.distinct) {
         candidates.push({ label: 'DISTINCT', kind: CompletionItemKind.Text })
       }
       const columns = ast.columns
       if (Array.isArray(columns)) {
-        const selectColumnRefs = columns.map((v: any) => v.expr).filter((v: any) => !!v)
-        const whereColumnRefs = ast.where || []
+        const selectColumnRefs = (columns as any).map((v: any) => v.expr).filter((v: any) => !!v)
+        const whereColumnRefs = ast.type === 'select' &&  ast.where || []
         const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
         logger.debug(JSON.stringify(columnRef))
         if (columnRef) {
@@ -219,7 +219,7 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
         }
       }
 
-      if (Array.isArray(ast.from?.tables)) {
+      if (ast.type === 'select' && Array.isArray(ast.from?.tables)) {
         const fromTable = getFromNodeByPos(ast.from?.tables || [], pos)
         if (fromTable && fromTable.type === 'table') {
           candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
