@@ -103,7 +103,7 @@
 }
 
 start 
-  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) {
+  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) __ {
       return {
         ast   : ast,
         param : params
@@ -526,24 +526,26 @@ replace_insert
   / KW_REPLACE  { return 'replace' }
 
 value_clause
-  = KW_VALUES __ l:value_list  { return l; }
+  = KW_VALUES __ l:values  {
+    return {
+      type: 'values',
+      values: l
+    };
+  }
 
 on_duplicate_key_update
   = KW_ON __ KW_DUPLICATE __ KW_KEY __ KW_UPDATE __ l:set_list {
     return l;
   }
 
-value_list
-  = head:value_item tail:(__ COMMA __ value_item)* {
-      return createList(head, tail);
-    } 
+values
+  = LPAREN __
+    head:(expr / select_stmt) tail:(__ COMMA __ (expr / select_stmt))* __
+    RPAREN {
+    var l = createExprList(head, tail);
+    return l;
+  }
 
-value_item
-  = LPAREN __ l:expr_list  __ RPAREN {
-      return l;
-    }
-
-//for template auto fill
 expr_list
   = head:expr tail:(__ COMMA __ expr)*{
       var el = {

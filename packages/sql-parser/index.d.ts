@@ -20,6 +20,36 @@ export type KeywordNode = {
   location: NodeRange
 }
 
+export type LiteralStringNode = {
+  type: 'string'
+  value: string
+  location: NodeRange
+}
+
+export type LiteralBoolNode = {
+  type: 'bool'
+  value: boolean
+  location: NodeRange
+}
+
+export type LiteralNumberNode = {
+  type: 'number'
+  value: number
+  location: NodeRange
+}
+
+export type LiteralNullNode = {
+  type: 'null'
+  value: null
+  location: NodeRange
+}
+
+export type LiteralNode =
+  LiteralStringNode |
+  LiteralBoolNode |
+  LiteralNumberNode |
+  LiteralNullNode
+
 export type ComparisonOperator =
   '+' | '-' | '*' | '/' | '>' | '>=' | '<' | '<=' | '!=' | '<>' | '='
 
@@ -34,7 +64,7 @@ export type BinaryExpressionNode = {
   location: NodeRange 
 }
 
-export type AST = SelectStatement | DeleteStatement
+export type AST = SelectStatement | DeleteStatement | InsertStatement
 
 export type SelectStatement = {
   type: 'select'
@@ -69,6 +99,18 @@ export type DeleteStatement = {
   table: TableNode
   where: WhereClause | null
   location: NodeRange
+}
+
+export type InsertStatement = {
+  type: 'insert'
+  table: string
+  columns: string[]
+  values: ValuesClause
+}
+
+export type ValuesClause = {
+  type: 'values',
+  values: (SelectStatement | LiteralNode)[]
 }
 
 export type ColumnListItemNode = {
