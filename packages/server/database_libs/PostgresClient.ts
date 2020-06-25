@@ -23,6 +23,7 @@ export default class PosgresClient extends AbstractClient {
     })
     client.connect()
     this.connection = client
+    return true
   }
 
   disconnect() {

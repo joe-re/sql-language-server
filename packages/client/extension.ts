@@ -7,6 +7,7 @@ import {
   TransportKind,
 } from 'vscode-languageclient'
 import { ExecuteCommandParams } from 'vscode-languageserver-protocol'
+import { rebuild } from './rebuild'
 
 export function activate(context: ExtensionContext) {
   let serverModule = context.asAbsolutePath(path.join('packages', 'server', 'dist', 'cli.js'))
@@ -67,8 +68,27 @@ export function activate(context: ExtensionContext) {
     client.sendRequest('workspace/executeCommand', params)
   })
 
+  let isRebuilding = false
+  const rebuildSqlite3 = commands.registerCommand('extension.rebuildSqlite3', async () => {
+    if (isRebuilding) {
+      Window.showInformationMessage('Already started rebuild Sqlite3 process')
+      return
+    }
+    isRebuilding = true
+    try {
+      Window.showInformationMessage('Start to rebuild Sqlite3.')
+      await rebuild()
+      Window.showInformationMessage('Done to rebuild Sqlite3.')
+    } catch (e) {
+      Window.showErrorMessage(e)
+    } finally {
+      isRebuilding = false
+    }
+  })
+
   context.subscriptions.push(switchConnection)
   context.subscriptions.push(fixAllFixableProblem)
+  context.subscriptions.push(rebuildSqlite3)
   context.subscriptions.push(disposable)
   client.onReady().then(() => {
     client.onNotification('sqlLanguageServer.finishSetup', (params) => {

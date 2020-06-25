@@ -41,18 +41,28 @@ export default function createServer() {
   connection.onInitialize((params): InitializeResult => {
     logger.debug(`onInitialize: ${params.rootPath}`)
   	SettingStore.getInstance().on('change', async () => {
+      logger.debug('onInitialize: receive change event from SettingStore')
   		try {
-    		const client = getDatabaseClient(SettingStore.getInstance().getSetting())
-  			schema = await client.getSchema()
-  			logger.debug('get schema')
-        logger.debug(JSON.stringify(schema))
-        connection.sendNotification('sqlLanguageServer.finishSetup', {
-          personalConfig: SettingStore.getInstance().getPersonalConfig(),
-          config: SettingStore.getInstance().getSetting()
-        })
-  		} catch (e) {
-  			logger.error(e)
-  		}
+        setTimeout(() => {
+          connection.sendNotification('sqlLanguageServer.finishSetup', {
+            personalConfig: SettingStore.getInstance().getPersonalConfig(),
+            config: SettingStore.getInstance().getSetting()
+          })
+        }, 1000) // TODO: Need to think about better way to sendNotification
+        try {
+          const client = getDatabaseClient(
+            SettingStore.getInstance().getSetting()
+          )
+          schema = await client.getSchema()
+          logger.debug("get schema")
+          logger.debug(JSON.stringify(schema))
+        } catch (e) {
+          logger.error("failed to get schema info")
+          throw e
+        }
+      } catch (e) {
+        logger.error(e)
+      }
   	})
   	if (params.rootPath) {
       SettingStore.getInstance().setSettingFromFile(

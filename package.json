@@ -40,6 +40,11 @@
         "command": "extension.fixAllFixableProblems",
         "title": "Fix all auto-fixable problems",
         "category": "SQLLanguageServer"
+      },
+      {
+        "command": "extension.rebuildSqlite3",
+        "title": "Rebuild SQLite3 Client",
+        "category": "SQLLanguageServer"
       }
     ]
   },

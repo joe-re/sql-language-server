@@ -21,6 +21,7 @@ export default class MysqlClient extends AbstractClient {
       port: this.settings.port || this.DefaultPort,
       database: this.settings.database || ''
     })
+    return true
   }
 
   disconnect() {
