@@ -106,6 +106,7 @@ export type InsertStatement = {
   table: string
   columns: string[]
   values: ValuesClause
+  location: NodeRange
 }
 
 export type ValuesClause = {
