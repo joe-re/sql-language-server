@@ -15,13 +15,14 @@ export type SSHConfig = {
 }
 export type Settings = {
   name: string | null,
-  adapter: 'mysql' | 'postgresql' | null,
-  host: string | null,
-  port: number | null,
-  user: string | null,
-  database: string | null,
-  password: string | null,
-  projectPaths: string[],
+  adapter: 'mysql' | 'postgresql' | 'sqlite3' | null,
+  host: string | null
+  port: number | null
+  user: string | null
+  database: string | null
+  password: string | null
+  filename: string | null // for sqlite3
+  projectPaths: string[]
   ssh: SSHConfig | null
 }
 
@@ -55,6 +56,7 @@ export default class SettingStore extends EventEmitter {
     database: null,
     password: null,
     ssh: null,
+    filename: null,
     projectPaths: []
   }
   private static instance: SettingStore;

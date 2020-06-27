@@ -6,3 +6,4 @@ packages/server/dist/*
 **/*/package-lock.json
 **/*/yarn.lock
 yarn.lock
+*.sqlite3

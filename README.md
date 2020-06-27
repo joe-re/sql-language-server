@@ -92,7 +92,13 @@ There are two ways to use configuration files.
       "user": "postgres",
       "password": "pg_pass",
       "database": "pg_test",
-      "projectPaths": ["/Users/joe-re/src/postgres_ptoject"]
+      "projectPaths": ["/Users/joe-re/src/postgres_project"]
+    },
+    {
+      "name": "sqlite3-project",
+      "adapter": "sqlite3",
+      "filename": "/Users/noguchimasato/src/sql-language-server/packages/server/test.sqlite3",
+      "projectPaths": ["/Users/joe-re/src/sqlite2_project"]
     }
   ]
 }
@@ -105,12 +111,13 @@ Please restart sql-language-server process after create .sqlrc.json.
 | Key          | Description                                                                                                               | value                   | required | default                           |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------- | ----------------------- | -------- | --------------------------------- |
 | name         | Connection name(free-form text)                                                                                           |                         | true     |                                   |
-| adapter      | Database type                                                                                                             | "mysql" #124; "postgres"  | true     |                                   |
-| host         | Database host                                                                                                             | string                  | true     |                                   |
+| adapter      | Database type                                                                                                             | "mysql" #124; "postgres" #124; "sqlite3"  | true     |                                   |
+| host         | Database host                                                                                                             | string                  | false    |                                   |
 | port         | Database port                                                                                                             | string                  | false    | mysql:3306, postgres:5432         |
-| user         | Database user                                                                                                             | string                  | true     | mysql:"root", postgres:"postgres" |
+| user         | Database user                                                                                                             | string                  | false    | mysql:"root", postgres:"postgres" |
 | password     | Database password                                                                                                         | string                  | false    |                                   |
 | database     | Database name                                                                                                             | string                  | false    |                                   |
+| filename     | Database filename(only for sqlite3)                                                                                       | string                  | false    |                                   |
 | projectPaths | Project path that you want to apply(if you don't set it configuration will not apply automatically when lsp's started up) | string[]                | false    | []                                |
 | ssh          | Settings for port fowarding                                                                                               | \*see below SSH section | false    |                                   |
 
@@ -236,6 +243,17 @@ method: workspace/executeCommand
 command: switchDataBaseConnection
 arguments: string(project name)
 ```
+
+
+#### SQLite3 Notes
+
+If you get error when you use sqlite3 connection, you may need to rebuild sqlite3 on your environment.
+
+VSC extension provides the command to rebuild it.(Name: `Rebuild SQLite3 Client`)
+![image](https://user-images.githubusercontent.com/4954534/85928359-ef952180-b8de-11ea-8cb3-7a9a509cd6d7.png)
+
+If you're using sql-language-server directly, after go to the directry of it and call `npm rebuild sqlite` to rebuild it.
+
 
 #### Lint
 

@@ -12,3 +12,4 @@
 **/*/yarn-error.log
 README.md
 **/*/.npmignore
+!./node_modules/sqlite3
