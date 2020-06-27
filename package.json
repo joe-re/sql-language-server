@@ -21,7 +21,7 @@
     "watch": "run-p watch:client watch:server",
     "watch:client": "cd ./packages/client && yarn run watch",
     "watch:server": "cd ./packages/server && yarn run watch",
-    "vscode:prepublish": "yarn run compile"
+    "vscode:prepublish": "yarn run compile && rm -rf node_modules/lib/binding"
   },
   "engines": {
     "vscode": "^1.45.1"
