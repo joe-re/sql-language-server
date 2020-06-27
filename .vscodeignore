@@ -4,7 +4,6 @@
 **/*.map
 **/tsconfig.json
 **/tslint.json
-**/*/node_modules
 .cache
 .vscode
 **/*/rollup.config.js
@@ -12,4 +11,4 @@
 **/*/yarn-error.log
 README.md
 **/*/.npmignore
-!./node_modules/sqlite3
+**/*/node_modules
