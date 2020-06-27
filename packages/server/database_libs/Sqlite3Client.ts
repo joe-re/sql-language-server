@@ -5,6 +5,13 @@ import log4js from 'log4js'
 
 const logger = log4js.getLogger()
 
+export class RequireSqlite3Error extends Error {
+  constructor(message: any) {
+    super(message)
+    this.name = "RequireSQLite3Error"
+  }
+}
+
 export default class Sqlite3Client extends AbstractClient {
   connection: Database | null = null
 
@@ -21,7 +28,7 @@ export default class Sqlite3Client extends AbstractClient {
       throw new Error('Need to specify filename to use sqlite3 connection.')
     }
     try {
-      // use commonjs to avoid dynamic import
+      // use commonjs to avoid dynamic import build error
       const sqlite3: SQLite3 = require('sqlite3')
 
       this.connection = new sqlite3.Database(
@@ -30,7 +37,7 @@ export default class Sqlite3Client extends AbstractClient {
       )
     } catch (e) {
       logger.error('Sqlite3Client: failed to connect to database', e)
-      return false
+      throw new RequireSqlite3Error(e)
     }
     return true
   }

@@ -18,6 +18,7 @@ import getDatabaseClient from './database_libs/getDatabaseClient'
 import initializeLogging from './initializeLogging'
 import { lint, LintResult } from 'sqlint'
 import log4js from 'log4js'
+import { RequireSqlite3Error } from './database_libs/Sqlite3Client'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
 type Args = {
@@ -58,6 +59,11 @@ export default function createServer() {
           logger.debug(JSON.stringify(schema))
         } catch (e) {
           logger.error("failed to get schema info")
+          if (e instanceof RequireSqlite3Error) {
+            connection.sendNotification('sqlLanguageServer.error', {
+              message: "Need to rebuild sqlite3 module."
+            })
+          }
           throw e
         }
       } catch (e) {
