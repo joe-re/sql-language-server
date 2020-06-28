@@ -56,7 +56,7 @@ $ sql-language-server up --method stdio
 
 There are two ways to use configuration files.
 
-- Set personal configuration file(~/.config/sql-language-server/sqllsrc.json)
+- Set personal configuration file(~/.config/sql-language-server/.sqllsrc.json)
 - Set project configuration file on your project root(\${YOUR_PROJECT/.sqllsrc.json})
 
 #### Example for personal configuration file
@@ -104,7 +104,7 @@ There are two ways to use configuration files.
 }
 ```
 
-Please restart sql-language-server process after create .sqlrc.json.
+Please restart sql-language-server process after create .sqllsrc.json.
 
 #### Parameters
 
