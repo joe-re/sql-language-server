@@ -1,13 +1,14 @@
 {
   "name": "sql-language-server",
   "version": "0.10.0",
-  "main": "index.js",
+  "main": "dist/index.js",
   "bin": {
     "sql-language-server": "./dist/cli.js"
   },
   "license": "MIT",
   "scripts": {
     "compile": "rollup -c",
+    "compile:index": "rollup -c rollup.index.config.js",
     "watch": "rollup -c -w",
     "test": "jest",
     "prepublish": "yarn run compile"
