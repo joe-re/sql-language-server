@@ -101,7 +101,7 @@ export function loadConfig(directoryOrFile: string): Config {
       break
     case '.yaml':
     case '.yml':
-      config = yaml.safeLoad(fileContent)
+      config = yaml.safeLoad(fileContent) as any
       break
     default:
       config = JSON.parse(fileContent)
