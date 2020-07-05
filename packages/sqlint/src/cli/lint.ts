@@ -59,7 +59,7 @@ export function lint (
   const { path, formatType, configPath, outputFile, text } = params
   const files = path ? getFileList(path) : []
   if (files.length === 0 && !text) {
-    throw new Error(`No files matching '${path}' were found.`)
+    throw new Error(`No files matching. path: ${path}`)
   }
   const config = loadConfig(configPath || process.cwd())
 
