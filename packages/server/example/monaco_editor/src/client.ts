@@ -20,12 +20,10 @@ const editor = monaco.editor.create(document.getElementById("container")!, {
   model: monaco.editor.createModel(
     value,
     "sql",
-    monaco.Uri.parse("inmemory://model.sql")
+    monaco.Uri.parse("inmemory://model.sql"),
   ),
   glyphMargin: true,
-  lightbulb: {
-    enabled: true,
-  },
+  tabCompletion: 'on'
 });
 
 MonacoServices.install(editor);
