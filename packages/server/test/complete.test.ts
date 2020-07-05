@@ -7,12 +7,21 @@ describe('keyword completion', () => {
     expect(result.candidates[0].label).toEqual('SELECT')
   })
   
-  test("complete 'FROM' keyword", () => {
-    const result = complete('SELECT * F', { line: 0, column: 10 })
-    expect(result.candidates.length).toEqual(1)
-    expect(result.candidates[0].label).toEqual('FROM')
+  describe('FROM keyword', () => {
+    test("complete FROM word with the star column", () => {
+      const result = complete('SELECT * F', { line: 0, column: 10 })
+      expect(result.candidates.length).toEqual(1)
+      expect(result.candidates[0].label).toEqual('FROM')
+    })
+
+    test("complete FROM word with norm columns", () => {
+      const sql = 'SELECT d, f F'
+      const result = complete('SELECT d, f F', { line: 0, column: sql.length })
+      expect(result.candidates.length).toEqual(1)
+      expect(result.candidates[0].label).toEqual('FROM')
+    })
   })
-  
+
   test("complete 'WHERE' keyword", () => {
     const result = complete('SELECT * FROM FOO W', { line: 0, column: 19 })
     expect(result.candidates.length).toEqual(1)
