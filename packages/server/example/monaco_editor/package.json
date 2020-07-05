@@ -8,6 +8,7 @@
     "compile": "tsc",
     "copy": "cp src/index.html lib/index.html",
     "build": "yarn compile && webpack && yarn run copy",
+    "build:server": "cd ../../ && yarn && yarn run compile:index",
     "start": "node lib/server.js"
   },
   "dependencies": {

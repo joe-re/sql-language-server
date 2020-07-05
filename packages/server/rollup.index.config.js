@@ -7,12 +7,12 @@ import resolve from '@rollup/plugin-node-resolve';
 export default {
   input: 'index.ts',
   output: {
-    dir: 'dist',
+    dir: 'dist_index',
     format: 'cjs',
     sourcemap: true
   },
   plugins: [
-    typescript(),
+    typescript({ tsconfig: 'tsconfig.index.json' }),
     json(),
     resolve({
       preferBuiltins: false
