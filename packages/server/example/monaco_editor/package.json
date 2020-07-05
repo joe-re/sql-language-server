@@ -9,7 +9,7 @@
     "copy": "cp src/index.html lib/index.html",
     "build": "yarn build:server && yarn build:client",
     "build:client": "yarn compile && webpack && yarn run copy",
-    "build:server": "cd ../../ && yarn && yarn run compile:index",
+    "build:server": "cd ../../ && yarn",
     "start": "node lib/server.js"
   },
   "dependencies": {

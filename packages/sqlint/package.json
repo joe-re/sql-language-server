@@ -8,7 +8,7 @@
   "author": "joe-re<joe.tialtngo@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "rollup -c",
+    "build": "rm -rf dist && rollup -c",
     "watch": "rollup -c -w",
     "test": "jest",
     "prepublish": "yarn run build"

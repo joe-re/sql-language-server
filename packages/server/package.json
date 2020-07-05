@@ -7,12 +7,13 @@
   },
   "license": "MIT",
   "scripts": {
-    "compile": "rm -rf dist && rollup -c",
+    "compile:cli": "rm -rf dist && rollup -c",
     "compile:index": "rm -rf dist_index && rollup -c rollup.index.config.js",
+    "compile:sqlint": "cd ../sqlint && yarn build",
     "clean": "rm -rf dist dist_index",
     "watch": "rollup -c -w",
     "test": "jest",
-    "prepublish": "yarn compile && yarn compile:index"
+    "prepublish": "yarn compile:sqlint && yarn compile:cli && yarn compile:index"
   },
   "files": [
     "package.json",
