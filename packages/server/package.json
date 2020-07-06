@@ -9,7 +9,7 @@
   "scripts": {
     "compile:cli": "rm -rf dist && rollup -c",
     "compile:index": "rm -rf dist_index && rollup -c rollup.index.config.js",
-    "compile:sqlint": "cd ../sqlint && yarn build",
+    "compile:sqlint": "cd ../sqlint && yarn && yarn build",
     "clean": "rm -rf dist dist_index",
     "watch": "rollup -c -w",
     "test": "jest",

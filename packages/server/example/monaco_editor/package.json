@@ -15,7 +15,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "monaco-editor-core": "^0.20.0",
-    "monaco-languageclient": "^0.13.0",
+    "monaco-languageclient": "^0.13.1-next.1",
     "reconnecting-websocket": "^4.4.0",
     "vscode-ws-jsonrpc": "^0.2.0",
     "ws": "^7.3.1"
