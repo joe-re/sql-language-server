@@ -9,6 +9,9 @@ import cache, { LintCache } from './cache'
 const logger = log4js.getLogger()
 
 function doLint(uri: string, sql: string): Diagnostic[] {
+  if (!sql) {
+    return []
+  }
   const result: LintResult[] = JSON.parse(lint({ configPath: process.cwd(), formatType: 'json', text: sql }))
   const lintDiagnostics = result.map(v => v.diagnostics).flat()
   const lintCache: LintCache[] = []

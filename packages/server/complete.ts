@@ -17,6 +17,8 @@ type Pos = { line: number, column: number }
 
 const logger = log4js.getLogger()
 
+const FROM_KEYWORD = { label: 'FROM', kind: CompletionItemKind.Text }
+
 const CLAUSES: CompletionItem[] = [
   { label: 'WHERE', kind: CompletionItemKind.Text },
   { label: 'ORDER BY', kind: CompletionItemKind.Text },
@@ -191,6 +193,22 @@ function completeDeleteStatement (ast: DeleteStatement, pos: Pos, schema: Schema
   return []
 }
 
+function completeSelectStatement(ast: SelectStatement, _pos: Pos, _schema: Schema): CompletionItem[] {
+  let candidates: CompletionItem[] = []
+  if (Array.isArray(ast.columns)) {
+    const first = ast.columns[0]
+    const rest = ast.columns.slice(1, ast.columns.length)
+    const lastColumn = rest.reduce((p, c) => p.location.end.offset < c.location.end.offset ? c : p ,first)
+    if (
+      FROM_KEYWORD.label.startsWith(lastColumn.expr.column) ||
+      (lastColumn.as && FROM_KEYWORD.label.startsWith(lastColumn.as))
+     ) {
+      candidates.push(FROM_KEYWORD)
+    }
+  }
+  return candidates
+}
+
 export default function complete(sql: string, pos: Pos, schema: Schema = []) {
   logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   let candidates: CompletionItem[] = []
@@ -207,6 +225,9 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
     } else {
       if (ast.type === 'select' && !ast.distinct) {
         candidates.push({ label: 'DISTINCT', kind: CompletionItemKind.Text })
+      }
+      if (ast.type === 'select') {
+        candidates = candidates.concat(completeSelectStatement(ast, pos, schema))
       }
       const columns = ast.columns
       if (Array.isArray(columns)) {
