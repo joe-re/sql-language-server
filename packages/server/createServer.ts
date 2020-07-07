@@ -25,8 +25,7 @@ type Args = {
 	method?: ConnectionMethod
 }
 
-export default function createServer() {
-  let connection: IConnection = createConnection((yargs.argv as Args).method || 'node-ipc')
+export function createServerWithConnection(connection: IConnection) {
   initializeLogging()
   const logger = log4js.getLogger()
   let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
@@ -200,4 +199,9 @@ export default function createServer() {
   connection.listen()
   logger.info('start sql-languager-server')
   return connection
+}
+
+export function createServer() {
+  let connection: IConnection = createConnection((yargs.argv as Args).method || 'node-ipc')
+  return createServerWithConnection(connection)
 }

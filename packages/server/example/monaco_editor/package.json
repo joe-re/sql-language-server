@@ -1,0 +1,34 @@
+{
+  "private": true,
+  "name": "sql-lsp-monaco-editor-example",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "compile": "tsc",
+    "copy": "cp src/index.html lib/index.html",
+    "build": "yarn build:server && yarn build:client",
+    "build:client": "yarn compile && webpack && yarn run copy",
+    "build:server": "cd ../../ && yarn",
+    "start": "node lib/server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "monaco-editor-core": "^0.20.0",
+    "monaco-languageclient": "^0.13.1-next.1",
+    "reconnecting-websocket": "^4.4.0",
+    "vscode-ws-jsonrpc": "^0.2.0",
+    "ws": "^7.3.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.6",
+    "@types/ws": "^7.2.6",
+    "css-loader": "^3.6.0",
+    "file-loader": "^6.0.0",
+    "source-map-loader": "^1.0.1",
+    "style-loader": "^1.2.1",
+    "typescript": "^3.9.6",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12"
+  }
+}
