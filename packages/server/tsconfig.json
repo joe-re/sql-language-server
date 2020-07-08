@@ -1,19 +1,24 @@
 {
   "compilerOptions": {
+    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "strict": true,
     "target": "es2017",
     "module": "es6",
     "lib": [ "es2018", "es2019" ],
     "moduleResolution": "node",
-    "sourceMap": true,
     "esModuleInterop": true,
     "outDir": "dist",
     "declaration": true
   },
+  "include": [
+    "bin/**/*",
+    "src/**/*"
+  ],
   "exclude": [
     "node_modules",
     "example"
   ]
 }
+
+

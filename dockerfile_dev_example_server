@@ -1,0 +1,5 @@
+FROM node:12
+
+COPY ./example /opt/example
+WORKDIR /opt/example
+RUN cd monaco_editor && yarn

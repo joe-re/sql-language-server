@@ -15,13 +15,13 @@
   "license": "MIT",
   "publisher": "joe-re",
   "scripts": {
-    "postinstall": "npm i sqlite3 electron-rebuild",
     "compile": "npm run compile:client && npm run compile:server",
     "compile:client": "cd ./packages/client && yarn run compile",
     "compile:server": "cd ./packages/server && yarn run compile",
     "watch": "run-p watch:client watch:server",
     "watch:client": "cd ./packages/client && yarn run watch",
-    "watch:server": "cd ./packages/server && yarn run watch",
+    "watch:sqlint": "cd ./packages/sqlint && yarn run watch",
+    "watch:server": "wait-on ./packages/sqlint/dist/index.js && cd ./packages/server && yarn run watch:index",
     "vscode:prepublish": "yarn run compile"
   },
   "engines": {
@@ -51,10 +51,12 @@
   },
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "example/monaco_editor/*"
   ],
   "devDependencies": {
-    "npm-run-all": "^4.1.3"
+    "npm-run-all": "^4.1.3",
+    "wait-on": "^5.0.1"
   },
   "dependencies": {
     "electron-rebuild": "^1.11.0",

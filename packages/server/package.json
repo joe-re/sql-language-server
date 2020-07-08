@@ -1,19 +1,19 @@
 {
   "name": "sql-language-server",
   "version": "0.10.0",
-  "main": "dist_index/index.js",
+  "main": "dist/src/index.js",
   "bin": {
-    "sql-language-server": "./dist/cli.js"
+    "sql-language-server": "./dist/bin/cli.js"
   },
   "license": "MIT",
   "scripts": {
-    "compile:cli": "rm -rf dist && rollup -c",
-    "compile:index": "rm -rf dist_index && rollup -c rollup.index.config.js",
-    "compile:sqlint": "cd ../sqlint && yarn && yarn build",
-    "clean": "rm -rf dist dist_index",
-    "watch": "rollup -c -w",
+    "compile:cli": "rollup -c",
+    "compile:index": "tsc -p .",
+    "clean": "rm -rf dist",
+    "watch:cli": "rollup -c -w",
+    "watch:index": "tsc -w",
     "test": "jest",
-    "prepublish": "yarn compile:sqlint && yarn compile:cli && yarn compile:index"
+    "_prepare": "yarn compile:sqlint && yarn compile:cli && yarn compile:index"
   },
   "files": [
     "package.json",

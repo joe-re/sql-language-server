@@ -1,13 +1,22 @@
 {
   "compilerOptions": {
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "target": "es2017",
-    "module": "commonjs",
-    "lib": [ "dom", "es2018", "es2019" ],
-    "strict": false,
+    "module": "es6",
+    "lib": [ "es2018", "es2019" ],
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "sourceMap": true,
-    "outDir": "./out"
+    "baseUrl": ".",
+    "paths": {
+      "@sql-language-server/sqlint": ["packages/sqlint/dist"]
+    }
   },
-  "exclude": ["node_modules", "server", "test"]
+  "include": ["../sqlint"],
+  "exclude": [
+    "node_modules",
+    "example"
+  ]
 }
+
