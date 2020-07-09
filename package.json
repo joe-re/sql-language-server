@@ -21,7 +21,9 @@
     "watch": "run-p watch:client watch:server",
     "watch:client": "cd ./packages/client && yarn run watch",
     "watch:sqlint": "cd ./packages/sqlint && yarn run watch",
-    "watch:server": "wait-on ./packages/sqlint/dist/index.js && cd ./packages/server && yarn run watch:index",
+    "watch:server": "wait-on ./packages/sqlint/dist/src/index.js && cd ./packages/server && yarn run watch:index",
+    "watch:dev-server": "run-p ",
+    "dev": "run-p watch:server",
     "vscode:prepublish": "yarn run compile"
   },
   "engines": {

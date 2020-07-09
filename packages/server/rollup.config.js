@@ -13,7 +13,7 @@ export default {
     sourcemap: true
   },
   plugins: [
-    typescript(),
+    typescript({ tsconfig: 'tsconfig.cli.json' }),
     json(),
     resolve({
       preferBuiltins: false

@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: dockerfile_dev_example_server
-    command: ''
+    command: 'cd example/mocaco_editor && yarn start'
   assets:
     build:
       context: .

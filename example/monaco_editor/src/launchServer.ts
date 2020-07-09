@@ -1,9 +1,8 @@
 import * as path from "path";
 import * as rpc from "vscode-ws-jsonrpc";
-import * as server from "vscode-ws-jsonrpc/lib/server";
 import * as lsp from "vscode-languageserver";
 import { createConnection } from 'vscode-languageserver';
-import { createServerWithConnection } from 'sql-language-server'
+import { createServerWithConnection } from 'sql-language-server/src/index'
 
 export function launchServer(socket: rpc.IWebSocket) {
   const reader = new rpc.WebSocketMessageReader(socket);

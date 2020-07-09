@@ -1,23 +1,24 @@
 {
-    "compilerOptions": {
-        "strict": true,
-        "target": "es6",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "outDir": "lib",
-        "skipLibCheck": true,
-        "sourceMap": true,
-        "declarationMap": true,
-        "inlineSources": false,
-        "declaration": true,
-        "stripInternal": true,
-        "lib": [
-          "es2016",
-          "dom"
-        ],
-    },
-    "include": [
-        "src"
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2015",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "lib",
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "inlineSources": false,
+    "esModuleInterop": true,
+    "declaration": true,
+    "stripInternal": true,
+    "lib": [
+      "es2016",
+      "dom"
     ],
-    "exclude": [ "node_modules" ]
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [ "node_modules" ]
 }

@@ -48,45 +48,4 @@ const client = {
   }
 }
 
-const server = {
-  entry: {
-    server: path.resolve(src, 'server.ts'),
-  },
-  output: {
-    filename: '[name].bundle.js',
-    path: dist
-  },
-  target: 'node',
-  externals: ['aws-sdk', 'pg-native'],
-  node: {
-    fs: 'empty',
-    child_process: 'empty',
-    net: 'empty',
-    crypto: 'empty',
-    tls: 'empty',
-    readline: 'empty',
-    dns: 'empty'
-  },
-  resolve: {
-    alias: {
-      'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
-    },
-    extensions: ['.js', '.json', '.ttf', '.ts']
-  },
-  devtool: 'source-map',
-  module: {
-    rules: [{
-      test: /\.ts$/,
-      use: 'ts-loader',
-      exclude: /node_modules/
-    },
-    {
-      test: /\.js$/,
-      enforce: 'pre',
-      loader: 'source-map-loader',
-      exclude: /node_modules/
-    }]
-  }
-}
-
-module.exports = [client, server]
+module.exports = [client]
