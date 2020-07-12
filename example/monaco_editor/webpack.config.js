@@ -4,7 +4,7 @@ const dist = path.resolve(__dirname, 'dist')
 
 const client = {
   entry: {
-    main: path.resolve(src, 'main.ts'),
+    main: path.resolve(src, 'index.ts'),
     'editor.worker': 'monaco-editor-core/esm/vs/editor/editor.worker.js'
   },
   output: {
@@ -12,6 +12,7 @@ const client = {
     path: dist
   },
   target: 'web',
+  mode: 'development',
   node: {
     fs: 'empty',
     child_process: 'empty',
@@ -22,11 +23,17 @@ const client = {
     alias: {
       'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
     },
-    extensions: ['.js', '.json', '.ttf', '.ts']
+    extensions: ['.js', '.json', '.ttf', '.ts', '.svelte']
   },
   devtool: 'source-map',
   module: {
     rules: [{
+      test: /\.svelte$/,
+      use: {
+        loader: 'svelte-loader'
+      }
+    },
+    {
       test: /\.ts$/,
       use: [
         {
@@ -52,6 +59,9 @@ const client = {
       loader: 'source-map-loader',
       exclude: /node_modules/
     }]
+  },
+  watchOptions: {
+    poll: 1000
   }
 }
 
