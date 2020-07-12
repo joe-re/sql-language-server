@@ -26,6 +26,13 @@ let g:LanguageClient_serverCommands = {
     \ }
 ```
 
+#### Monaco Editor([monaco-languageclient](https://github.com/TypeFox/monaco-languageclient))
+
+https://github.com/joe-re/sql-language-server/blob/master/example/monaco_editor
+
+It's also used to develop sql-language-server.
+You can follow [development section](#development) to check Mocaco Editor working.
+
 ## Usage
 
 ### CLI
@@ -111,7 +118,7 @@ Please restart sql-language-server process after create .sqllsrc.json.
 | Key          | Description                                                                                                               | value                   | required | default                           |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------- | ----------------------- | -------- | --------------------------------- |
 | name         | Connection name(free-form text)                                                                                           |                         | true     |                                   |
-| adapter      | Database type                                                                                                             | "mysql" #124; "postgres" #124; "sqlite3"  | true     |                                   |
+| adapter      | Database type                                                                                                             | "mysql" or "postgres" or "sqlite3"  | true     |                                   |
 | host         | Database host                                                                                                             | string                  | false    |                                   |
 | port         | Database port                                                                                                             | string                  | false    | mysql:3306, postgres:5432         |
 | user         | Database user                                                                                                             | string                  | false    | mysql:"root", postgres:"postgres" |
@@ -272,3 +279,30 @@ method: workspace/executeCommand
 command: fixAllFixableProblems
 arguments: string(document uri)
 ```
+
+## Contributing on sql-language-server
+
+### Bug Repots and Feature Requests
+
+[GitHub Issues](https://github.com/joe-re/sql-language-server/issues) are opening for asking question, reporting problems, and suggests improvement.
+
+You can start a disccustion about new rule for SQLint there also.
+
+### Development
+
+Code contributions are always appreciated. Feel free to fork the repo and submit pull requests.
+
+You can start to develop sql-language-server on docker-compose.
+Please follows below steps.
+
+1. Setup docker-compose on your machine.
+  - https://docs.docker.com/compose/install/
+2. Start development process on your docker.
+
+```sh
+$ docker-compose up
+```
+
+3. Open `http://localhost:3000` on your browser.
+
+
