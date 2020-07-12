@@ -1,5 +1,5 @@
 const path = require('path')
-const src = path.resolve(__dirname, 'src')
+const src = path.resolve(__dirname, 'src/client')
 const dist = path.resolve(__dirname, 'dist')
 
 const client = {
@@ -28,7 +28,14 @@ const client = {
   module: {
     rules: [{
       test: /\.ts$/,
-      use: 'ts-loader',
+      use: [
+        {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true
+          },
+        }
+      ],
       exclude: /node_modules/
     },
     {

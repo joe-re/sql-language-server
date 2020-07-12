@@ -16,8 +16,6 @@ process.on("uncaughtException", function (err: any) {
 const app = express();
 app.use(express.static(`${process.cwd()}/dist`));
 
-console.log('start, hoge?')
-console.log(process.cwd())
 const server = app.listen(3000);
 
 const wss = new ws.Server({
@@ -49,7 +47,7 @@ server.on(
         } else {
           webSocket.on("open", () => {
             // launch(socket)
-            console.log("ready to raunch server2");
+            console.log("ready to launch server");
             launchServer(socket);
           });
         }

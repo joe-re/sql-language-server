@@ -11,7 +11,7 @@
     "copy": "cp src/index.html dist/index.html",
     "build": "yarn tsc && webpack && yarn run copy",
     "watch": "run-p copy webpack:watch",
-    "start": "node lib/server.js"
+    "start": "ts-node-dev --transpile-only ./src/server/server.ts"
   },
   "dependencies": {
     "express": "^4.17.1",

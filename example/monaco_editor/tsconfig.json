@@ -4,7 +4,7 @@
     "target": "ES2015",
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "outDir": "lib",
+    "outDir": "dist",
     "skipLibCheck": true,
     "sourceMap": true,
     "declarationMap": true,
@@ -22,3 +22,4 @@
   ],
   "exclude": [ "node_modules" ]
 }
+

@@ -1,17 +1,14 @@
 version: '3'
 services:
-  example:
-    build:
-      context: .
-      dockerfile: dockerfile_dev_example_server
-    command: 'cd example/mocaco_editor && yarn start'
   assets:
     build:
       context: .
       dockerfile: dockerfile
     volumes:
       - .:/opt/sql-language-server/rw
-    command: 'yarn run watch'
+    command: 'yarn run dev'
+    ports:
+      - '3000:3000'
   postgres:
     image: postgres:10
     restart: always
