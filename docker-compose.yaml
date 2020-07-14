@@ -5,8 +5,8 @@ services:
       context: .
       dockerfile: dockerfile
     volumes:
-      - .:/opt/sql-language-server/rw
-    command: 'yarn run dev'
+      - .:/opt/sql-language-server:rw
+    command: 'yarn dev' # 'tail -f /dev/null'
     ports:
       - '3000:3000'
   postgres:

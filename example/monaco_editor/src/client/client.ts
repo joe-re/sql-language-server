@@ -5,6 +5,7 @@ import {
   MonacoLanguageClient,
   MonacoServices,
   createConnection,
+  ExecuteCommandParams,
 } from "monaco-languageclient";
 import ReconnectingWebSocket from "reconnecting-websocket";
 
@@ -36,7 +37,7 @@ export function initClient() {
   listen({
     webSocket,
     onConnection: (connection) => {
-      const languageClient = createLanguageClient(connection);
+      languageClient = createLanguageClient(connection);
       const disposable = languageClient.start();
       connection.onClose(() => disposable.dispose());
     },
@@ -75,4 +76,12 @@ export function initClient() {
 
 export function getLanguageClient() {
   return languageClient;
+}
+
+export function executeFixAllFixableProblemsCommand() {
+  const params: ExecuteCommandParams = {
+    command: 'fixAllFixableProblems',
+    arguments: ['inmemory://model.sql']
+  }
+  languageClient.sendRequest('workspace/executeCommand', params)
 }
