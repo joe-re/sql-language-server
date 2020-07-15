@@ -13,8 +13,9 @@ services:
     image: postgres:10
     restart: always
     environment:
-      POSTGRES_USER: prisma
-      POSTGRES_PASSWORD: prisma
+      POSTGRES_DB: postgres_db
+      POSTGRES_USER: sqlls
+      POSTGRES_PASSWORD: sqlls
     volumes:
       - postgres:/var/lib/postgresql/data
 volumes:

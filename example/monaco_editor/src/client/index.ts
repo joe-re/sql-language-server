@@ -7,10 +7,7 @@ require('monaco-editor-core');
 }
 
 const app = new App({
-	target: document.body,
-	props: {
-		name: 'worl'
-	}
+  target: document.body,
 });
 
 (window as any).app = app;

@@ -3,7 +3,8 @@
 
   const commands = [
     { id: 'fixAllFixableProblems', text: 'fixAllFixableProblems' },
-    { id: 'switchDatabaseConnection', text: 'switchDatabaseConnection' },
+    // TODO
+    // { id: 'switchDatabaseConnection', text: 'switchDatabaseConnection' },
   ]
 
   let command = commands[0]

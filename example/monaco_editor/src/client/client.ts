@@ -8,7 +8,7 @@ import {
   ExecuteCommandParams,
 } from "monaco-languageclient";
 import ReconnectingWebSocket from "reconnecting-websocket";
-
+import { URI } from 'vscode-uri'
 
 let languageClient: MonacoLanguageClient;
 export function initClient() {
@@ -50,6 +50,11 @@ export function initClient() {
       name: "SQL Language Server MonacoClient",
       clientOptions: {
         documentSelector: ["sql"],
+        workspaceFolder: {
+          uri: URI.file('/opt/sql-language-server/example/monaco_editor'),
+          name: 'workspace',
+          index: 0
+        }
       },
       connectionProvider: {
         get: (errorHandler, closeHandler) => {

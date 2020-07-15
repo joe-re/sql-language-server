@@ -67,7 +67,7 @@ export default class PosgresClient extends AbstractClient {
       LEFT JOIN pg_attrdef d ON a.attrelid = d.adrelid AND a.attnum = d.adnum
       LEFT JOIN pg_type t ON a.atttypid = t.oid
       LEFT JOIN pg_collation c ON a.attcollation = c.oid AND a.attcollation <> t.typcollation
-    WHERE a.attrelid = '${tableName}'::regclass
+    WHERE a.attrelid = '"${tableName}"'::regclass
       AND a.attnum > 0 AND NOT a.attisdropped
     ORDER BY a.attnum
     `

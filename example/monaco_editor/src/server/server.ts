@@ -46,7 +46,6 @@ server.on(
           launchServer(socket);
         } else {
           webSocket.on("open", () => {
-            // launch(socket)
             console.log("ready to launch server");
             launchServer(socket);
           });
