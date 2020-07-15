@@ -44,10 +44,14 @@ export function createServerWithConnection(connection: IConnection) {
       logger.debug('onInitialize: receive change event from SettingStore')
   		try {
         setTimeout(() => {
-          connection.sendNotification('sqlLanguageServer.finishSetup', {
-            personalConfig: SettingStore.getInstance().getPersonalConfig(),
-            config: SettingStore.getInstance().getSetting()
-          })
+          try {
+            connection.sendNotification('sqlLanguageServer.finishSetup', {
+              personalConfig: SettingStore.getInstance().getPersonalConfig(),
+              config: SettingStore.getInstance().getSetting()
+            })
+          } catch (e) {
+            logger.error(e)
+          }
         }, 1000) // TODO: Need to think about better way to sendNotification
         try {
           const client = getDatabaseClient(
