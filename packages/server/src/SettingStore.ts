@@ -15,7 +15,7 @@ export type SSHConfig = {
 }
 export type Settings = {
   name: string | null,
-  adapter: 'mysql' | 'postgresql' | 'sqlite3' | null,
+  adapter: 'mysql' | 'postgresql' | 'postgres' | 'sqlite3' | null,
   host: string | null
   port: number | null
   user: string | null

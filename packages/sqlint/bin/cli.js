@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const yargs = require('yargs')
-const commands = require('../dist/index')
+const commands = require('../dist/src/index')
 
 function readStdin() {
   return new Promise((resolve, reject) => {

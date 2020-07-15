@@ -1,5 +1,5 @@
 import yargs from 'yargs'
-import { createServer } from '../createServer'
+import { createServer } from '../src/createServer'
 
 const cli = yargs
   .usage('SQL Language Server Command Line Interface')

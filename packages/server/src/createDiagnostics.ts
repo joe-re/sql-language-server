@@ -2,8 +2,7 @@ import { parse } from '@joe-re/sql-parser'
 import log4js from 'log4js';
 import { PublishDiagnosticsParams, Diagnostic } from 'vscode-languageserver'
 import { DiagnosticSeverity }from 'vscode-languageserver-types'
-import { lint, ErrorLevel } from 'sqlint'
-import { LintResult } from 'sqlint/src/cli/lint'
+import { lint, ErrorLevel, LintResult } from 'sqlint'
 import cache, { LintCache } from './cache'
 
 const logger = log4js.getLogger()

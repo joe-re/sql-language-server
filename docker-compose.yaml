@@ -1,0 +1,22 @@
+version: '3'
+services:
+  assets:
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - .:/opt/sql-language-server:rw
+    command: 'yarn dev' # 'tail -f /dev/null'
+    ports:
+      - '3000:3000'
+  postgres:
+    image: postgres:10
+    restart: always
+    environment:
+      POSTGRES_DB: postgres_db
+      POSTGRES_USER: sqlls
+      POSTGRES_PASSWORD: sqlls
+    volumes:
+      - postgres:/var/lib/postgresql/data
+volumes:
+  postgres:
