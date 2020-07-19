@@ -1,9 +1,10 @@
-import * as mysql from 'mysql'
+import * as mysql from 'mysql2'
+import * as mysqlType from 'mysql'
 import { Settings } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
 
 export default class MysqlClient extends AbstractClient {
-  connection: mysql.Connection | null = null
+  connection: mysqlType.Connection | null = null
 
   constructor(settings: Settings) {
     super(settings)
@@ -47,7 +48,7 @@ export default class MysqlClient extends AbstractClient {
           reject(new Error(err.message))
           return
         }
-        const tables = results.map((v: any) => v[`table_name`])
+        const tables = results.map((v: any) => v['table_name'] || v['TABLE_NAME'])
         resolve(tables)
       })
     })
