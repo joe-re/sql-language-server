@@ -116,7 +116,7 @@ export type ValuesClause = {
 
 export type ColumnListItemNode = {
   type: 'column_list_item',
-  expr: ColumnRefNode,
+  expr: ColumnRefNode | AggrFuncNode,
   as: string | null,
   location: NodeRange
 }
@@ -125,6 +125,15 @@ export type ColumnRefNode = {
   type: 'column_ref',
   table: string,
   column: string,
+  location: NodeRange
+}
+
+export type AggrFuncNode = {
+  type: 'aggr_func'
+  name: string
+  args: {
+    expr: ColumnRefNode
+  },
   location: NodeRange
 }
 
