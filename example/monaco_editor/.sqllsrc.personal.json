@@ -1,0 +1,22 @@
+{
+  "connections": [
+    {
+      "name": "postgres_db",
+      "adapter": "postgres",
+      "host": "postgres",
+      "port": 5432,
+      "user": "sqlls",
+      "password": "sqlls",
+      "database": "postgres_db"
+    },
+    {
+      "name": "mysql_db",
+      "adapter": "mysql",
+      "host": "mysql",
+      "port": 3306,
+      "user": "sqlls",
+      "password": "sqlls",
+      "database": "mysql_db"
+    }
+  ]
+}

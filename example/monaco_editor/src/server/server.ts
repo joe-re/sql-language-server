@@ -19,6 +19,7 @@ function startServer() {
   const app = express();
   app.use(express.static(`${process.cwd()}/dist`));
   server = app.listen(3000);
+  console.log('startServer')
 
   const wss = new ws.Server({
     noServer: true,
