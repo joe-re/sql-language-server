@@ -18,5 +18,16 @@ services:
       POSTGRES_PASSWORD: sqlls
     volumes:
       - postgres:/var/lib/postgresql/data
+  mysql:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mysql_db
+      MYSQL_USER: sqlls
+      MYSQL_PASSWORD: sqlls
+    volumes:
+      - mysql:/var/lib/mysql
 volumes:
   postgres:
+  mysql:

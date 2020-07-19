@@ -7,10 +7,10 @@
     "dialect": "postgres"
   },
   "mysql": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
+    "username": "sqlls",
+    "password": "sqlls",
+    "database": "mysql_db",
+    "host": "mysql",
     "dialect": "mysql"
   }
 }

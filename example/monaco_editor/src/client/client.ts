@@ -11,6 +11,9 @@ import ReconnectingWebSocket from "reconnecting-websocket";
 import { URI } from 'vscode-uri'
 
 let languageClient: MonacoLanguageClient;
+let connectionNames: string[] = []
+let connectedConnectionName = ''
+
 export function initClient() {
   monaco.languages.register({
     id: "sql",
@@ -40,6 +43,15 @@ export function initClient() {
       languageClient = createLanguageClient(connection);
       const disposable = languageClient.start();
       connection.onClose(() => disposable.dispose());
+      languageClient.onReady().then(() => {
+        languageClient.onNotification('sqlLanguageServer.finishSetup', (params) => {
+          connectionNames =
+            params.personalConfig?.connections?.
+              map((v: { name: string}) => v.name).
+              filter((v: string) => !!v)
+          connectedConnectionName = params.config?.name || ''
+        })
+      })
     },
   });
 
@@ -89,4 +101,20 @@ export function executeFixAllFixableProblemsCommand() {
     arguments: ['inmemory://model.sql']
   }
   languageClient.sendRequest('workspace/executeCommand', params)
+}
+
+export function executeSwitchDatabaseCommand(db: string) {
+  const params: ExecuteCommandParams = {
+    command: 'switchDatabaseConnection',
+    arguments: [db]
+  }
+  languageClient.sendRequest('workspace/executeCommand', params)
+}
+
+export function getConnectionList() {
+  return connectionNames
+}
+
+export function getCurrecntConnection() {
+  return connectedConnectionName
 }
