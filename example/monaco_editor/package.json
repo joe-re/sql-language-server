@@ -13,7 +13,8 @@
     "watch": "run-p copy webpack:watch",
     "start": "ts-node-dev --transpile-only ./src/server/server.ts",
     "migrate:postgres": "NODE_ENV=postgres sequelize-cli db:migrate",
-    "migrate:mysql": "NODE_ENV=mysql sequelize-cli db:migrate"
+    "migrate:mysql": "NODE_ENV=mysql sequelize-cli db:migrate",
+    "migrate:sqlite": "NODE_ENV=sqlite sequelize-cli db:migrate"
   },
   "dependencies": {
     "express": "^4.17.1",
@@ -33,6 +34,7 @@
     "sequelize": "^6.3.3",
     "sequelize-cli": "^6.2.0",
     "source-map-loader": "^1.0.1",
+    "sqlite3": "^5.0.0",
     "style-loader": "^1.2.1",
     "svelte": "^3.24.0",
     "svelte-loader": "^2.13.6",

@@ -17,6 +17,11 @@
       "user": "sqlls",
       "password": "sqlls",
       "database": "mysql_db"
+    },
+    {
+      "name": "sqlite_db",
+      "adapter": "sqlite3",
+      "filename": "/opt/sql-language-server/example/monaco_editor/sqlite_db.sqlite"
     }
   ]
 }

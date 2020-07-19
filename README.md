@@ -104,7 +104,7 @@ There are two ways to use configuration files.
     {
       "name": "sqlite3-project",
       "adapter": "sqlite3",
-      "filename": "/Users/noguchimasato/src/sql-language-server/packages/server/test.sqlite3",
+      "filename": "/Users/joe-re/src/sql-language-server/packages/server/test.sqlite3",
       "projectPaths": ["/Users/joe-re/src/sqlite2_project"]
     }
   ]
