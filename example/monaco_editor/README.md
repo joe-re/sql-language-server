@@ -2,9 +2,10 @@
 
 ### how to setup
 
+Move to project root directory then do following commands.
+
 ```sh
-$ yarn && yarn build
-$ yarn start
+$ yarn && yarn dev
 ```
 
 Then connect to http://localhost:3000 on your browser.

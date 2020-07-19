@@ -292,6 +292,8 @@ You can start a disccustion about new rule for SQLint there also.
 
 Code contributions are always appreciated. Feel free to fork the repo and submit pull requests.
 
+#### Development environment
+
 You can start to develop sql-language-server on docker-compose.
 Please follows below steps.
 
@@ -305,4 +307,19 @@ $ docker-compose up
 
 3. Open `http://localhost:3000` on your browser.
 
+#### Migrate database
 
+1. Login into development docker container
+
+```sh
+$ docker-compose exec assets bash
+```
+
+2. Migrate database
+
+```sh
+$ cd example/monaco_editor
+$ yarn migrate:postgres # postgres
+$ yarn migrate:mysql    # mysql
+$ yarn migrate:sqlite   # sqlite3
+```
