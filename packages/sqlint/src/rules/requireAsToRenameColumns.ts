@@ -13,15 +13,15 @@ export const requireAsToRenameColumns: Rule<SelectStatement, RuleConfig> = {
       return
     }
     const invalidColumns = context.node.columns.filter(v => v.as).filter(v => {
-      console.log(v)
-      console.log(context.getAfterSQL(v.expr.location))
-      console.log(!context.getAfterSQL(v.expr.location).trim().match(/^(AS|as)\s/))
       return !context.getAfterSQL(v.expr.location).trim().match(/^(AS|as)\s/)
     })
     return invalidColumns.map(v => {
       return {
         message: 'Require AS keyword to rename a column',
-        location: v.location
+        location: v.location,
+        fix: (fixer) => {
+          return fixer.insertText(v.expr.location.end.offset, ' AS')
+        }
       }
     })
   }
