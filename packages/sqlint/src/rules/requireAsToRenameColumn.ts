@@ -2,11 +2,11 @@ import { SelectStatement } from '@joe-re/sql-parser'
 import { Rule, RuleConfig } from './index'
 
 const META = {
-  name: 'require-as-to-rename-columns',
+  name: 'require-as-to-rename-column',
   type: 'select'
 }
 
-export const requireAsToRenameColumns: Rule<SelectStatement, RuleConfig> = {
+export const requireAsToRenameColumn: Rule<SelectStatement, RuleConfig> = {
   meta: META,
   create: (context) => {
     if (!Array.isArray(context.node.columns)) {

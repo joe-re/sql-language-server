@@ -10,11 +10,11 @@ test('valid case', () => {
     employees LEFT JOIN tasks
       ON employees.id = tasks.id
   `
-  const result = execute(sql, { rules: { 'require-as-to-rename-columns': { level: 2 } } })
+  const result = execute(sql, { rules: { 'require-as-to-rename-column': { level: 2 } } })
   expect(result).toEqual([])
 })
 
-test('require as to rename columns', () => {
+test('require as to rename column', () => {
   const sql = `
   SELECT
     employees.name employee_name,
@@ -23,7 +23,7 @@ test('require as to rename columns', () => {
     employees LEFT JOIN tasks
       ON employees.id = tasks.id
   `
-  const result = execute(sql, { rules: { 'require-as-to-rename-columns': { level: 2 } } })
+  const result = execute(sql, { rules: { 'require-as-to-rename-column': { level: 2 } } })
   expect(result.length).toEqual(2)
   expect(result[0].message).toEqual('Require AS keyword to rename a column')
   expect(result[0].location).toEqual({
