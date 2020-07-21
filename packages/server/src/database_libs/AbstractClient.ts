@@ -27,7 +27,7 @@ export default abstract class AbstractClient {
 
   constructor(protected settings: Settings) {}
 
-  abstract connect(): boolean
+  abstract connect(): Promise<boolean> | boolean
   abstract disconnect(): void
   abstract getTables(): Promise<string[]>
   abstract getColumns(tableName: string): Promise<RawField[]>
@@ -57,7 +57,7 @@ export default abstract class AbstractClient {
         return []
       })
     }
-    if (!this.connect()) {
+    if (!(await this.connect())) {
       logger.error('AbstractClinet.getSchema: failed to connect database')
       return []
     }

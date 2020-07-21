@@ -16,18 +16,20 @@ export default {
     typescript({ tsconfig: 'tsconfig.cli.json' }),
     json(),
     resolve({
-      preferBuiltins: false
+      preferBuiltins: false,
     }),
     replace({
       delimiters: ['', ''],
       values: {
         'require(\'readable-stream/transform\')': 'require(\'stream\').Transform',
         'require("readable-stream/transform")': 'require("stream").Transform',
-        'readable-stream': 'stream'
+        'readable-stream': 'stream',
+        "require('./lib/pool.js')": 'class FakePool {}',
+        "require('./lib/pool_connection')": 'class FakePoolConnection {}' 
       }
     }),
     commonjs({
-      ignore: ['pg-native' , './native']
+      ignore: ['pg-native' , './native', './lib/pool_cluster.js', './pool.js', './lib/pool.js', './lib/pool_connection', './lib/pool_connection.js', './pool_connection.js']
     })
   ]
 };

@@ -1,7 +1,7 @@
+import * as mysql from 'mysql2/promise'
 import * as mysqlType from 'mysql'
 import { Settings } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
-const mysql = require('mysql2')
 
 export default class MysqlClient extends AbstractClient {
   connection: mysqlType.Connection | null = null
@@ -14,8 +14,8 @@ export default class MysqlClient extends AbstractClient {
   get DefaultHost() { return '127.0.0.1' }
   get DefaultUser() { return 'root' }
 
-  connect() {
-    this.connection = mysql.createConnection({
+  async connect() {
+    this.connection = await mysql.createConnection({
       host: this.settings.host || this.DefaultHost,
       password: this.settings.password || '',
       user: this.settings.user || this.DefaultUser,
