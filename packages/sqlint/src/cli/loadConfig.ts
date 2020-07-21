@@ -19,7 +19,8 @@ const defaultConfig: Config = {
     'reserved-word-case': { level: ErrorLevel.Error, option: 'upper' },
     'space-surrounding-operators': { level: ErrorLevel.Error },
     'where-clause-new-line': { level: ErrorLevel.Error },
-    'align-where-clause-to-the-first': { level: ErrorLevel.Error }
+    'align-where-clause-to-the-first': { level: ErrorLevel.Error },
+    'require-as-to-rename-column': { level: ErrorLevel.Error }
   }
 }
 
