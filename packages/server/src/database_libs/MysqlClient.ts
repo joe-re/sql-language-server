@@ -1,7 +1,7 @@
-import * as mysql from 'mysql2'
 import * as mysqlType from 'mysql'
 import { Settings } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
+const mysql = require('mysql2')
 
 export default class MysqlClient extends AbstractClient {
   connection: mysqlType.Connection | null = null
