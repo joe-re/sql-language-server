@@ -5,6 +5,7 @@ import { columnNewLine } from './columnNewLine'
 import { alignColumnToTheFirst } from './alignColumnToTheFirst'
 import { whereClauseNewLine } from './whereClauseNewLine'
 import { alignWhereClauseToTheFirst } from './alignWhereClauseToTheFirst'
+import { requireAsToRenameColumn } from './requireAsToRenameColumn'
 import { parse, NodeRange, AST, BaseNode } from '@joe-re/sql-parser'
 import { Fixer, FixDescription, createFixer } from '../fixer'
 
@@ -69,6 +70,7 @@ export function execute(sql: string, config: Config): Diagnostic[] {
   registerRule(alignColumnToTheFirst, config, sql)
   registerRule(whereClauseNewLine, config, sql)
   registerRule(alignWhereClauseToTheFirst, config, sql)
+  registerRule(requireAsToRenameColumn, config, sql)
   const ast = parse(sql)
   return walk(ast)
 }

@@ -603,14 +603,16 @@ function peg$parse(input, options) {
               name : name,
               args : {
                 expr : e  
-              } 
+              },
+              location: location()
             }   
           },
       peg$c120 = function(name, arg) {
             return {
               type : 'aggr_func',
               name : name,
-              args : arg 
+              args : arg,
+              location: location()
             }   
           },
       peg$c121 = function(e) {

@@ -72,7 +72,8 @@ $ sqlint --fix .
     "linebreak-after-clause-keyword": "error",
     "reserved-word-case": ["error", "upper"],
     "space-surrounding-operators": "error",
-    "where-clause-new-line": "error"
+    "where-clause-new-line": "error",
+    "align-where-clause-to-the-first": "error",
   }
 }
 ```
@@ -270,4 +271,47 @@ foo.c = 'c' AND
 foo.d = 'd'
 ```
 
+##### align-where-clause-to-the-first
 
+Where clauses must align to the first clause.
+
+Good
+```sql
+SELECT foo.a
+FROM foo 
+WHERE foo.a = 'a' AND foo.b = 'b' AND
+      foo.c = 'c' AND
+      foo.d = 'd'
+```
+
+Bad
+```sql
+SELECT foo.a
+FROM foo 
+WHERE foo.a = 'a' AND foo.b = 'b' AND
+foo.c = 'c' AND
+foo.d = 'd'
+```
+##### require-as-to-rename-column
+
+As is always required to rename a column name.
+
+Good
+```sql
+SELECT
+  employees.name AS employee_name,
+  COUNT(tasks.id) AS assigned_task_count
+FROM
+  employees LEFT JOIN tasks
+    ON employees.id = tasks.id
+```
+
+Bad
+```sql
+SELECT
+  employees.name employee_name,
+  COUNT(tasks.id) assigned_task_count
+FROM
+  employees LEFT JOIN tasks
+    ON employees.id = tasks.id
+```

@@ -130,7 +130,7 @@ function createTablesFromFromNodes(fromNodes: FromTableNode[]): Schema {
     }
     const columns = c.subquery.columns.map(v => {
       if (typeof v === 'string') { return null }
-      return { columnName: v.as || v.expr.column || '', description: 'alias' }
+      return { columnName: v.as || (v.expr.type === 'column_ref' && v.expr.column) || '', description: 'alias' }
     })
     return p.concat({ database: null, columns, tableName: c.as })
   }, [])
@@ -200,7 +200,7 @@ function completeSelectStatement(ast: SelectStatement, _pos: Pos, _schema: Schem
     const rest = ast.columns.slice(1, ast.columns.length)
     const lastColumn = rest.reduce((p, c) => p.location.end.offset < c.location.end.offset ? c : p ,first)
     if (
-      FROM_KEYWORD.label.startsWith(lastColumn.expr.column) ||
+      (lastColumn.expr.type === 'column_ref' && FROM_KEYWORD.label.startsWith(lastColumn.expr.column)) ||
       (lastColumn.as && FROM_KEYWORD.label.startsWith(lastColumn.as))
      ) {
       candidates.push(FROM_KEYWORD)

@@ -831,7 +831,8 @@ aggr_fun_smma
         name : name,
         args : {
           expr : e  
-        } 
+        },
+        location: location()
       }   
     }
 
@@ -843,7 +844,8 @@ aggr_fun_count
       return {
         type : 'aggr_func',
         name : name,
-        args : arg 
+        args : arg,
+        location: location()
       }   
     }
 
