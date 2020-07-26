@@ -1,4 +1,4 @@
-import complete from '../complete'
+import complete from '../src/complete'
 
 describe('keyword completion', () => {
   test("complete 'SELECT' keyword", () => {

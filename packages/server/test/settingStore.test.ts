@@ -1,4 +1,4 @@
-import SettingStore from "../SettingStore"
+import SettingStore from "../src/SettingStore"
 
 describe('setSetting', () => {
   beforeAll(() => {
