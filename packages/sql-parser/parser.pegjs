@@ -280,7 +280,7 @@ table_base
   / s:select_stmt __ KW_AS? __ alias:ident? {
       return  { type: 'subquery', subquery: s, as: alias, location: location() };
     }
-  / text:(LPAREN __ table:table_base __ RPAREN) __ KW_AS? __ alias:ident? {
+  / LPAREN __ table:table_base __ RPAREN __ KW_AS? __ alias:ident? {
       return  { type: 'subquery', subquery: table, as: alias, location: location() };
     }
   / text:(LPAREN __ ([^)]* {return text()}) __ RPAREN) __ KW_AS? __ alias:ident? {
