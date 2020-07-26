@@ -2,7 +2,7 @@
   "name": "sql-language-server",
   "displayName": "SQL Language Server",
   "description": "SQL Language Server Extension for VSC",
-  "version": "0.10.8",
+  "version": "0.11.2",
   "main": "./packages/client/out/extension",
   "repository": {
     "type": "git",
@@ -15,9 +15,9 @@
   "license": "MIT",
   "publisher": "joe-re",
   "scripts": {
-    "compile": "npm run compile:client && npm run compile:server",
-    "compile:client": "cd ./packages/client && yarn run compile",
-    "compile:server": "cd ./packages/server && yarn run compile",
+    "vsc-compile": "npm run vsc-compile:client && npm run vsc-compile:server",
+    "vsc-compile:client": "cd ./packages/client && yarn run compile",
+    "vsc-compile:server": "cd ./packages/server && yarn run prepare-vsc-extension",
     "watch": "run-p watch:client watch:server",
     "watch:client": "cd ./packages/client && yarn run watch",
     "watch:sqlint": "cd ./packages/sqlint && yarn run watch",
@@ -25,7 +25,7 @@
     "watch:dev-server:client": "cd ./example/monaco_editor && yarn run webpack:watch",
     "watch:dev-server:server": "wait-on ./packages/server/dist/src/index.js && cd ./example/monaco_editor && yarn run start",
     "dev": "run-p watch:sqlint watch:server watch:dev-server:client watch:dev-server:server",
-    "vscode:prepublish": "yarn run compile"
+    "vscode:prepublish": "yarn run vsc-compile"
   },
   "engines": {
     "vscode": "^1.45.1"

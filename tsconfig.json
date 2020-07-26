@@ -1,22 +1,19 @@
 {
   "compilerOptions": {
-    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "strict": true,
     "target": "es2017",
-    "module": "es6",
+    "module": "CommonJS",
     "lib": [ "es2018", "es2019" ],
     "moduleResolution": "node",
+    "sourceMap": true,
     "esModuleInterop": true,
+    "declaration": true,
     "baseUrl": ".",
     "paths": {
-      "@sql-language-server/sqlint": ["packages/sqlint/dist"]
+      "@joe-re/sql-parser": ["packages/sql-parser/*"],
+      "sqlint": ["packages/sqlint"]
     }
   },
-  "include": ["../sqlint"],
-  "exclude": [
-    "node_modules",
-    "example"
-  ]
 }
-

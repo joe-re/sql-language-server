@@ -1,19 +1,13 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "strict": true,
-    "target": "es2017",
-    "module": "CommonJS",
-    "lib": [ "es2018", "es2019" ],
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "outDir": "dist",
-    "declaration": true
+    "rootDir": ".",
+    "outDir": "dist"
   },
   "exclude": [
     "node_modules",
-    "dist"
-  ]
+    "dist",
+    "test"
+  ],
+  "references": [{ "path": "../sql-parser" }]
 }

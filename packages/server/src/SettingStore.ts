@@ -45,7 +45,7 @@ function readFile(filePath: string) {
   return fs.readFileSync(filePath, "utf8").replace(/^\ufeff/u, "");
 }
 
-export default class SettingStore extends EventEmitter {
+export default class SettingStore extends EventEmitter.EventEmitter {
   private personalConfig: PersonalConfig = { connections: []}
   private state: Settings = {
     name: null,

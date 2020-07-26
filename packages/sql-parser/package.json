@@ -2,7 +2,7 @@
   "author": "joe-re<joe.tialtngo@gmail.com>",
   "name": "@joe-re/sql-parser",
   "description": "sql parser for nodejs",
-  "version": "0.3.3",
+  "version": "0.11.1",
   "typings": "index.d.ts",
   "scripts": {
     "test": "jest",
@@ -10,6 +10,12 @@
     "generateParser": "pegjs -o ./base/parser.js parser.pegjs",
     "generateFromClauseParser": "pegjs -o ./base/fromClauseParser.js  --allowed-start-rules extract_from_clause parser.pegjs"
   },
+  "files": [
+    "base",
+    "index.js",
+    "index.d.ts",
+    "package.json"
+  ],
   "engines": {
     "node": ">=0.8.0"
   },
