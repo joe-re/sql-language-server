@@ -5055,7 +5055,10 @@ function peg$parse(input, options) {
                 s0 = peg$FAILED;
               }
               if (s0 === peg$FAILED) {
-                s0 = peg$parsevar_decl();
+                s0 = peg$parseselect_stmt();
+                if (s0 === peg$FAILED) {
+                  s0 = peg$parsevar_decl();
+                }
               }
             }
           }
