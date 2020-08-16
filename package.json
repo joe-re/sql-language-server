@@ -55,7 +55,7 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "example/monaco_editor/*"
+    "example/*"
   ],
   "devDependencies": {
     "npm-run-all": "^4.1.3",
