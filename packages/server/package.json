@@ -1,6 +1,6 @@
 {
   "name": "sql-language-server",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "main": "dist/src/index.js",
   "bin": {
     "sql-language-server": "./npm_bin/cli.js"
