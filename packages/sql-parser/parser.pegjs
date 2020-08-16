@@ -752,6 +752,7 @@ primary
       e.paren = true; 
       return e; 
     } 
+  / select_stmt
   / var_decl
 
 column_ref 
