@@ -103,7 +103,7 @@
 }
 
 start 
-  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) __ {
+  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) __ EOSQL? __ {
       return {
         ast   : ast,
         param : params
@@ -1081,6 +1081,7 @@ EOL
   / [\n\r]+
   
 EOF = !.
+EOSQL = ';'
 
 //begin procedure extension
 proc_stmts 
