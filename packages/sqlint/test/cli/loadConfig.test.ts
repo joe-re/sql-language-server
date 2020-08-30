@@ -14,7 +14,7 @@ describe('loadConfig', () => {
 
   describe('invalid config', () => {
     test('it should show error details', () => {
-      expect(() => loadConfig(`${__dirname}/fixtures/loadconfig/invalid`)).toThrowError(/Unexpected property "bar"/)
+      expect(() => loadConfig(`${__dirname}/fixtures/loadConfig/invalid`)).toThrowError(/Unexpected property "bar"/)
     })
   })
 

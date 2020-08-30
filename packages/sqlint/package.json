@@ -1,6 +1,6 @@
 {
   "name": "sqlint",
-  "version": "0.11.4",
+  "version": "0.11.5",
   "main": "dist/src/index",
   "bin": {
     "sqlint": "bin/cli.js"
@@ -20,7 +20,7 @@
   ],
   "types": "./dist/src",
   "dependencies": {
-    "@joe-re/sql-parser": "^0.11.4",
+    "@joe-re/sql-parser": "^0.11.5",
     "ajv": "^6.12.2",
     "chalk": "^4.0.0",
     "js-yaml": "^3.14.0",
