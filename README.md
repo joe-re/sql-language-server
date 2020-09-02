@@ -16,14 +16,24 @@ Install [vsc extension](https://marketplace.visualstudio.com/items?itemName=joe-
 npm i -g sql-language-server
 ```
 
-#### Neovim example([LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim))
+#### Neovim
 
-- .vimrc
+##### [LanguageClient-neovim](https://github.com/autozimu/LanguageClient-neovim)
 
-```
+Add the following to the init.vim file (.vimrc)
+
+```vim
 let g:LanguageClient_serverCommands = {
     \ 'sql': ['sql-language-server', 'up', '--method', 'stdio'],
     \ }
+```
+
+##### [nvim-lsp](https://github.com/neovim/nvim-lspconfig#sqlls)
+
+Run the following command, reference the [nvim-lsp documentation](https://github.com/neovim/nvim-lspconfig#sqlls) for more information.
+
+```vim
+:LspInstall sqlls
 ```
 
 #### Monaco Editor([monaco-languageclient](https://github.com/TypeFox/monaco-languageclient))
