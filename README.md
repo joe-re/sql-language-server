@@ -4,6 +4,18 @@ SQL Language Server
 
 ![completion](https://user-images.githubusercontent.com/4954534/47268897-36b70500-d589-11e8-98b2-65cffdcd60b8.gif)
 
+## Packages
+
+- Autocompletion and notify warnings and errors and some other editor support ([sql-language-server](https://github.com/joe-re/sql-language-server/tree/release/packages/server))
+- Lint ([sqlint](https://github.com/joe-re/sql-language-server/tree/release/packages/sqlint))
+- [VSC extension](https://github.com/joe-re/sql-language-server/tree/release/packages/client)
+- [SQL parser](https://github.com/joe-re/sql-language-server/tree/release/packages/sql-parser)
+
+### Supported DB
+- MySQL
+- PostgreSQL
+- SQLite3
+
 ## Installation & How to setup
 
 ### Visual Studio Code
@@ -222,7 +234,7 @@ It will merge them as following:
 #### Inject envitonment variables
 
 ${env:VARIABLE_NAME} syntax allows you to replace configuration value with enviroment variable.
-This is useful when you don't write actual value on configuration file.
+This is useful when you don't want to write actual value on the configuration file.
 
 ##### example
 
@@ -274,7 +286,7 @@ If you're using sql-language-server directly, after go to the directry of it and
 
 #### Lint
 
-You can use lint rules that are provided [sqlint](https://github.com/joe-re/sql-language-server/blob/master/packages/sqlint/README.md).
+You can use lint rules that are provided [sqlint](https://github.com/joe-re/sql-language-server/tree/release/packages/sqlint).
 Please refer this to know how to use and how to configure to make them be matched your case.
 
 ![sqlint-on-editor](https://user-images.githubusercontent.com/4954534/83353304-3c3f1880-a384-11ea-8266-4d7048461b56.png)

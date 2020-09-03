@@ -5,6 +5,17 @@
   "bin": {
     "sql-language-server": "./npm_bin/cli.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joe-re/sql-language-server"
+  },
+  "keywords": [
+    "sql",
+    "language-server",
+    "language-server-protocol",
+    "lint",
+    "autocompletion"
+  ],
   "license": "MIT",
   "scripts": {
     "compile:cli": "rollup -c",
