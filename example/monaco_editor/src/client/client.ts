@@ -99,7 +99,7 @@ export function executeFixAllFixableProblemsCommand() {
   const params: ExecuteCommandParams = {
     command: 'fixAllFixableProblems',
     arguments: ['inmemory://model.sql']
-  }
+}
   languageClient.sendRequest('workspace/executeCommand', params)
 }
 
@@ -109,6 +109,13 @@ export function executeSwitchDatabaseCommand(db: string) {
     arguments: [db]
   }
   languageClient.sendRequest('workspace/executeCommand', params)
+}
+
+export function executeWorkspaceConfig(db: string) {
+  languageClient.sendRequest('workspace/configuration', { test: 'test' }).catch(e => {
+    console.log('--- error ---')
+    console.log(e)
+  })
 }
 
 export function getConnectionList() {

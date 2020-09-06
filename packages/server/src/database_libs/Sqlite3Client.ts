@@ -1,4 +1,4 @@
-import { Settings } from '../SettingStore'
+import { Connection } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
 import { sqlite3 as SQLite3, Database } from 'sqlite3'
 import log4js from 'log4js'
@@ -19,7 +19,7 @@ export default class Sqlite3Client extends AbstractClient {
   get DefaultHost() { return '' }
   get DefaultUser() { return '' }
 
-  constructor(settings: Settings) {
+  constructor(settings: Connection) {
     super(settings)
   }
 

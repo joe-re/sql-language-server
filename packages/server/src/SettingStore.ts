@@ -13,7 +13,7 @@ export type SSHConfig = {
   passphrase?: string
   identityFile?: string
 }
-export type Settings = {
+export type Connection = {
   name: string | null,
   adapter: 'mysql' | 'postgresql' | 'postgres' | 'sqlite3' | null,
   host: string | null
@@ -27,7 +27,7 @@ export type Settings = {
 }
 
 type PersonalConfig = {
-  connections: Settings[]
+  connections: Connection[]
 }
 
 function fileExists(path: string) {
@@ -47,7 +47,7 @@ function readFile(filePath: string) {
 
 export default class SettingStore extends EventEmitter.EventEmitter {
   private personalConfig: PersonalConfig = { connections: []}
-  private state: Settings = {
+  private state: Connection = {
     name: null,
     adapter: null,
     host: null,
@@ -83,7 +83,7 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     const config = this.personalConfig.connections.find(v => v.name === connectionName)
     if (!config) {
       const errorMessage = `not find connection name: ${connectionName}`
-      logger.error(`not find connection name: ${connectionName}`)
+      logger.error(errorMessage)
       throw new Error(errorMessage)
     }
     this.setSetting(config)
@@ -93,8 +93,8 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     personalConfigPath: string,
     projectConfigPath: string,
     projectPath: string
-  ): Promise<Settings | null> {
-    let personalConfig = { connections: [] } as PersonalConfig, projectConfig = {} as Settings
+  ): Promise<Connection | null> {
+    let personalConfig = { connections: [] } as PersonalConfig, projectConfig = {} as Connection
     if (fileExists(personalConfigPath)) {
       personalConfig = JSON.parse(readFile(personalConfigPath))
       this.personalConfig = personalConfig
@@ -107,21 +107,25 @@ export default class SettingStore extends EventEmitter.EventEmitter {
       logger.debug(`There isn't project config file., ${projectConfigPath}`)
     }
     const extractedPersonalConfig = projectConfig.name
-      ? personalConfig.connections.find((v: Settings) => v.name === projectConfig.name)
-      : personalConfig.connections.find((v: Settings) => v.projectPaths?.includes(projectPath))
-    if (!extractedPersonalConfig) {
-      logger.debug(`Failed to extract personal config, { path: ${projectPath}, projectName: ${projectConfig.name} }`)
-    }
+      ? personalConfig.connections.find((v: Connection) => v.name === projectConfig.name)
+      : this.extractPersonalConfigMatchedProjectPath(projectPath)
 
     const sshConfig = { ...extractedPersonalConfig?.ssh || {}, ...projectConfig?.ssh || {} } as SSHConfig
     const config = { ...extractedPersonalConfig, ...projectConfig }
     config.ssh = sshConfig
-    logger.debug(`Set config: ${JSON.stringify(config)}`)
     this.setSetting(config)
     return this.getSetting()
   }
 
-  setSetting(setting: Partial<Settings>) {
+  async setSettingFromWorkspaceConfig(connections: Connection[], projectPath: string = '') {
+    this.personalConfig = { connections }
+    const extractedPersonalConfig = this.extractPersonalConfigMatchedProjectPath(projectPath)
+    this.setSetting(extractedPersonalConfig || {})
+    return this.getSetting()
+  }
+
+  setSetting(setting: Partial<Connection>) {
+    logger.debug(`Set config: ${JSON.stringify(setting)}`)
     const replaceEnv = (v: { [key: string]: any }) => {
       for (const k in v) {
         if (v[k] && typeof v[k] === 'object') {
@@ -140,5 +144,13 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     this.state = Object.assign({}, this.state, newSetting)
     logger.debug('setting store, emit "change"')
     this.emit('change', this.state)
+  }
+
+  private extractPersonalConfigMatchedProjectPath(projectPath: string) {
+    const con = this.personalConfig.connections.find((v: Connection) => v.projectPaths?.includes(projectPath))
+    if (!con) {
+      logger.debug(`Not to extract personal config, { path: ${projectPath}, projectName: ${projectPath} }`)
+    }
+    return con
   }
 }

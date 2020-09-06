@@ -3,7 +3,7 @@ import {
   TextDocuments,
   InitializeResult,
   TextDocumentPositionParams,
-  CompletionItem
+  CompletionItem,
 } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument' 
 import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
@@ -43,8 +43,6 @@ export function createServerWithConnection(connection: IConnection) {
   connection.onInitialize((params): InitializeResult => {
     const capabilities = params.capabilities
     hasConfigurationCapability = !!capabilities.workspace && !!capabilities.workspace.configuration;
-    logger.debug('--- onInitialize ---')
-    logger.debug(capabilities)
     logger.debug(`onInitialize: ${params.rootPath}`)
     rootPath = params.rootPath || ''
 
@@ -66,8 +64,7 @@ export function createServerWithConnection(connection: IConnection) {
     }
   })
 
-  connection.onInitialized(() => {
-    console.log(hasConfigurationCapability)
+  connection.onInitialized(async () => {
   	SettingStore.getInstance().on('change', async () => {
       logger.debug('onInitialize: receive change event from SettingStore')
   		try {
@@ -98,14 +95,32 @@ export function createServerWithConnection(connection: IConnection) {
       } catch (e) {
         logger.error(e)
       }
-  	})
-  	if (rootPath) {
+    })
+    const connections = hasConfigurationCapability && (
+      await connection.workspace.getConfiguration({
+        section: 'sqlLanguageServer',
+      })
+    )?.connections || []
+    if (connections.length > 0) {
+      SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
+    } else if (rootPath) {
       SettingStore.getInstance().setSettingFromFile(
         `${process.env.HOME}/.config/sql-language-server/.sqllsrc.json`,
         `${rootPath}/.sqllsrc.json`,
         rootPath || ''
       )
-  	}
+    }
+  })
+
+  connection.onDidChangeConfiguration(change => {
+    logger.debug('onDidChangeConfiguration', JSON.stringify(change))
+    if (!hasConfigurationCapability) {
+      return
+    }
+    const connections = change.settings?.sqlLanguageServer?.connections ?? []
+    if (connections.length > 0) {
+      SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
+    }
   })
 
   connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[] => {

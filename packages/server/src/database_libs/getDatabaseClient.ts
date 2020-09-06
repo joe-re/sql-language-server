@@ -1,10 +1,10 @@
 import AbstractClient from './AbstractClient'
 import MysqlClient from './MysqlClient'
 import PostgresClient from './PostgresClient'
-import { Settings } from '../SettingStore'
+import { Connection } from '../SettingStore'
 import Sqlite3Client from './Sqlite3Client'
 
-export default function getDatabaseClient(settings: Settings): AbstractClient {
+export default function getDatabaseClient(settings: Connection): AbstractClient {
   switch (settings.adapter) {
     case 'mysql': return new MysqlClient(settings)
     case 'postgres': return new PostgresClient(settings)
