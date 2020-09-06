@@ -29,7 +29,7 @@ export default {
       }
     }),
     commonjs({
-      ignore: ['pg-native' , './native', './lib/pool_cluster.js', './pool.js', './lib/pool.js', './lib/pool_connection', './lib/pool_connection.js', './pool_connection.js']
+      ignore: ['util','pg-native' , './native', './lib/pool_cluster.js', './pool.js', './lib/pool.js', './lib/pool_connection', './lib/pool_connection.js', './pool_connection.js']
     })
   ]
 };
