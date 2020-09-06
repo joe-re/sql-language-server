@@ -112,10 +112,11 @@ export function executeSwitchDatabaseCommand(db: string) {
 }
 
 export function executeWorkspaceConfig(db: string) {
-  languageClient.sendRequest('workspace/configuration', { test: 'test' }).catch(e => {
-    console.log('--- error ---')
-    console.log(e)
-  })
+  // TODO: implement
+  // languageClient.sendRequest('workspace/configuration', { test: 'test' }).catch(e => {
+  //   console.log('--- error ---')
+  //   console.log(e)
+  // })
 }
 
 export function getConnectionList() {

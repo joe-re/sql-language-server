@@ -34,10 +34,24 @@ export function createServerWithConnection(connection: IConnection) {
   let hasConfigurationCapability = false
   let rootPath = ''
 
-  documents.onDidChangeContent((params) => {
-    logger.debug(`onDidChangeContent: ${params.document.uri}, ${params.document.version}`)
-    const diagnostics = createDiagnostics(params.document.uri, params.document.getText())
+  async function makeDiagnostics(document: TextDocument) {
+    const lintConfig = hasConfigurationCapability && (
+      await connection.workspace.getConfiguration({
+        section: 'sqlLanguageServer',
+      })
+    )?.lint || {}
+    const hasRules = lintConfig.hasOwnProperty('rules')
+    const diagnostics = createDiagnostics(
+      document.uri,
+      document.getText(),
+      hasRules ? lintConfig : null
+    )
     connection.sendDiagnostics(diagnostics)
+  }
+
+  documents.onDidChangeContent(async (params) => {
+    logger.debug(`onDidChangeContent: ${params.document.uri}, ${params.document.version}`)
+    makeDiagnostics(params.document)
   })
 
   connection.onInitialize((params): InitializeResult => {
@@ -120,6 +134,13 @@ export function createServerWithConnection(connection: IConnection) {
     const connections = change.settings?.sqlLanguageServer?.connections ?? []
     if (connections.length > 0) {
       SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
+    }
+
+    const lint = change.settings?.sqlLanguageServer?.lint
+    if (lint?.rules) {
+      documents.all().forEach(v => {
+        makeDiagnostics(v)
+      })
     }
   })
 

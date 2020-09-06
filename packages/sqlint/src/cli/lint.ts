@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { getFileList, readFile, writeFile } from './utils'
 import { execute, Diagnostic, ErrorLevel } from '../rules'
-import { loadConfig } from './loadConfig';
+import { loadConfig, RawConfig, convertToConfig } from './loadConfig';
 import { applyFixes, FixDescription } from '../fixer';
 
 export type LintResult = {
@@ -54,14 +54,15 @@ export function lint (
     outputFile?: string
     text?: string
     fix?: boolean
+    configObject?: RawConfig | null
   }
 ) {
-  const { path, formatType, configPath, outputFile, text } = params
+  const { path, formatType, configPath, outputFile, text, configObject } = params
   const files = path ? getFileList(path) : []
   if (files.length === 0 && !text) {
     throw new Error(`No files matching. path: ${path}`)
   }
-  const config = loadConfig(configPath || process.cwd())
+  const config = configObject ? convertToConfig(configObject) : loadConfig(configPath || process.cwd())
 
   let result: LintResult[] = text
     ? [{ filepath: 'text', diagnostics: execute(text, config) }]

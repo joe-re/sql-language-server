@@ -41,13 +41,13 @@ function validateSchema(config: Object) {
   return true
 }
 
-type RawConfig = {
+export type RawConfig = {
   rules: {
     [key: string]: string | number | { level: string | number, option: any }
   }
 }
 
-function convertToConfig(rawConfig: RawConfig): Config {
+export function convertToConfig(rawConfig: RawConfig): Config {
   return Object.entries(rawConfig.rules).reduce((p, c) => {
     let level = 0
     let option = null
@@ -59,7 +59,7 @@ function convertToConfig(rawConfig: RawConfig): Config {
         switch(v) {
           case 'error': return 2
           case 'warning': return 1
-          case 'off': level = 0
+          case 'off': return 0
           default: throw new Error(`unknown error type: ${c[1]}`)
         }
       }
