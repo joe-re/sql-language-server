@@ -57,6 +57,27 @@ describe('lint', () => {
     })
   })
 
+  describe('configObject', () => {
+    it('should do lint according to configObject given', () => {
+      const before = JSON.parse(lint({
+        text: 'select * from bar',
+        formatType: 'json',
+        configPath: `${__dirname}/fixtures/lint`
+      }))
+      expect(before.length).toEqual(1)
+      expect(before[0].diagnostics.length).toEqual(2)
+
+      const result = lint({
+        text: 'select * from bar',
+        formatType: 'json',
+        configObject: { rules: { "reserved-word-case": "off" } }
+      })
+      const parsed = JSON.parse(result)
+      expect(parsed.length).toEqual(1)
+      expect(parsed[0].diagnostics.length).toEqual(0)
+    })
+  })
+
   describe('fix', () => {
     it('should be fixed correctly. case1', () => {
       const sql = 'SELECT employees.first_name, employees.email, e.first_name, e.department_id, e.manager_id, e.hire_date' +

@@ -67,8 +67,8 @@ export function lint (
   let result: LintResult[] = text
     ? [{ filepath: 'text', diagnostics: execute(text, config) }]
     : files.map(v => {
-      const diaglostics = execute(readFile(v), config)
-      return { filepath: v, diagnostics: diaglostics }
+      const diagnostics = execute(readFile(v), config)
+      return { filepath: v, diagnostics: diagnostics }
     }).flat()
 
   let output = ''
