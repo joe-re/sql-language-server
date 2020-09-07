@@ -86,7 +86,7 @@ describe('setSettingFromWorkspaceConfig', () => {
   it('should apply configuration from the configuration object given', async () => {
     const personalConfig = readFileSync(`${__dirname}/fixtures/personalConfigFile.json`, 'utf8')
     const setting = await SettingStore.getInstance().setSettingFromWorkspaceConfig(
-      JSON.parse(personalConfig),
+      JSON.parse(personalConfig).connections,
       '/Users/sql-language-server/project2'
     )
     expect(setting?.name).toEqual('project2')
