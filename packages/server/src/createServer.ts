@@ -3,7 +3,7 @@ import {
   TextDocuments,
   InitializeResult,
   TextDocumentPositionParams,
-  CompletionItem
+  CompletionItem,
 } from 'vscode-languageserver'
 import { TextDocument } from 'vscode-languageserver-textdocument' 
 import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
@@ -31,28 +31,65 @@ export function createServerWithConnection(connection: IConnection) {
   let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = []
+  let hasConfigurationCapability = false
+  let rootPath = ''
 
-  documents.onDidChangeContent((params) => {
-    logger.debug(`onDidChangeContent: ${params.document.uri}, ${params.document.version}`)
-    const diagnostics = createDiagnostics(params.document.uri, params.document.getText())
+  async function makeDiagnostics(document: TextDocument) {
+    const lintConfig = hasConfigurationCapability && (
+      await connection.workspace.getConfiguration({
+        section: 'sqlLanguageServer',
+      })
+    )?.lint || {}
+    const hasRules = lintConfig.hasOwnProperty('rules')
+    const diagnostics = createDiagnostics(
+      document.uri,
+      document.getText(),
+      hasRules ? lintConfig : null
+    )
     connection.sendDiagnostics(diagnostics)
+  }
+
+  documents.onDidChangeContent(async (params) => {
+    logger.debug(`onDidChangeContent: ${params.document.uri}, ${params.document.version}`)
+    makeDiagnostics(params.document)
   })
 
   connection.onInitialize((params): InitializeResult => {
+    const capabilities = params.capabilities
+    hasConfigurationCapability = !!capabilities.workspace && !!capabilities.workspace.configuration;
     logger.debug(`onInitialize: ${params.rootPath}`)
+    rootPath = params.rootPath || ''
+
+    return {
+      capabilities: {
+        textDocumentSync: 1,
+        completionProvider: {
+          resolveProvider: true,
+          triggerCharacters: ['.'],
+        },
+        codeActionProvider: true,
+        executeCommandProvider: {
+          commands: [
+            'sqlLanguageServer.switchDatabaseConnection',
+            'sqlLanguageServer.fixAllFixableProblems'
+          ]
+        }
+      }
+    }
+  })
+
+  connection.onInitialized(async () => {
   	SettingStore.getInstance().on('change', async () => {
       logger.debug('onInitialize: receive change event from SettingStore')
   		try {
-        setTimeout(() => {
-          try {
-            connection.sendNotification('sqlLanguageServer.finishSetup', {
-              personalConfig: SettingStore.getInstance().getPersonalConfig(),
-              config: SettingStore.getInstance().getSetting()
-            })
-          } catch (e) {
-            logger.error(e)
-          }
-        }, 1000) // TODO: Need to think about better way to sendNotification
+        try {
+          connection.sendNotification('sqlLanguageServer.finishSetup', {
+            personalConfig: SettingStore.getInstance().getPersonalConfig(),
+            config: SettingStore.getInstance().getSetting()
+          })
+        } catch (e) {
+          logger.error(e)
+        }
         try {
           const client = getDatabaseClient(
             SettingStore.getInstance().getSetting()
@@ -72,29 +109,38 @@ export function createServerWithConnection(connection: IConnection) {
       } catch (e) {
         logger.error(e)
       }
-  	})
-  	if (params.rootPath) {
+    })
+    const connections = hasConfigurationCapability && (
+      await connection.workspace.getConfiguration({
+        section: 'sqlLanguageServer',
+      })
+    )?.connections || []
+    if (connections.length > 0) {
+      SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
+    } else if (rootPath) {
       SettingStore.getInstance().setSettingFromFile(
         `${process.env.HOME}/.config/sql-language-server/.sqllsrc.json`,
-        `${params.rootPath}/.sqllsrc.json`,
-        params.rootPath || ''
+        `${rootPath}/.sqllsrc.json`,
+        rootPath || ''
       )
-  	}
-    return {
-      capabilities: {
-        textDocumentSync: 1,
-        completionProvider: {
-          resolveProvider: true,
-          triggerCharacters: ['.'],
-        },
-        codeActionProvider: true,
-        executeCommandProvider: {
-          commands: [
-            'sqlLanguageServer.switchDatabaseConnection',
-            'sqlLanguageServer.fixAllFixableProblems'
-          ]
-        }
-      }
+    }
+  })
+
+  connection.onDidChangeConfiguration(change => {
+    logger.debug('onDidChangeConfiguration', JSON.stringify(change))
+    if (!hasConfigurationCapability) {
+      return
+    }
+    const connections = change.settings?.sqlLanguageServer?.connections ?? []
+    if (connections.length > 0) {
+      SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
+    }
+
+    const lint = change.settings?.sqlLanguageServer?.lint
+    if (lint?.rules) {
+      documents.all().forEach(v => {
+        makeDiagnostics(v)
+      })
     }
   })
 

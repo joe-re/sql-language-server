@@ -1,4 +1,5 @@
 import SettingStore from "../src/SettingStore"
+import { readFileSync } from 'fs'
 
 describe('setSetting', () => {
   beforeAll(() => {
@@ -78,6 +79,18 @@ describe('setSettingFromFile', () => {
         "passphrase": "123456"
       })
     })
+  })
+})
+
+describe('setSettingFromWorkspaceConfig', () => {
+  it('should apply configuration from the configuration object given', async () => {
+    const personalConfig = readFileSync(`${__dirname}/fixtures/personalConfigFile.json`, 'utf8')
+    const setting = await SettingStore.getInstance().setSettingFromWorkspaceConfig(
+      JSON.parse(personalConfig).connections,
+      '/Users/sql-language-server/project2'
+    )
+    expect(setting?.name).toEqual('project2')
+    expect(setting?.database).toEqual('projectConfigDatabase')
   })
 })
 

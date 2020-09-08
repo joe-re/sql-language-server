@@ -6,7 +6,7 @@
   "main": "./packages/client/out/extension",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joe-re/sql-language-server"
+    "url": "git+https://github.com/joe-re/sql-language-server.git"
   },
   "keywords": [
     "sql",
@@ -57,7 +57,25 @@
         "title": "Rebuild SQLite3 Client",
         "category": "SQLLanguageServer"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "sql-language-server configuration",
+      "properties": {
+        "sqlLanguageServer.connections": {
+          "scope": "resource",
+          "type": "array",
+          "default": [],
+          "description": "connection setting"
+        },
+        "sqlLanguageServer.lint": {
+          "scope": "resource",
+          "type": "object",
+          "default": {},
+          "description": "lint setting"
+        }
+      }
+    }
   },
   "private": true,
   "workspaces": [

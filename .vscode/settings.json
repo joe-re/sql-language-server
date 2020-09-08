@@ -9,5 +9,5 @@
 		"out": true
 	},
 	"typescript.tsdk": "./node_modules/typescript/lib",
-	"typescript.tsc.autoDetect": "off"
+	"typescript.tsc.autoDetect": "off",
 }

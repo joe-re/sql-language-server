@@ -21,6 +21,7 @@ export default {
     replace({
       delimiters: ['', ''],
       values: {
+        "console.log('using faster connection')": '',
         'require(\'readable-stream/transform\')': 'require(\'stream\').Transform',
         'require("readable-stream/transform")': 'require("stream").Transform',
         'readable-stream': 'stream',

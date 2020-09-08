@@ -79,14 +79,13 @@ $ sql-language-server up [options]        run sql-language-server
 $ sql-language-server up --method stdio
 ```
 
-### Connect to database
-
-#### Using Configuration Files
+### Configuration
 
 There are two ways to use configuration files.
 
 - Set personal configuration file(~/.config/sql-language-server/.sqllsrc.json)
 - Set project configuration file on your project root(\${YOUR_PROJECT/.sqllsrc.json})
+- Use workspace/configuration according to LSP specification
 
 #### Example for personal configuration file
 
@@ -135,7 +134,7 @@ There are two ways to use configuration files.
 
 Please restart sql-language-server process after create .sqllsrc.json.
 
-#### Parameters
+#### Parameters of connections
 
 | Key          | Description                                                                                                               | value                   | required | default                           |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------- | ----------------------- | -------- | --------------------------------- |
@@ -230,6 +229,101 @@ It will merge them as following:
   }
 }
 ```
+
+#### workspace/configuration
+
+##### Parameters of workspace configuration
+
+- connections: It's the same as `connections` params of personal config file
+- lint: It's the same as configuration of [sqlint](https://github.com/joe-re/sql-language-server/tree/release/packages/sqlint#configuration).
+
+
+##### Example of workspace configuration
+
+- [coc.nvim](https://github.com/neoclide/coc.nvim)
+
+~/.config/nvim/coc-settings.json
+```json
+{
+  "languageserver": {
+    "sql": {
+      "command": "sql-language-server",
+      "args": ["up", "--method", "stdio"],
+      "filetypes": ["sql"],
+      "settings": {
+        "sqlLanguageServer": {
+          "connections": [
+            {
+              "name": "mysql_project",
+              "adapter": "mysql",
+              "host": "127.0.0.1",
+              "port": 3306,
+              "user": "sqlls",
+              "password": "sqlls",
+              "database": "mysql_db",
+              "projectPaths": ["/Users/joe_re/src/MysqlProject"],
+              "ssh": {
+                "user": "ubuntu",
+                "remoteHost": "xxx-xx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+                "dbHost": "127.0.0.1",
+                "port": 3306
+              }
+            }
+          ],
+          "lint": {
+            "rules": {
+              "align-column-to-the-first": "error",
+              "column-new-line": "error",
+              "linebreak-after-clause-keyword": "off",
+              "reserved-word-case": ["error", "upper"],
+              "space-surrounding-operators": "error",
+              "where-clause-new-line": "error",
+              "align-where-clause-to-the-first": "error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+- vscode workspace setting
+
+```json
+"settings": {
+  "sqlLanguageServer.connections": [
+    {
+      "name": "mysql_project",
+      "adapter": "mysql",
+      "host": "127.0.0.1",
+      "port": 3306,
+      "user": "sqlls",
+      "password": "sqlls",
+      "database": "mysql_db",
+      "projectPaths": ["/Users/joe_re/src/MysqlProject"],
+      "ssh": {
+        "user": "ubuntu",
+        "remoteHost": "xxx-xx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
+        "dbHost": "127.0.0.1",
+        "port": 3306
+      }
+    }
+  ],
+  "sqlLanguageServer.lint": {
+    "rules": {
+      "align-column-to-the-first": "off",
+      "column-new-line": "error",
+      "linebreak-after-clause-keyword": "error",
+      "reserved-word-case": ["error", "upper"],
+      "space-surrounding-operators": "error",
+      "where-clause-new-line": "error",
+      "align-where-clause-to-the-first": "error",
+    }
+  }
+}
+```
+
 
 #### Inject envitonment variables
 

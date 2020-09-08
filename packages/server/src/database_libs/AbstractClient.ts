@@ -1,4 +1,4 @@
-import { Settings } from '../SettingStore'
+import { Connection } from '../SettingStore'
 import log4js from 'log4js';
 import { SSHConnection } from 'node-ssh-forward'
 import { readFileSync } from 'fs'
@@ -25,7 +25,7 @@ export type Schema = Table[]
 export default abstract class AbstractClient {
   connection: any
 
-  constructor(protected settings: Settings) {}
+  constructor(protected settings: Connection) {}
 
   abstract connect(): Promise<boolean> | boolean
   abstract disconnect(): void

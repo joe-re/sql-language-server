@@ -2,16 +2,16 @@ import { parse } from '@joe-re/sql-parser'
 import log4js from 'log4js';
 import { PublishDiagnosticsParams, Diagnostic } from 'vscode-languageserver'
 import { DiagnosticSeverity }from 'vscode-languageserver-types'
-import { lint, ErrorLevel, LintResult } from 'sqlint'
+import { lint, ErrorLevel, LintResult, RawConfig } from 'sqlint'
 import cache, { LintCache } from './cache'
 
 const logger = log4js.getLogger()
 
-function doLint(uri: string, sql: string): Diagnostic[] {
+function doLint(uri: string, sql: string, config?: RawConfig | null): Diagnostic[] {
   if (!sql) {
     return []
   }
-  const result: LintResult[] = JSON.parse(lint({ configPath: process.cwd(), formatType: 'json', text: sql }))
+  const result: LintResult[] = JSON.parse(lint({ configPath: process.cwd(), formatType: 'json', text: sql, configObject: config }))
   const lintDiagnostics = result.map(v => v.diagnostics).flat()
   const lintCache: LintCache[] = []
   const diagnostics = lintDiagnostics.map(v => {
@@ -32,13 +32,13 @@ function doLint(uri: string, sql: string): Diagnostic[] {
   return diagnostics
 }
 
-export default function createDiagnostics(uri: string, sql: string): PublishDiagnosticsParams {
+export default function createDiagnostics(uri: string, sql: string, config?: RawConfig | null): PublishDiagnosticsParams {
   logger.debug(`createDiagnostics`)
   let diagnostics: Diagnostic[] = []
   try {
     const ast = parse(sql)
     logger.debug(`ast: ${JSON.stringify(ast)}`)
-    diagnostics = doLint(uri, sql)
+    diagnostics = doLint(uri, sql, config)
   } catch (e) {
     logger.debug('parse error')
     logger.debug(e)
