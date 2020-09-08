@@ -6,7 +6,7 @@
   "main": "./packages/client/out/extension",
   "repository": {
     "type": "git",
-    "url": "https://github.com/joe-re/sql-language-server"
+    "url": "git+https://github.com/joe-re/sql-language-server.git"
   },
   "keywords": [
     "sql",

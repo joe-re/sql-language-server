@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/joe-re/sql-language-server"
+    "url": "git+https://github.com/joe-re/sql-language-server.git"
   },
   "keywords": [
     "sql",
@@ -24,7 +24,7 @@
     "beautify"
   ],
   "bugs": {
-    "url": "https://github.com/joe-re/sql-language-server"
+    "url": "https://github.com/joe-re/sql-language-server/issues"
   },
   "files": [
     "package.json",
