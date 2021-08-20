@@ -1,7 +1,6 @@
 import App from './App.svelte';
 import { initClient } from './client'
 
-require('monaco-editor-core');
 (self as any).MonacoEnvironment = {
     getWorkerUrl: () => './editor.worker.bundle.js'
 }
