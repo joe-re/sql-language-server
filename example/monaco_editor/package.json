@@ -17,8 +17,9 @@
     "migrate:sqlite": "NODE_ENV=sqlite sequelize-cli db:migrate"
   },
   "dependencies": {
+    "@codingame/monaco-jsonrpc": "^0.3.1",
     "express": "^4.17.1",
-    "monaco-editor-core": "^0.20.0",
+    "monaco-editor-core": "^0.22.3",
     "monaco-languageclient": "^0.13.1-next.1",
     "reconnecting-websocket": "^4.4.0",
     "vscode-ws-jsonrpc": "^0.2.0",

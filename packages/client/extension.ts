@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { workspace, ExtensionContext, commands, window as Window } from 'vscode'
+import { ExtensionContext, commands, window as Window } from 'vscode'
 import {
   LanguageClient,
   LanguageClientOptions,

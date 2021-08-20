@@ -19,6 +19,7 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
   mysql:
+    platform: linux/x86_64
     image: mysql
     restart: always
     environment:
