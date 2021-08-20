@@ -4,7 +4,5 @@ packages/client/out/*
 packages/server/dist/*
 **/*/*.log
 **/*/package-lock.json
-**/*/yarn.lock
-yarn.lock
 *.sqlite3
 *.sqlite
