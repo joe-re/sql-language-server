@@ -1,4 +1,4 @@
-import App from './App.svelte';
+import App from './App.svelte'
 import { initClient } from './client'
 
 (self as any).MonacoEnvironment = {
