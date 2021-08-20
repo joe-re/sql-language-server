@@ -1,11 +1,11 @@
-/// <reference types="monaco-editor-core/monaco"/>
-
-import { listen, MessageConnection } from "vscode-ws-jsonrpc";
+import * as monaco from 'monaco-editor-core'
+import { listen } from '@codingame/monaco-jsonrpc';
 import {
   MonacoLanguageClient,
   MonacoServices,
   createConnection,
   ExecuteCommandParams,
+  MessageConnection,
 } from "monaco-languageclient";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { URI } from 'vscode-uri'
@@ -23,7 +23,7 @@ export function initClient() {
   });
 
   const value = `SELECT * FROM users`;
-  const editor = monaco.editor.create(document.getElementById("container")!, {
+  monaco.editor.create(document.getElementById("container")!, {
     model: monaco.editor.createModel(
       value,
       "sql",
@@ -33,7 +33,7 @@ export function initClient() {
     tabCompletion: "on",
   });
 
-  MonacoServices.install(editor);
+  MonacoServices.install(monaco);
 
   const URL = "ws://localhost:3000/server";
   const webSocket = createWebSocket(URL) as WebSocket;

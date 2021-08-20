@@ -1,5 +1,5 @@
 import {
-  IConnection,
+  Connection,
   TextDocuments,
   InitializeResult,
   TextDocumentPositionParams,
@@ -25,7 +25,7 @@ type Args = {
 	method?: ConnectionMethod
 }
 
-export function createServerWithConnection(connection: IConnection) {
+export function createServerWithConnection(connection: Connection) {
   initializeLogging()
   const logger = log4js.getLogger()
   let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
@@ -252,6 +252,6 @@ export function createServerWithConnection(connection: IConnection) {
 }
 
 export function createServer() {
-  let connection: IConnection = createConnection((yargs.argv as Args).method || 'node-ipc')
+  let connection: Connection = createConnection((yargs.argv as Args).method || 'node-ipc')
   return createServerWithConnection(connection)
 }
