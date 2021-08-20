@@ -1,10 +1,9 @@
-import * as mysql from 'mysql2/promise'
-import * as mysqlType from 'mysql'
+import * as mysql from 'mysql2'
 import { Connection } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
 
 export default class MysqlClient extends AbstractClient {
-  connection: mysqlType.Connection | null = null
+  connection: mysql.Connection | null = null
 
   constructor(settings: Connection) {
     super(settings)
@@ -15,7 +14,7 @@ export default class MysqlClient extends AbstractClient {
   get DefaultUser() { return 'root' }
 
   async connect() {
-    this.connection = await mysql.createConnection({
+    this.connection = mysql.createConnection({
       host: this.settings.host || this.DefaultHost,
       password: this.settings.password || '',
       user: this.settings.user || this.DefaultUser,
@@ -48,7 +47,7 @@ export default class MysqlClient extends AbstractClient {
           reject(new Error(err.message))
           return
         }
-        const tables = results.map((v: any) => v['table_name'] || v['TABLE_NAME'])
+        const tables = (results as any).map((v: any) => v['table_name'] || v['TABLE_NAME'])
         resolve(tables)
       })
     })
@@ -66,7 +65,7 @@ export default class MysqlClient extends AbstractClient {
           reject(new Error(err.message))
           return
         }
-        const columns: RawField[] = results.map((v: any) => ({
+        const columns: RawField[] = (results as any).map((v: any) => ({
           field: v.Field,
           type: v.Type,
           null: v.Null,

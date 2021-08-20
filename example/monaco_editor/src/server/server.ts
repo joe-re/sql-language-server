@@ -1,9 +1,9 @@
 import express from "express";
 import ws from "ws";
-import http from "http";
-import net from "net";
+import type http from "http";
+import type net from "net";
 import url from "url";
-import rpc from "vscode-ws-jsonrpc";
+import type rpc from "vscode-ws-jsonrpc";
 import { launchServer } from "./launchServer";
 
 process.on("uncaughtException", function (err: any) {
