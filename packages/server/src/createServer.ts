@@ -5,7 +5,7 @@ import {
   TextDocumentPositionParams,
   CompletionItem,
 } from 'vscode-languageserver'
-import { TextDocument } from 'vscode-languageserver-textdocument' 
+import { TextDocument } from 'vscode-languageserver-textdocument'
 import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
 import cache from './cache'
 import complete from './complete'
@@ -19,10 +19,12 @@ import initializeLogging from './initializeLogging'
 import { lint, LintResult } from 'sqlint'
 import log4js from 'log4js'
 import { RequireSqlite3Error } from './database_libs/Sqlite3Client'
+import * as fs from 'fs'
+import { RawConfig } from 'sqlint'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
 type Args = {
-	method?: ConnectionMethod
+  method?: ConnectionMethod
 }
 
 export function createServerWithConnection(connection: Connection) {
@@ -30,17 +32,38 @@ export function createServerWithConnection(connection: Connection) {
   const logger = log4js.getLogger()
   let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
   documents.listen(connection);
-  let schema: Schema = []
+  let schema: Schema = { tables: [], functions: [] }
   let hasConfigurationCapability = false
   let rootPath = ''
+  let lintConfig: RawConfig | null | undefined
+
+  // Read schema file
+  function readJsonSchemaFile(filePath: string) {
+    logger.info(`loading schema file: ${filePath}`)
+    const data = fs.readFileSync(filePath, "utf8").replace(/^\ufeff/u, "");
+    try {
+      schema = JSON.parse(data);
+    }
+    catch (e) {
+      logger.error("failed to read schema file")
+      connection.sendNotification('sqlLanguageServer.error', {
+        message: "Failed to read schema file: " + filePath + " error: " + e.message
+      })
+      throw e
+    }
+  }
+
+  function readAndMonitorJsonSchemaFile(filePath: string) {
+    readJsonSchemaFile(filePath)
+    fs.watchFile(filePath, (_curr, _prev) => {
+      logger.info(`change detected, reloading schema file: ${filePath}`)
+      readJsonSchemaFile(filePath)
+    })
+  }
 
   async function makeDiagnostics(document: TextDocument) {
-    const lintConfig = hasConfigurationCapability && (
-      await connection.workspace.getConfiguration({
-        section: 'sqlLanguageServer',
-      })
-    )?.lint || {}
-    const hasRules = lintConfig.hasOwnProperty('rules')
+
+    const hasRules = lintConfig?.hasOwnProperty('rules')
     const diagnostics = createDiagnostics(
       document.uri,
       document.getText(),
@@ -56,7 +79,14 @@ export function createServerWithConnection(connection: Connection) {
 
   connection.onInitialize((params): InitializeResult => {
     const capabilities = params.capabilities
-    hasConfigurationCapability = !!capabilities.workspace && !!capabilities.workspace.configuration;
+    // JupyterLab sends didChangeConfiguration information
+    // using both the workspace.configuration and
+    // workspace.didChangeConfiguration
+    hasConfigurationCapability = !!capabilities.workspace && (
+      !!capabilities.workspace.configuration ||
+      !!capabilities.workspace.didChangeConfiguration);
+
+
     logger.debug(`onInitialize: ${params.rootPath}`)
     rootPath = params.rootPath || ''
 
@@ -79,9 +109,9 @@ export function createServerWithConnection(connection: Connection) {
   })
 
   connection.onInitialized(async () => {
-  	SettingStore.getInstance().on('change', async () => {
+    SettingStore.getInstance().on('change', async () => {
       logger.debug('onInitialize: receive change event from SettingStore')
-  		try {
+      try {
         try {
           connection.sendNotification('sqlLanguageServer.finishSetup', {
             personalConfig: SettingStore.getInstance().getPersonalConfig(),
@@ -90,21 +120,37 @@ export function createServerWithConnection(connection: Connection) {
         } catch (e) {
           logger.error(e)
         }
-        try {
-          const client = getDatabaseClient(
-            SettingStore.getInstance().getSetting()
-          )
-          schema = await client.getSchema()
-          logger.debug("get schema")
-          logger.debug(JSON.stringify(schema))
-        } catch (e) {
-          logger.error("failed to get schema info")
-          if (e instanceof RequireSqlite3Error) {
+        var setting = SettingStore.getInstance().getSetting()
+        if (setting.adapter == 'json') {
+          // Loading schema from json file
+          var path = setting.filename || ""
+          if (path == "") {
+            logger.error("filename must be provided")
             connection.sendNotification('sqlLanguageServer.error', {
-              message: "Need to rebuild sqlite3 module."
+              message: "filename must be provided"
             })
+            throw "filename must be provided"
           }
-          throw e
+          readAndMonitorJsonSchemaFile(path)
+        }
+        else {
+          // Else get schema form database client
+          try {
+            const client = getDatabaseClient(
+              SettingStore.getInstance().getSetting()
+            )
+            schema = await client.getSchema()
+            logger.debug("get schema")
+            logger.debug(JSON.stringify(schema))
+          } catch (e) {
+            logger.error("failed to get schema info")
+            if (e instanceof RequireSqlite3Error) {
+              connection.sendNotification('sqlLanguageServer.error', {
+                message: "Need to rebuild sqlite3 module."
+              })
+            }
+            throw e
+          }
         }
       } catch (e) {
         logger.error(e)
@@ -136,7 +182,9 @@ export function createServerWithConnection(connection: Connection) {
       SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
     }
 
+    // On configuration changes we retrieve the lint config
     const lint = change.settings?.sqlLanguageServer?.lint
+    lintConfig = lint
     if (lint?.rules) {
       documents.all().forEach(v => {
         makeDiagnostics(v)
@@ -149,13 +197,13 @@ export function createServerWithConnection(connection: Connection) {
     if (!text) {
       return []
     }
-  	logger.debug(text || '')
-  	const candidates = complete(text, {
+    logger.debug(text || '')
+    const candidates = complete(text, {
   		line: docParams.position.line,
   		column: docParams.position.character
   	}, schema).candidates
   	logger.debug(candidates.map(v => v.label).join(","))
-  	return candidates
+    return candidates
   })
 
   connection.onCodeAction(params => {
@@ -186,9 +234,9 @@ export function createServerWithConnection(connection: Connection) {
           const edit = v.range.startOffset === v.range.endOffset
             ? TextEdit.insert(toPosition(text, v.range.startOffset), v.text)
             : TextEdit.replace({
-                start: toPosition(text, v.range.startOffset),
-                end: toPosition(text, v.range.endOffset)
-              }, v.text)
+              start: toPosition(text, v.range.startOffset),
+              end: toPosition(text, v.range.endOffset)
+            }, v.text)
           return edit
         }))
       ]
@@ -196,7 +244,7 @@ export function createServerWithConnection(connection: Connection) {
     action.diagnostics = params.context.diagnostics
     return [action]
   })
-  
+
   connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
     return item
   })

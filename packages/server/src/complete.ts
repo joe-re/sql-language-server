@@ -72,9 +72,9 @@ function toCompletionItemFromColumn(column: Column): CompletionItem {
 }
 
 function getTableAndColumnCondidates(tablePrefix: string, schema: Schema, option?: { withoutTable?: boolean, withoutColumn?: boolean }): CompletionItem[] {
-  const tableCandidates = schema.filter(v => v.tableName.startsWith(tablePrefix)).map(v => toCompletionItemFromTable(v))
+  const tableCandidates = schema.tables.filter(v => v.tableName.startsWith(tablePrefix)).map(v => toCompletionItemFromTable(v))
   const columnCandidates = Array.prototype.concat.apply([],
-    schema.filter(v => tableCandidates.map(v => v.label).includes(v.tableName)).map(v => v.columns)
+    schema.tables.filter(v => tableCandidates.map(v => v.label).includes(v.tableName)).map(v => v.columns)
   ).map((v: Column) => toCompletionItemFromColumn(v))
   const candidates: CompletionItem[] = []
   if (!option?.withoutTable) {
@@ -120,7 +120,7 @@ function getCandidatedFromIncompleteSubquery(params: {
   return candidates
 }
 
-function createTablesFromFromNodes(fromNodes: FromTableNode[]): Schema {
+function createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
   return fromNodes.reduce((p: any, c) => {
     if (c.type !== 'subquery') {
       return p
@@ -148,7 +148,7 @@ function getCandidatesFromError(target: string, schema: Schema, pos: Pos, e: any
     return []
   }
   if (candidatesLiterals.includes('.')) {
-    candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
+    candidates = candidates.concat(schema.tables.map(v => toCompletionItemFromTable(v)))
   }
   const lastChar = target[target.length - 1]
   logger.debug(`lastChar: ${lastChar}`)
@@ -159,7 +159,7 @@ function getCandidatesFromError(target: string, schema: Schema, pos: Pos, e: any
     }
     const tableName = getLastToken(removedLastDotTarget)
     const subqueryTables = createTablesFromFromNodes(fromNodes)
-    const attachedAlias = schema.concat(subqueryTables).map(v => {
+    const attachedAlias = schema.tables.concat(subqueryTables).map(v => {
       const as = fromNodes.filter((v2: any) => v.tableName === v2.table).map(v => v.as)
       return Object.assign({}, v, { as: as ? as : [] })
     })
@@ -209,7 +209,7 @@ function completeSelectStatement(ast: SelectStatement, _pos: Pos, _schema: Schem
   return candidates
 }
 
-export default function complete(sql: string, pos: Pos, schema: Schema = []) {
+export default function complete(sql: string, pos: Pos, schema: Schema = {tables:[], functions:[]}) {
   logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   let candidates: CompletionItem[] = []
   let error = null;
@@ -243,7 +243,7 @@ export default function complete(sql: string, pos: Pos, schema: Schema = []) {
       if (ast.type === 'select' && Array.isArray(ast.from?.tables)) {
         const fromTable = getFromNodeByPos(ast.from?.tables || [], pos)
         if (fromTable && fromTable.type === 'table') {
-          candidates = candidates.concat(schema.map(v => toCompletionItemFromTable(v)))
+          candidates = candidates.concat(schema.tables.map(v => toCompletionItemFromTable(v)))
             .concat([{ label: 'INNER JOIN' }, { label: 'LEFT JOIN' }])
           if (fromTable.join && !fromTable.on) {
             candidates.push({ label: 'ON' })
