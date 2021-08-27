@@ -790,12 +790,17 @@ column =
   name:column_name !{ return reservedMap[name.toUpperCase()] === true; } {
     return name;
   }
-  / '`' chars:[^`]+ '`' {
-    return chars.join('');
+  / backtik_column ([.] backtik_column)* {
+    return text();
   }
 
-column_name 
-  =  start:ident_start parts:column_part* { return start + parts.join(''); }
+backtik_column = '`' chars:[^`]+ '`'
+
+// Supports nested column names like `books.chapters.paragraphs`
+column_name
+  = ident_start column_char* ([.] column_char+)* {
+     return text();
+  }
 
 ident_name  
   =  start:ident_start parts:ident_part* { return start + parts.join(''); }
@@ -805,7 +810,8 @@ ident_start = [A-Za-z_]
 ident_part  = [A-Za-z0-9_]
 
 //to support column name like `cf1:name` in hbase
-column_part  = [A-Za-z0-9_:]
+// Allow square brackets and quote to support nested columns with subscripts for example `books['title'].chapters[12].paragraphs`
+column_char  = [A-Za-z0-9_:\[\]\']
 
 
 param 
