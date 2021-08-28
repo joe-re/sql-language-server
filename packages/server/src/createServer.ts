@@ -8,7 +8,7 @@ import * as VscodeNode  from 'vscode-languageserver/node'
 import { TextDocument } from 'vscode-languageserver-textdocument' 
 import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
 import cache from './cache'
-import complete from './complete'
+import { complete } from './complete'
 import createDiagnostics from './createDiagnostics'
 import createConnection from './createConnection'
 import yargs from 'yargs'
@@ -198,11 +198,9 @@ export function createServerWithConnection(connection: Connection) {
       return []
     }
     logger.debug(text || '')
-    const candidates = complete(text, {
-  		line: docParams.position.line,
-  		column: docParams.position.character
-  	}, schema).candidates
-  	logger.debug(candidates.map(v => v.label).join(","))
+    let pos = { line: docParams.position.line, column: docParams.position.character }
+    const candidates = complete(text, pos, schema).candidates
+    if (logger.isDebugEnabled()) logger.debug('onCompletion returns: ' + JSON.stringify(candidates))
     return candidates
   })
 
