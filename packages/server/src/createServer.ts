@@ -1,11 +1,11 @@
-import {
+import type {
   Connection,
-  TextDocuments,
   InitializeResult,
   TextDocumentPositionParams,
   CompletionItem,
-} from 'vscode-languageserver'
-import { TextDocument } from 'vscode-languageserver-textdocument'
+} from 'vscode-languageserver/node'
+import VscodeNode  from 'vscode-languageserver/node'
+import { TextDocument } from 'vscode-languageserver-textdocument' 
 import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
 import cache from './cache'
 import complete from './complete'
@@ -30,7 +30,7 @@ type Args = {
 export function createServerWithConnection(connection: Connection) {
   initializeLogging()
   const logger = log4js.getLogger()
-  let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
+  let documents: VscodeNode.TextDocuments<TextDocument> = new VscodeNode.TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = { tables: [], functions: [] }
   let hasConfigurationCapability = false

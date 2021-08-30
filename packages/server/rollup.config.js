@@ -26,11 +26,12 @@ export default {
         'require("readable-stream/transform")': 'require("stream").Transform',
         'readable-stream': 'stream',
         "require('./lib/pool.js')": 'class FakePool {}',
-        "require('./lib/pool_connection')": 'class FakePoolConnection {}' 
+        "require('./lib/pool_connection')": 'class FakePoolConnection {}' ,
+        "require('./promise.js')": 'class FakePromiseMYSQL {}' 
       }
     }),
     commonjs({
-      ignore: ['util','pg-native' , './native', './lib/pool_cluster.js', './pool.js', './lib/pool.js', './lib/pool_connection', './lib/pool_connection.js', './pool_connection.js']
+      ignore: ['util','pg-native' , './native', './lib/pool_cluster.js', './pool.js', './lib/pool.js', './lib/pool_connection', './lib/pool_connection.js', './pool_connection.js', './promise.js']
     })
   ]
 };

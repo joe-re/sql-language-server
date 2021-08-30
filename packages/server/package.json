@@ -38,9 +38,10 @@
   "dependencies": {
     "@joe-re/sql-parser": "^0.11.5",
     "@types/pg": "^7.4.10",
+    "cardinal": "^2.1.1",
     "jest": "^26.0.1",
     "log4js": "^6.2.1",
-    "mysql2": "^2.1.0",
+    "mysql2": "^2.3.0",
     "node-ssh-forward": "^0.6.3",
     "pg": "^7.4.3",
     "sqlint": "^0.12.0",

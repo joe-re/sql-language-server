@@ -1148,6 +1148,11 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
+ansicolors@~0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/ansicolors/-/ansicolors-0.3.2.tgz#665597de86a9ffe3aa9bfbe6cae5c6ea426b4979"
+  integrity sha1-ZlWX3oap/+Oqm/vmyuXG6kJrSXk=
+
 any-promise@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/any-promise/-/any-promise-1.3.0.tgz#abc6afeedcea52e809cdc0376aed3ce39635d17f"
@@ -1701,6 +1706,14 @@ capture-exit@^2.0.0:
   integrity sha512-PiT/hQmTonHhl/HFGN+Lx3JJUznrVYJ3+AQsnthneZbvW7x+f08Tk7yLJTLEOUvBTbduLeeBkxEaYXUOUrRq6g==
   dependencies:
     rsvp "^4.8.4"
+
+cardinal@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/cardinal/-/cardinal-2.1.1.tgz#7cc1055d822d212954d07b085dea251cc7bc5505"
+  integrity sha1-fMEFXYItISlU0HsIXeolHMe8VQU=
+  dependencies:
+    ansicolors "~0.3.2"
+    redeyed "~2.1.0"
 
 caseless@~0.12.0:
   version "0.12.0"
@@ -2617,7 +2630,7 @@ eslint-scope@^4.0.3:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-esprima@^4.0.0, esprima@^4.0.1:
+esprima@^4.0.0, esprima@^4.0.1, esprima@~4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.1.tgz#13b04cdb3e6c5d19df91ab6987a8695619b0aa71"
   integrity sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==
@@ -4911,7 +4924,7 @@ ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-mysql2@^2.1.0:
+mysql2@^2.1.0, mysql2@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-2.3.0.tgz#600f5cc27e397dfb77b59eac93666434f88e8079"
   integrity sha512-0t5Ivps5Tdy5YHk5NdKwQhe/4Qyn2pload+S+UooDBvsqngtzujG1BaTWBihQLfeKO3t3122/GtusBtmHEHqww==
@@ -6006,6 +6019,13 @@ reconnecting-websocket@^4.4.0:
   version "4.4.0"
   resolved "https://registry.yarnpkg.com/reconnecting-websocket/-/reconnecting-websocket-4.4.0.tgz#3b0e5b96ef119e78a03135865b8bb0af1b948783"
   integrity sha512-D2E33ceRPga0NvTDhJmphEgJ7FUYF0v4lr1ki0csq06OdlxKfugGzN0dSkxM/NfqCxYELK4KcaTOUOjTV6Dcng==
+
+redeyed@~2.1.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/redeyed/-/redeyed-2.1.1.tgz#8984b5815d99cb220469c99eeeffe38913e6cc0b"
+  integrity sha1-iYS1gV2ZyyIEacme7v/jiRPmzAs=
+  dependencies:
+    esprima "~4.0.0"
 
 regex-not@^1.0.0, regex-not@^1.0.2:
   version "1.0.2"
