@@ -15,7 +15,7 @@ export type SSHConfig = {
 }
 export type Connection = {
   name: string | null,
-  adapter: 'mysql' | 'postgresql' | 'postgres' | 'sqlite3' | null,
+  adapter: 'json' | 'mysql' | 'postgresql' | 'postgres' | 'sqlite3' | null,
   host: string | null
   port: number | null
   user: string | null
@@ -119,7 +119,13 @@ export default class SettingStore extends EventEmitter.EventEmitter {
 
   async setSettingFromWorkspaceConfig(connections: Connection[], projectPath: string = '') {
     this.personalConfig = { connections }
-    const extractedPersonalConfig = this.extractPersonalConfigMatchedProjectPath(projectPath)
+    let extractedPersonalConfig = this.extractPersonalConfigMatchedProjectPath(projectPath)
+    // Default to first connection if none are matched
+    if (extractedPersonalConfig == undefined) {
+      if (connections?.length > 0) {
+        extractedPersonalConfig = connections[0]
+      }
+    }
     this.setSetting(extractedPersonalConfig || {})
     return this.getSetting()
   }

@@ -21,7 +21,16 @@ export type Table = {
   tableName: string,
   columns: Column[]
 }
-export type Schema = Table[]
+export type DbFunction = {
+  name: string,
+  description: string,
+}
+
+export type Schema = {
+  tables: Table[],
+  functions: DbFunction[]
+}
+
 export default abstract class AbstractClient {
   connection: any
 
@@ -36,7 +45,7 @@ export default abstract class AbstractClient {
   abstract DefaultUser: string
 
   async getSchema(): Promise<Schema> {
-    let schema: Schema = []
+    let schema: Schema = {tables:[], functions: []}
     const sshConnection =
       this.settings.ssh?.remoteHost ? new SSHConnection({
         endHost: this.settings.ssh.remoteHost,
@@ -59,11 +68,11 @@ export default abstract class AbstractClient {
     }
     if (!(await this.connect())) {
       logger.error('AbstractClinet.getSchema: failed to connect database')
-      return []
+      return {tables:[], functions: []}
     }
     try {
       const tables = await this.getTables()
-      schema = await Promise.all(
+      schema.tables = await Promise.all(
         tables.map((v) => this.getColumns(v).then(columns => ({
           database: this.settings.database,
           tableName: v,

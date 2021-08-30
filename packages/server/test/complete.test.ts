@@ -82,7 +82,9 @@ describe('keyword completion', () => {
   })
 })
 
-const SIMPLE_SCHEMA = [
+const SIMPLE_SCHEMA = {
+functions: [],
+tables: [
   {
     database: null,
     tableName: 'TABLE1',
@@ -92,6 +94,7 @@ const SIMPLE_SCHEMA = [
     ]
   }
 ]
+}
 
 describe('TableName completion', () => {
   test("complete TableName", () => {
@@ -187,7 +190,9 @@ describe('cursor on dot', () => {
   })
 })
 
-const COMPLEX_SCHEMA = [
+const COMPLEX_SCHEMA = {
+functions: [],
+tables:[
   {
      database: null,
      tableName: 'employees',
@@ -268,6 +273,7 @@ const COMPLEX_SCHEMA = [
      ]
   },
 ]
+}
 
 test("conplete columns from duplicated alias", () => {
   const sql = `
