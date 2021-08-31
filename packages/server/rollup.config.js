@@ -15,9 +15,6 @@ export default {
   plugins: [
     typescript({ tsconfig: 'tsconfig.cli.json' }),
     json(),
-    resolve({
-      preferBuiltins: false,
-    }),
     replace({
       delimiters: ['', ''],
       values: {
@@ -27,11 +24,29 @@ export default {
         'readable-stream': 'stream',
         "require('./lib/pool.js')": 'class FakePool {}',
         "require('./lib/pool_connection')": 'class FakePoolConnection {}' ,
-        "require('./promise.js')": 'class FakePromiseMYSQL {}' 
+        "require('./promise.js')": 'class FakePromiseMYSQL {}',
+        // workaround for fix build error(patch for ssh2-streams/lib/sftp.js)
+        "readString: readString,": '',
+        "function readString(buffer, start, encoding, stream, cb, maxLen)": "export function readString(buffer, start, encoding, stream, cb, maxLen)",
       }
     }),
     commonjs({
-      ignore: ['util','pg-native' , './native', './lib/pool_cluster.js', './pool.js', './lib/pool.js', './lib/pool_connection', './lib/pool_connection.js', './pool_connection.js', './promise.js']
-    })
+      ignore: [
+        'util',
+        'pg-native',
+        './native',
+        './lib/pool_cluster.js',
+        './pool.js',
+        './lib/pool.js',
+        './lib/pool_connection',
+        './lib/pool_connection.js',
+        './pool_connection.js',
+        './promise.js'
+      ],
+      requireReturnsDefault: true,
+    }),
+    resolve({
+      preferBuiltins: false,
+    }),
   ]
 };
