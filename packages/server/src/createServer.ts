@@ -4,7 +4,7 @@ import type {
   TextDocumentPositionParams,
   CompletionItem,
 } from 'vscode-languageserver/node'
-import * as VscodeNode  from 'vscode-languageserver/node'
+import { TextDocuments }  from 'vscode-languageserver/lib/common/server'
 import { TextDocument } from 'vscode-languageserver-textdocument' 
 import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
 import cache from './cache'
@@ -30,7 +30,7 @@ type Args = {
 export function createServerWithConnection(connection: Connection) {
   initializeLogging()
   const logger = log4js.getLogger()
-  let documents: VscodeNode.TextDocuments<TextDocument> = new VscodeNode.TextDocuments(TextDocument)
+  let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = { tables: [], functions: [] }
   let hasConfigurationCapability = false
@@ -44,7 +44,7 @@ export function createServerWithConnection(connection: Connection) {
     try {
       schema = JSON.parse(data);
     }
-    catch (e) {
+    catch (e: any) {
       logger.error("failed to read schema file")
       connection.sendNotification('sqlLanguageServer.error', {
         message: "Failed to read schema file: " + filePath + " error: " + e.message
@@ -256,7 +256,7 @@ export function createServerWithConnection(connection: Connection) {
         SettingStore.getInstance().changeConnection(
           request.arguments && request.arguments[0] || ''
         )
-      } catch (e) {
+      } catch (e: any) {
         connection.sendNotification('sqlLanguageServer.error', {
           message: e.message
         })

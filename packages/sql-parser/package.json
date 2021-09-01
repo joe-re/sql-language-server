@@ -19,7 +19,6 @@
   "engines": {
     "node": ">=0.8.0"
   },
-  "dependencies": {},
   "devDependencies": {
     "jest": "^26.0.1",
     "pegjs": "=0.10.0"

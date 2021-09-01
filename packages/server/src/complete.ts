@@ -106,7 +106,7 @@ function getCandidatedFromIncompleteSubquery(params: {
   const parsedFromClause = getFromNodesFromClause(incompleteSubquery.text)
   try {
     parse(incompleteSubquery.text);
-  } catch (e) {
+  } catch (e: any) {
     if (e.name !== 'SyntaxError') {
       throw e
     }
@@ -251,7 +251,7 @@ export default function complete(sql: string, pos: Pos, schema: Schema = {tables
         }
       }
     }
-  } catch (e) {
+  } catch (e: any) {
     logger.debug('error')
     logger.debug(e)
     if (e.name !== 'SyntaxError') {
