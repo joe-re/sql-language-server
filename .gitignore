@@ -7,3 +7,10 @@ packages/server/dist/*
 **/*/package-lock.json
 *.sqlite3
 *.sqlite
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
