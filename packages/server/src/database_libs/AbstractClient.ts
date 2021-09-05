@@ -17,6 +17,7 @@ export type Column = {
   description: string
 }
 export type Table = {
+  catalog: string | null,
   database: string | null,
   tableName: string,
   columns: Column[]
@@ -74,6 +75,7 @@ export default abstract class AbstractClient {
       const tables = await this.getTables()
       schema.tables = await Promise.all(
         tables.map((v) => this.getColumns(v).then(columns => ({
+          catalog: null,
           database: this.settings.database,
           tableName: v,
           columns: columns.map(v => this.toColumnFromRawField(v)) }

@@ -249,13 +249,29 @@ table_join
 
 //NOTE that ,the table assigned to `var` shouldn't write in `table_join`
 table_base
-  = db:db_name __ DOT __ t:table_name __ KW_AS? __ alias:ident? {
+  = cat:catalog_name __ DOT __ db:db_name __ DOT __ t:table_name __ KW_AS? __ alias:ident? {
       if (t && t.type == 'var') {
         t.as = alias;
         return t;
       } else {
         return  {
           type: 'table',
+          catalog: cat,
+          db    : db,
+          table : t,
+          as    : alias,
+          location: location()
+        }
+      }
+    }
+  / db:db_name __ DOT __ t:table_name __ KW_AS? __ alias:ident? {
+      if (t && t.type == 'var') {
+        t.as = alias;
+        return t;
+      } else {
+        return  {
+          type: 'table',
+          catalog: '',
           db    : db,
           table : t,
           as    : alias,
@@ -270,6 +286,7 @@ table_base
       } else {
         return  {
           type: 'table',
+          catalog: '',
           db    : '',
           table : t,
           as    : alias,
@@ -290,6 +307,11 @@ table_base
 join_op
   = KW_LEFT __ KW_JOIN { return 'LEFT JOIN'; }
   / (KW_INNER __)? KW_JOIN { return 'INNER JOIN'; }
+
+catalog_name
+  = cat: ident_name {
+    return cat;
+  }
 
 db_name
   = db:ident_name {

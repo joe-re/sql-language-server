@@ -143,6 +143,7 @@ export type FromTableNode = TableNode | SubqueryNode | IncompleteSubqueryNode
 
 export type TableNode = {
   type: 'table',
+  catalog: string,
   db: string,
   table: string,
   as: string | null,
