@@ -1,4 +1,4 @@
-import {complete, getLastToken} from '../src/complete'
+import {complete, getLastToken, Identifier, COLUMN_ICON} from '../src/complete'
 
 describe('keyword completion', () => {
   test("complete 'SELECT' keyword", () => {
@@ -920,3 +920,55 @@ describe('DELETE statement', () => {
     expect(result.candidates[1].label).toEqual('COLUMN2')
   })
 })
+
+describe('toCompletionItemForIdentifier', () => {
+  test('complete comlumn name', () => {
+    const item = new Identifier(
+      'col',
+      'column1',
+      '',
+      COLUMN_ICON
+    )
+    const completion = item.toCompletionItem()
+    expect(completion.label).toEqual('column1')
+    expect(completion.insertText).toEqual('column1')
+    expect(completion.filterText).toEqual('column1')
+  })
+  test('complete aliased comlumn name', () => {
+    const item = new Identifier(
+      'ali.col',
+      'ali.column1',
+      '',
+      COLUMN_ICON
+    )
+    const completion = item.toCompletionItem()
+    expect(completion.label).toEqual('column1')
+    expect(completion.insertText).toEqual('.column1')
+    expect(completion.filterText).toEqual('.column1')
+  })
+  test('complete aliased nested comlumn name', () => {
+    const item = new Identifier(
+      'ali.column1.sub',
+      'ali.column1.subcolumn2',
+      '',
+      COLUMN_ICON
+    )
+    const completion = item.toCompletionItem()
+    expect(completion.label).toEqual('subcolumn2')
+    expect(completion.insertText).toEqual('.subcolumn2')
+    expect(completion.filterText).toEqual('.subcolumn2')
+  })
+  test('complete aliased nested comlumn name2', () => {
+    const item = new Identifier(
+      'ali.colu',
+      'ali.column1.subcolumn2',
+      '',
+      COLUMN_ICON
+    )
+    const completion = item.toCompletionItem()
+    expect(completion.label).toEqual('column1.subcolumn2')
+    expect(completion.insertText).toEqual('.column1.subcolumn2')
+    expect(completion.filterText).toEqual('.column1.subcolumn2')
+  })
+})
+
