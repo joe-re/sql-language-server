@@ -88,7 +88,7 @@ export type FromClause = {
 export type WhereClause = {
   type: 'where',
   keyword: KeywordNode,
-  expression: BinaryExpressionNode,
+  expression: BinaryExpressionNode | ColumnRefNode,
   location: NodeRange
 }
 

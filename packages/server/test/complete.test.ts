@@ -146,7 +146,7 @@ const SIMPLE_SCHEMA = {
 describe('on blank space', () => {
   test("complete ", () => {
     const result = complete('', { line: 0, column: 0 }, SIMPLE_SCHEMA)
-    expect(result.candidates.length).toEqual(8)
+    expect(result.candidates.length).toEqual(16)
     let expected = [
       expect.objectContaining({ label: 'SELECT' }),
       expect.objectContaining({ label: 'WHERE' }),
@@ -188,7 +188,7 @@ describe('TableName completion', () => {
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('TABLE1')
   })
-  test("complete TableName", () => {
+  test("complete alias", () => {
     const result = complete('SELECT ta FROM TABLE1 as tab', { line: 0, column: 9 }, SIMPLE_SCHEMA)
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('tab')
@@ -851,8 +851,8 @@ describe('From clause subquery', () => {
   })
 
   test("complete column name inside from clause subquery:nested", () => {
-    const sql = 'SELECT sub FROM (SELECT e.employee_id FROM (SELECT e2. FROM employees e2) e) sub'
-    const result = complete(sql, { line: 0, column: 54 }, COMPLEX_SCHEMA)
+    const sql = 'SELECT * FROM (SELECT e.employee_id FROM (SELECT e2. FROM employees e2) e) sub'
+    const result = complete(sql, { line: 0, column: 52 }, COMPLEX_SCHEMA)
     expect(result.candidates.length).toEqual(11)
   })
 
