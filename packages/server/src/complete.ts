@@ -68,7 +68,13 @@ export class Identifier {
   }
 
   matchesLastToken(): boolean {
-    return this.identifier.startsWith(this.lastToken)
+    if (this.identifier.startsWith(this.lastToken)) {
+      // prevent suggesting the lastToken itself, there is nothing to complete in that case
+      if (this.identifier !== this.lastToken) {
+        return true;
+      }
+    }
+    return false;
   }
 
   toCompletionItem(): CompletionItem {
