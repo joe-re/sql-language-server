@@ -1,8 +1,9 @@
-import type {
+import {
   Connection,
   InitializeResult,
-  TextDocumentPositionParams,
   CompletionItem,
+  CompletionParams,
+  CompletionTriggerKind,
 } from 'vscode-languageserver/node'
 import * as VscodeNode  from 'vscode-languageserver/node'
 import { TextDocument } from 'vscode-languageserver-textdocument' 
@@ -26,6 +27,8 @@ export type ConnectionMethod = 'node-ipc' | 'stdio'
 type Args = {
   method?: ConnectionMethod
 }
+
+const TRIGGER_CHARATER = '.'
 
 export function createServerWithConnection(connection: Connection) {
   initializeLogging()
@@ -95,7 +98,7 @@ export function createServerWithConnection(connection: Connection) {
         textDocumentSync: 1,
         completionProvider: {
           resolveProvider: true,
-          triggerCharacters: ['.'],
+          triggerCharacters: [TRIGGER_CHARATER],
         },
         codeActionProvider: true,
         executeCommandProvider: {
@@ -192,7 +195,14 @@ export function createServerWithConnection(connection: Connection) {
     }
   })
 
-  connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[] => {
+  connection.onCompletion((docParams: CompletionParams): CompletionItem[] => {
+    // Make sure the client does not send use completion request for characters
+    // other than the dot which we asked for.
+    if (docParams.context?.triggerKind == CompletionTriggerKind.TriggerCharacter) {
+      if (docParams.context?.triggerCharacter != TRIGGER_CHARATER) {
+        return []
+      }
+    }
     let text = documents.get(docParams.textDocument.uri)?.getText()
     if (!text) {
       return []
