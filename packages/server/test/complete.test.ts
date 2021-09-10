@@ -31,7 +31,7 @@ describe('keyword completion', () => {
       expect(result.candidates.length).toEqual(1)
       expect(result.candidates[0].label).toEqual('FROM')
     })
-    test("complete FROM word with norm columns", () => {
+    test("complete AS word with norm columns", () => {
       const result = complete('SELECT d, f A', { line: 0, column: 13 })
       expect(result.candidates.length).toEqual(1)
       expect(result.candidates[0].label).toEqual('AS')
@@ -253,9 +253,8 @@ describe('ColumnName completion', () => {
     expect(result.candidates[1].label).toEqual('COLUMN2')
   })
 
-  // TODO: should support this
   test("complete ColumnName:cursor on first char:using back tick", () => {
-    const result = complete('SELECT `t.C FROM TABLE1 as t', { line: 0, column: 10 }, SIMPLE_SCHEMA)
+    const result = complete('SELECT `t`.C FROM TABLE1 as t', { line: 0, column: 12 }, SIMPLE_SCHEMA)
     expect(result.candidates.length).toEqual(0)
   })
 })
@@ -332,18 +331,20 @@ describe('cursor on dot', () => {
     expect(result.candidates.length).toEqual(0)
   })
 
-  // TODO should support this
-  test("not complete column name when a cursor is on dot in from clause", () => {
+  // TODO: this should pass however it's hard to implement at the moment
+  // we are in the use case of a none-parsable query, then use the getFromNodesFromClause
+  // and we can't easily tell if we are in the SELEC, FROM or WHERE part.
+  test.skip("not complete column name when a cursor is on dot in from clause", () => {
     const result = complete('SELECT TABLE1.COLUMN1 FROM TABLE1.', { line: 0, column: 34 }, SIMPLE_SCHEMA)
-    expect(result.candidates.length).toEqual(2)
-    expect(result.candidates[0].label).toEqual('COLUMN1')
-    expect(result.candidates[1].label).toEqual('COLUMN2')
+    expect(result.candidates.length).toEqual(0)
   })
 
-  // TODO should support this
-  test("not complete when a cursor is on dot in back tick column name", () => {
-    const result = complete('SELECT `TABLE1. FROM TABLE1', { line: 0, column: 15 }, SIMPLE_SCHEMA)
-    expect(result.candidates.length).toEqual(0)
+  // TODO: should consider back ticked names
+  test.skip("complete when a cursor is on dot in back tick column name", () => {
+    const result = complete('SELECT `TABLE1`. FROM TABLE1', { line: 0, column: 16 }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(2)
+    expect(result.candidates[0].label).toEqual('COLUMN1')
+    expect(result.candidates[0].label).toEqual('COLUMN2')
   })
 
   test("not complete when ", () => {
@@ -736,7 +737,7 @@ const COMPLEX_SCHEMA = {
 }
 
 
-test("conplete columns from alias that start chars same as other table", () => {
+test("complete columns from alias that start chars same as other table", () => {
   const sql = `
     SELECT jo.
       FROM employees jo
@@ -747,7 +748,7 @@ test("conplete columns from alias that start chars same as other table", () => {
   expect(result.candidates.length).toEqual(11)
 })
 
-test("conplete columns from alias that start chars same as other table", () => {
+test("complete columns from alias that start chars same as other table", () => {
   const sql = `
     SELECT job.
       FROM employees jo
@@ -767,7 +768,7 @@ test("complete column, alias name matches a table from schema, but should not us
   expect(result.candidates.length).toEqual(1)
 })
 
-test("conplete columns from duplicated alias", () => {
+test("complete columns from duplicated alias", () => {
   const sql = `
     SELECT dm.
       FROM employees e
@@ -784,7 +785,7 @@ test("conplete columns from duplicated alias", () => {
   expect(result.candidates.length).toEqual(11)
 })
 
-test("conplete columns innside function 1", () => {
+test("complete columns inside function many joins", () => {
   const sql = `
     SELECT
       e.employee_id AS "Employee #"
@@ -819,7 +820,7 @@ test("conplete columns innside function 1", () => {
   expect(result.candidates.length).toEqual(11)
 })
 
-test("conplete columns innside function 2", () => {
+test("complete aliased column inside function", () => {
   const sql = `SELECT TO_CHAR(x.departm, 'MM/DD/YYYY') FROM employees x`
   const result = complete(sql, { line: 0, column: 24 }, COMPLEX_SCHEMA)
   expect(result.candidates.length).toEqual(1)
@@ -827,7 +828,7 @@ test("conplete columns innside function 2", () => {
   expect(result.candidates[0].insertText).toEqual('.department_id')
 })
 
-test("conplete columns innside function 3", () => {
+test("complete column inside function", () => {
   const sql = `SELECT TO_CHAR(empl, 'MM/DD/YYYY') FROM employees x`
   const result = complete(sql, { line: 0, column: 19 }, COMPLEX_SCHEMA)
   expect(result.candidates.length).toEqual(1)
@@ -835,7 +836,7 @@ test("conplete columns innside function 3", () => {
   //expect(result.candidates[0].insertText).toEqual('oyees')
 })
 
-test("conplete columns innside function 4", () => {
+test("complete an alias inside function", () => {
   const sql = `SELECT TO_CHAR(an_ali, 'MM/DD/YYYY') FROM employees an_alias`
   const result = complete(sql, { line: 0, column: 21 }, COMPLEX_SCHEMA)
   expect(result.candidates.length).toEqual(1)
@@ -946,7 +947,7 @@ describe('toCompletionItemForIdentifier', () => {
     expect(completion.insertText).toEqual('.column1')
     expect(completion.filterText).toEqual('.column1')
   })
-  test('complete aliased nested comlumn name', () => {
+  test('complete aliased nested comlumn last part name', () => {
     const item = new Identifier(
       'ali.column1.sub',
       'ali.column1.subcolumn2',
@@ -958,7 +959,7 @@ describe('toCompletionItemForIdentifier', () => {
     expect(completion.insertText).toEqual('.subcolumn2')
     expect(completion.filterText).toEqual('.subcolumn2')
   })
-  test('complete aliased nested comlumn name2', () => {
+  test('complete aliased nested comlumn first part name', () => {
     const item = new Identifier(
       'ali.colu',
       'ali.column1.subcolumn2',
