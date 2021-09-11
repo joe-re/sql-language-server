@@ -486,6 +486,7 @@ class Completer {
   }
 
   addCandidatesForFunctions() {
+    console.time('addCandidatesForFunctions')
     if (!this.lastToken) {
       // Nothing was typed, return all lowercase functions
       this.schema.functions
@@ -507,6 +508,7 @@ class Completer {
         .map(v => toCompletionItemForFunction(v))
         .forEach(item => this.addCandidate(item))
     }
+    console.timeEnd('addCandidatesForFunctions')
   }
 
   makeColumnName(alias: string, columnName: string) {
@@ -514,6 +516,7 @@ class Completer {
   }
 
   addCandidatesForScopedColumns(fromNodes: FromTableNode[], tables: Table[]) {
+    console.time('addCandidatesForScopedColumns')
     tables.flatMap(table => {
       return fromNodes.filter((fromNode: any) => this.tableMatch(fromNode, table))
         .map((fromNode: any) => fromNode.as || fromNode.table)
@@ -532,6 +535,7 @@ class Completer {
       .filter(item => item.matchesLastToken())
       .map(item => item.toCompletionItem())
       .forEach(item => this.addCandidate(item))
+    console.timeEnd('addCandidatesForScopedColumns')
   }
 
   /**
@@ -577,8 +581,10 @@ class Completer {
 
 
 export function complete(sql: string, pos: Pos, schema: Schema = { tables: [], functions: [] }) {
+  console.time('complete')
   if (logger.isDebugEnabled()) logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   const completer = new Completer(schema, sql, pos)
   const candidates = completer.complete()
+  console.timeEnd('complete')
   return { candidates: candidates, error: completer.error }
 }
