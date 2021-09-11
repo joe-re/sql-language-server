@@ -81,16 +81,27 @@ export class Identifier {
     const kindName = this.kind == TABLE_ICON ? 'table' : 'column'
     const idx = this.lastToken.lastIndexOf('.')
     const namePart = this.identifier.substr(idx + 1)
-    const dot = idx > 0 ? '.' : ''
-    return {
-      label: namePart,
-      filterText: dot + namePart,
-      insertText: dot + namePart,
-      detail: `${kindName} ${this.detail}`,
-      kind: this.kind,
+    const isDotTriggerCharacter = (idx == (this.lastToken.length - 1))
+    if (isDotTriggerCharacter) {
+      const text = '.' + namePart
+      return {
+        label: namePart,
+        filterText: text,
+        insertText: text,
+        detail: `${kindName} ${this.detail}`,
+        kind: this.kind,
+      }
+    }
+    else {
+      return {
+        label: namePart,
+        detail: `${kindName} ${this.detail}`,
+        kind: this.kind,
+      }
     }
   }
 }
+
 
 // Gets the last token from the given string considering that tokens can contain dots.
 export function getLastToken(sql: string) {

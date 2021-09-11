@@ -48,7 +48,7 @@ export function createServerWithConnection(connection: Connection) {
       schema = JSON.parse(data);
     }
     catch (e) {
-      logger.error("failed to read schema file")
+      logger.error("failed to read schema file " + e.message)
       connection.sendNotification('sqlLanguageServer.error', {
         message: "Failed to read schema file: " + filePath + " error: " + e.message
       })
@@ -57,11 +57,13 @@ export function createServerWithConnection(connection: Connection) {
   }
 
   function readAndMonitorJsonSchemaFile(filePath: string) {
-    readJsonSchemaFile(filePath)
     fs.watchFile(filePath, (_curr, _prev) => {
       logger.info(`change detected, reloading schema file: ${filePath}`)
       readJsonSchemaFile(filePath)
     })
+    // The readJsonSchemaFile function can throw exceptions so
+    // read file only after setting up monitoring
+    readJsonSchemaFile(filePath)
   }
 
   async function makeDiagnostics(document: TextDocument) {
