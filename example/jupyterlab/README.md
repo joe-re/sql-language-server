@@ -40,7 +40,8 @@ We have extended `sql-language-server` to support
     - Map and Array subscripts `map_col['key'].<tab>`, `array_col[0].<tab>`
     - Fully qualified table names `databaseName.schemaName.tableName`
 - Added utility to automatically generate all column names for a given table in a SELECT statement
-
+- Added utility to automatically generate join conditions on matching columns from other tables
+- When completing tables automatically generate table alias
 
 
 

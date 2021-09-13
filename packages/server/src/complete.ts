@@ -75,19 +75,40 @@ export class Identifier {
   }
 
   toCompletionItem(): CompletionItem {
-    const kindName = this.kind == TABLE_ICON ? 'table' : 'column'
     const idx = this.lastToken.lastIndexOf('.')
-    const namePart = this.identifier.substr(idx + 1)
+    const label = this.identifier.substr(idx + 1)
     const isSpaceTriggerCharacter = this.lastToken === ''
     const isDotTriggerCharacter = !isSpaceTriggerCharacter && (idx == (this.lastToken.length - 1))
+    let kindName: string
+    let insertText: string = ''
+    if (this.kind === TABLE_ICON) {
+      let tableName = label
+      const i = tableName.lastIndexOf('.')
+      if (i > 0) {
+        tableName = label.substr(i + 1)
+      }
+      const tableAlias = makeTableAlias(tableName)
+      kindName = 'table'
+      insertText = `${label} AS ${tableAlias}`
+    }
+    else {
+      kindName = 'column'
+      insertText = label
+    }
+
     const item: CompletionItem = {
-      label: namePart,
+      label: label,
       detail: `${kindName} ${this.detail}`,
       kind: this.kind,
     }
+
+    if (this.kind === TABLE_ICON) {
+      item.insertText = insertText
+    }
+
     if (isSpaceTriggerCharacter || isDotTriggerCharacter) {
       const prefix = isSpaceTriggerCharacter ? ' ' : '.'
-      const text = prefix + namePart
+      const text = prefix + insertText
       item.filterText = text
       item.insertText = text
     }
@@ -118,6 +139,23 @@ function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
     // no-op
     return null
   }
+}
+
+function makeTableAlias(tableName: string): string {
+  if (tableName.length > 3) {
+    return tableName.substr(0, 3)
+  }
+  return tableName
+}
+
+function makeTableName(table: Table): string {
+  if (table.catalog) {
+    return table.catalog + '.' + table.database + '.' + table.tableName
+  }
+  else if (table.database) {
+    return table.database + '.' + table.tableName
+  }
+  return table.tableName
 }
 
 class Completer {
@@ -159,6 +197,7 @@ class Completer {
         }
         else {
           this.addCandidatesForSelectQuery(e, fromNodes)
+          this.addCandidatesForJoins(e.expected || [], fromNodes)
         }
       }
       else if (e.message === 'EXPECTED COLUMN NAME') {
@@ -392,6 +431,47 @@ class Completer {
     this.addCandidatesForAliases(fromNodes)
     this.addCandidatesForTables(schemaAndSubqueries)
     if (logger.isDebugEnabled()) logger.debug(`candidates for error returns: ${JSON.stringify(this.candidates)}`)
+  }
+
+  addCandidatesForJoins(expected: { type: string, text: string }[], fromNodes: FromTableNode[]) {
+    let joinType: string = ''
+    if ('INNER'.startsWith(this.lastToken)) joinType = 'INNER'
+    if ('LEFT'.startsWith(this.lastToken)) joinType = 'LEFT'
+    if ('RIGH'.startsWith(this.lastToken)) joinType = 'RIGHT'
+
+    if (joinType && (expected.map(v => v.text).find(v => v === 'JOIN'))) {
+
+      if (fromNodes && fromNodes.length > 0) {
+        const fromNode: any = fromNodes[0]
+        const fromAlias = fromNode.as || fromNode.table
+        const fromTable = this.schema.tables.find(table => this.tableMatch(fromNode, table))
+
+        this.schema.tables
+          .filter(table => table != fromTable)
+          .forEach(table => {
+            table.columns
+              .filter(column =>
+                fromTable?.columns
+                  .map(col => col.columnName).includes(column.columnName))
+              .map(column => {
+                return {
+                  tableName: makeTableName(table),
+                  alias: makeTableAlias(table.tableName),
+                  columnName: column.columnName
+                }
+              })
+              .map(match => {
+                const label = `${joinType} JOIN ${match.tableName} AS ${match.alias} ON ${match.alias}.${match.columnName} = ${fromAlias}.${match.columnName}`
+                return {
+                  label: label,
+                  detail: 'utility',
+                  kind: UTILITY_ICON,
+                }
+              })
+              .forEach(item => this.addCandidate(item))
+          })
+      }
+    }
   }
 
   getRidOfAfterCursorString() {

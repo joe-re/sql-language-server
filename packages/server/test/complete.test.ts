@@ -1,4 +1,4 @@
-import {complete, getLastToken, Identifier, COLUMN_ICON} from '../src/complete'
+import { complete, getLastToken, Identifier, COLUMN_ICON } from '../src/complete'
 
 describe('keyword completion', () => {
   test("complete 'SELECT' keyword", () => {
@@ -43,7 +43,7 @@ describe('keyword completion', () => {
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('WHERE')
   })
-  
+
   test("complete 'WHERE' keyword one space", () => {
     const result = complete('SELECT * FROM FOO AS foo W', { line: 0, column: 26 })
     expect(result.candidates.length).toEqual(1)
@@ -402,7 +402,7 @@ const SIMPLE_NESTED_SCHEMA = {
       database: 'schema2',
       tableName: 'table2',
       columns: [
-        { columnName: 'abc2', description: '' }
+        { columnName: 'abc', description: '' }
       ]
     },
     {
@@ -410,12 +410,25 @@ const SIMPLE_NESTED_SCHEMA = {
       database: 'schema3',
       tableName: 'table3',
       columns: [
-        { columnName: 'abc3', description: '' }
+        { columnName: 'abc', description: '' }
       ]
     },
   ],
   functions: []
 }
+
+describe('JOIN', () => {
+  test("from clause: INNER JOIN", () => {
+    const result = complete(`
+    SELECT 
+      *
+    FROM TABLE1 AS a
+    INN`, { line: 4, column: 7 }, SIMPLE_NESTED_SCHEMA)
+    expect(result.candidates.map(v => v.label)).toContain('INNER JOIN')
+    expect(result.candidates.map(v => v.label)).toContain('INNER JOIN schema2.table2 AS tab ON tab.abc = a.abc')
+    expect(result.candidates.map(v => v.label)).toContain('INNER JOIN catalog3.schema3.table3 AS tab ON tab.abc = a.abc')
+  })
+})
 
 describe('Fully qualified table names', () => {
   test("complete catalog name", () => {
@@ -487,7 +500,7 @@ describe('Fully qualified table names', () => {
     const result = complete('SELECT ali. FROM catalog3.schema3.table3 AS ali', { line: 0, column: 11 }, SIMPLE_NESTED_SCHEMA)
     expect(result.candidates.length).toEqual(1)
     let expected = [
-      expect.objectContaining({ label: 'abc3' }),
+      expect.objectContaining({ label: 'abc' }),
     ]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
@@ -537,7 +550,7 @@ describe('Fully qualified table names', () => {
     const result = complete('SELECT ali. FROM schema2.table2 AS ali', { line: 0, column: 11 }, SIMPLE_NESTED_SCHEMA)
     expect(result.candidates.length).toEqual(1)
     let expected = [
-      expect.objectContaining({ label: 'abc2' }),
+      expect.objectContaining({ label: 'abc' }),
     ]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
@@ -608,7 +621,7 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates[0].label).toEqual('`with spaces`')
     expect(result.candidates[1].label).toEqual('`with spaces`.`sub space`')
   })
-  
+
   test("getLastToken", () => {
     expect(getLastToken("SELECT  abc")).toEqual("abc")
     expect(getLastToken("SELECT  abc.def")).toEqual("abc.def")
@@ -635,7 +648,7 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates[0].insertText).toEqual('.def')
     expect(result.candidates[1].insertText).toEqual('.def.ghi')
   })
-  
+
   test("with array subscripted, first char", () => {
     const result = complete('SELECT t.abc[0].d FROM TABLE1 as t', { line: 0, column: 17 }, SIMPLE_NESTED_SCHEMA)
     expect(result.candidates.length).toEqual(2)
@@ -651,7 +664,7 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates[0].insertText).toEqual(".def")
     expect(result.candidates[1].insertText).toEqual(".def.ghi")
   })
-  
+
   test("with map subscripted, first char", () => {
     const result = complete("SELECT t.abc['key'].d FROM TABLE1 as t", { line: 0, column: 21 }, SIMPLE_NESTED_SCHEMA)
     expect(result.candidates.length).toEqual(2)
