@@ -38,9 +38,8 @@ We have extended `sql-language-server` to support
 	- Table alias followed by dot
 	- Partially typed columns including multi-part fields (needed insertText)
     - Map and Array subscripts `map_col['key'].<tab>`, `array_col[0].<tab>`
-
-
-- no support for fully qualified table names `databaseName.schemaName.tableName` (might be something we want to support)
+    - Fully qualified table names `databaseName.schemaName.tableName`
+- Added utility to automatically generate all column names for a given table in a SELECT statement
 
 
 

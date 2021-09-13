@@ -17,18 +17,13 @@ type Pos = { line: number, column: number }
 
 const logger = log4js.getLogger()
 
-export const KEYWORD_ICON = CompletionItemKind.Event
+export const KEYWORD_ICON = CompletionItemKind.Text
 export const COLUMN_ICON = CompletionItemKind.Interface
 export const TABLE_ICON = CompletionItemKind.Field
 export const FUNCTION_ICON = CompletionItemKind.Property
 export const ALIAS_ICON = CompletionItemKind.Variable
+export const UTILITY_ICON = CompletionItemKind.Event
 
-const FROM_KEYWORD = toCompletionItemForKeyword('FROM')
-const AS_KEYWORD = toCompletionItemForKeyword('AS')
-const DISTINCT_KEYWORD = toCompletionItemForKeyword('DISTINCT')
-const INNERJOIN_KEYWORD = toCompletionItemForKeyword('INNER JOIN')
-const LEFTJOIN_KEYWORD = toCompletionItemForKeyword('LEFT JOIN')
-const ON_KEYWORD = toCompletionItemForKeyword('ON')
 
 const CLAUSES: string[] = [
   'SELECT',
@@ -50,6 +45,8 @@ const UNDESIRED_LITERAL = [
   'COUNT',
   'AVG',
   'SUM',
+  'MIN',
+  'MAX',
   '`',
   '"',
   "'",
@@ -63,7 +60,7 @@ export class Identifier {
   constructor(lastToken: string, identifier: string, detail: string, kind: CompletionItemKind) {
     this.lastToken = lastToken
     this.identifier = identifier
-    this.detail = detail
+    this.detail = detail || ''
     this.kind = kind
   }
 
@@ -81,30 +78,26 @@ export class Identifier {
     const kindName = this.kind == TABLE_ICON ? 'table' : 'column'
     const idx = this.lastToken.lastIndexOf('.')
     const namePart = this.identifier.substr(idx + 1)
-    const isDotTriggerCharacter = (idx == (this.lastToken.length - 1))
-    if (isDotTriggerCharacter) {
-      const text = '.' + namePart
-      return {
-        label: namePart,
-        filterText: text,
-        insertText: text,
-        detail: `${kindName} ${this.detail}`,
-        kind: this.kind,
-      }
+    const isSpaceTriggerCharacter = this.lastToken === ''
+    const isDotTriggerCharacter = !isSpaceTriggerCharacter && (idx == (this.lastToken.length - 1))
+    const item: CompletionItem = {
+      label: namePart,
+      detail: `${kindName} ${this.detail}`,
+      kind: this.kind,
     }
-    else {
-      return {
-        label: namePart,
-        detail: `${kindName} ${this.detail}`,
-        kind: this.kind,
-      }
+    if (isSpaceTriggerCharacter || isDotTriggerCharacter) {
+      const prefix = isSpaceTriggerCharacter ? ' ' : '.'
+      const text = prefix + namePart
+      item.filterText = text
+      item.insertText = text
     }
+    return item
   }
 }
 
 
 // Gets the last token from the given string considering that tokens can contain dots.
-export function getLastToken(sql: string) {
+export function getLastToken(sql: string): string {
   const match = sql.match(/^(?:.|\s)*[^A-z0-9\.:'](.*?)$/)
   if (match) {
     let prevToken = '';
@@ -118,32 +111,6 @@ export function getLastToken(sql: string) {
   return sql;
 }
 
-
-function toCompletionItemForKeyword(name: string): CompletionItem {
-  return {
-    label: name,
-    kind: KEYWORD_ICON,
-    detail: 'keyword',
-  }
-}
-
-function toCompletionItemForFunction(f: DbFunction): CompletionItem {
-  return {
-    label: f.name,
-    detail: 'function',
-    kind: FUNCTION_ICON,
-    documentation: f.description,
-  }
-}
-
-function toCompletionItemForAlias(alias: string): CompletionItem {
-  return {
-    label: alias,
-    detail: 'alias',
-    kind: ALIAS_ICON,
-  }
-}
-
 function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
   try {
     return parseFromClause(sql) as any
@@ -154,7 +121,7 @@ function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
 }
 
 class Completer {
-  lastToken: string;
+  lastToken: string
   candidates: CompletionItem[]
   schema: Schema
   error: any
@@ -205,17 +172,50 @@ class Completer {
     return this.candidates
   }
 
-  addCandidatesforKeywords(keywords: string[]) {
-    keywords.map(v => v == 'ORDER' ? 'ORDER BY' : v)
-      .map(v => v == 'GROUP' ? 'GROUP BY' : v)
-      .flatMap(v => [v.toLocaleLowerCase(), v])
-      .filter(v => v.startsWith(this.lastToken))
-      .map(v => toCompletionItemForKeyword(v))
-      .forEach(item => this.addCandidate(item))
+  toCompletionItemForFunction(f: DbFunction): CompletionItem {
+    const item: CompletionItem = {
+      label: f.name,
+      detail: 'function',
+      kind: FUNCTION_ICON,
+      documentation: f.description,
+    }
+    if (this.lastToken === '') {
+      item.insertText = ' ' + f.name
+      item.filterText = ' ' + f.name
+    }
+    return item
+  }
+
+  toCompletionItemForAlias(alias: string): CompletionItem {
+    const item: CompletionItem = {
+      label: alias,
+      detail: 'alias',
+      kind: ALIAS_ICON,
+    }
+    if (this.lastToken === '') {
+      item.insertText = ' ' + alias
+      item.filterText = ' ' + alias
+    }
+    return item
+  }
+
+  toCompletionItemForKeyword(name: string): CompletionItem {
+    const item: CompletionItem = {
+      label: name,
+      kind: KEYWORD_ICON,
+      detail: 'keyword',
+    }
+    if (this.lastToken === '') {
+      item.insertText = ' ' + name
+      item.filterText = ' ' + name
+    }
+    return item
   }
 
   addCandidatesForBasicKeyword() {
-    this.addCandidatesforKeywords(CLAUSES)
+    CLAUSES
+      .map(v => this.toCompletionItemForKeyword(v))
+      .forEach(v => this.addCandidateIfStartsWithLastToken(v))
   }
 
   // Check if parser expects us to terminate a single quote value or double quoted column name
@@ -224,11 +224,26 @@ class Completer {
   addCandidatesForExpectedLiterals(expected: { type: string, text: string }[]) {
     const literals = expected.filter(v => v.type === 'literal').map(v => v.text)
     const uniqueLiterals = [...new Set(literals)];
-    const keywords = uniqueLiterals
+    uniqueLiterals
       .filter(v => !UNDESIRED_LITERAL.includes(v))
-      .map(v => v == 'ORDER' ? 'ORDER BY' : v)
-      .map(v => v == 'GROUP' ? 'GROUP BY' : v)
-    this.addCandidatesforKeywords(keywords)
+      .map(v => {
+        switch (v) {
+          case 'ORDER':
+            return 'ORDER BY'
+          case 'GROUP':
+            return 'GROUP BY'
+          case 'LEFT':
+            return 'LEFT JOIN'
+          case 'RIGHT':
+            return 'RIGHT JOIN'
+          case 'INNER':
+            return 'INNER JOIN'
+          default:
+            return v
+        }
+      })
+      .map(v => this.toCompletionItemForKeyword(v))
+      .forEach(v => this.addCandidateIfStartsWithLastToken(v))
   }
 
   getColumnRefByPos(columns: ColumnRefNode[]) {
@@ -316,7 +331,7 @@ class Completer {
 
   addCandidateIfStartsWithLastToken(item: CompletionItem) {
     if (item.label.startsWith(this.lastToken)) {
-      this.candidates.push(item)
+      this.addCandidate(item)
     }
   }
 
@@ -368,9 +383,10 @@ class Completer {
   }
 
   addCandidatesForSelectQuery(e: any, fromNodes: FromTableNode[]) {
-    this.addCandidatesForExpectedLiterals(e.expected || [])
     const subqueryTables = this.createTablesFromFromNodes(fromNodes)
     const schemaAndSubqueries = this.schema.tables.concat(subqueryTables)
+    this.addCandidatesForSelectStar(fromNodes, schemaAndSubqueries)
+    this.addCandidatesForExpectedLiterals(e.expected || [])
     this.addCandidatesForFunctions()
     this.addCandidatesForScopedColumns(fromNodes, schemaAndSubqueries)
     this.addCandidatesForAliases(fromNodes)
@@ -396,8 +412,8 @@ class Completer {
 
   completeSelectStatement(ast: SelectStatement) {
     if (Array.isArray(ast.columns)) {
-      this.addCandidateIfStartsWithLastToken(FROM_KEYWORD)
-      this.addCandidateIfStartsWithLastToken(AS_KEYWORD)
+      this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('FROM'))
+      this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('AS'))
     }
   }
 
@@ -421,7 +437,7 @@ class Completer {
     this.addCandidatesForBasicKeyword()
     this.completeSelectStatement(ast)
     if (!ast.distinct) {
-      this.addCandidateIfStartsWithLastToken(DISTINCT_KEYWORD)
+      this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('DISTINCT'))
     }
     const columnRef = this.findColumnAtPosition(ast)
     if (!columnRef) {
@@ -470,10 +486,10 @@ class Completer {
       const fromTable = this.getFromNodeByPos(ast.from?.tables || [])
       if (fromTable && fromTable.type === 'table') {
         this.addCandidatesForTables(this.schema.tables)
-        this.addCandidateIfStartsWithLastToken(INNERJOIN_KEYWORD)
-        this.addCandidateIfStartsWithLastToken(LEFTJOIN_KEYWORD)
+        this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('INNER JOIN'))
+        this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('LEFT JOIN'))
         if (fromTable.join && !fromTable.on) {
-          this.addCandidateIfStartsWithLastToken(ON_KEYWORD)
+          this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('ON'))
         }
       }
     }
@@ -501,7 +517,7 @@ class Completer {
     if (!this.lastToken) {
       // Nothing was typed, return all lowercase functions
       this.schema.functions
-        .map(func => toCompletionItemForFunction(func))
+        .map(func => this.toCompletionItemForFunction(func))
         .forEach(item => this.addCandidate(item))
     }
     else {
@@ -516,7 +532,7 @@ class Completer {
           if (isTypedUpper) v.name = v.name.toUpperCase()
           return v
         })
-        .map(v => toCompletionItemForFunction(v))
+        .map(v => this.toCompletionItemForFunction(v))
         .forEach(item => this.addCandidate(item))
     }
     console.timeEnd('addCandidatesForFunctions')
@@ -524,6 +540,38 @@ class Completer {
 
   makeColumnName(alias: string, columnName: string) {
     return alias ? alias + '.' + columnName : columnName;
+  }
+
+  addCandidatesForSelectStar(fromNodes: FromTableNode[], tables: Table[]) {
+    console.time('addCandidatesForSelectStar')
+    tables.flatMap(table => {
+      return fromNodes.filter((fromNode: any) => this.tableMatch(fromNode, table))
+        .map((fromNode: any) => fromNode.as || fromNode.table)
+        .filter(_alias =>
+          this.lastToken.toUpperCase() === 'SELECT' // complete SELECT keyword
+          || this.lastToken === '') // complete at space after SELECT
+        .map(alias => {
+          const columnNames = table.columns
+            .map(col => this.makeColumnName(alias, col.columnName))
+            .join(',\n')
+          const label = `Select all columns from ${alias}`
+          let prefix: string
+          if (this.lastToken) {
+            prefix = this.lastToken + '\n'
+          }
+          else {
+            prefix = ' \n'
+          }
+          return {
+            label: label,
+            insertText: prefix + columnNames,
+            filterText: prefix + label,
+            detail: 'utility',
+            kind: UTILITY_ICON,
+          }
+        })
+    }).forEach(item => this.addCandidate(item))
+    console.timeEnd('addCandidatesForSelectStar')
   }
 
   addCandidatesForScopedColumns(fromNodes: FromTableNode[], tables: Table[]) {
@@ -585,7 +633,7 @@ class Completer {
     fromNodes
       .map((fromNode: any) => fromNode.as)
       .filter(aliasName => aliasName && aliasName.startsWith(this.lastToken))
-      .map(aliasName => toCompletionItemForAlias(aliasName))
+      .map(aliasName => this.toCompletionItemForAlias(aliasName))
       .forEach(item => this.addCandidate(item))
   }
 }

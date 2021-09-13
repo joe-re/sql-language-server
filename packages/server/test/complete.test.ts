@@ -146,7 +146,7 @@ const SIMPLE_SCHEMA = {
 describe('on blank space', () => {
   test("complete ", () => {
     const result = complete('', { line: 0, column: 0 }, SIMPLE_SCHEMA)
-    expect(result.candidates.length).toEqual(16)
+    expect(result.candidates.length).toEqual(8)
     let expected = [
       expect.objectContaining({ label: 'SELECT' }),
       expect.objectContaining({ label: 'WHERE' }),
@@ -162,9 +162,12 @@ describe('on blank space', () => {
 
   test("complete inside SELECT", () => {
     const result = complete('SELECT ', { line: 0, column: 7 }, SIMPLE_SCHEMA)
-    expect(result.candidates.length).toEqual(25) // TODO whare are they?
-    expect(result.candidates[22].label).toEqual('array_concat()')
-    expect(result.candidates[23].label).toEqual('array_contains()')
+    expect(result.candidates.length).toEqual(12) // TODO whare are they?
+    let expected = [
+      expect.objectContaining({ label: 'array_concat()' }),
+      expect.objectContaining({ label: 'array_contains()' }),
+    ]
+    expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 })
 
@@ -192,6 +195,30 @@ describe('TableName completion', () => {
     const result = complete('SELECT ta FROM TABLE1 as tab', { line: 0, column: 9 }, SIMPLE_SCHEMA)
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('tab')
+  })
+  test("complete SELECT star", () => {
+    const result = complete('SELECT FROM TABLE1', { line: 0, column: 6 }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(2)
+    expect(result.candidates[0].label).toEqual('Select all columns from TABLE1')
+    expect(result.candidates[0].insertText).toEqual('SELECT\nTABLE1.COLUMN1,\nTABLE1.COLUMN2')
+    expect(result.candidates[1].label).toEqual('SELECT')
+  })
+  // This is difficult because we can't parse the statement to get
+  // at the column names
+  test.skip("complete partial SELECT star", () => {
+    const result = complete('SELEC FROM TABLE1', { line: 0, column: 5 }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(2)
+    expect(result.candidates[0].label).toEqual('SELECT')
+    expect(result.candidates[1].label).toEqual('Select all columns from TABLE1')
+    expect(result.candidates[1].insertText).toEqual('SELECT\nTABLE1.COLUMN1,\nTABLE1.COLUMN2')
+  })
+  test("complete SELECT star passed select ", () => {
+    const result = complete('SELECT  FROM TABLE1', { line: 0, column: 7 }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(13)
+    let expected = [
+      expect.objectContaining({ label: 'Select all columns from TABLE1', insertText: ' \nTABLE1.COLUMN1,\nTABLE1.COLUMN2' }),
+    ]
+    expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 })
 
@@ -349,7 +376,7 @@ describe('cursor on dot', () => {
 
   test("not complete when ", () => {
     const result = complete('SELECT    FROM TABLE1', { line: 0, column: 8 }, SIMPLE_SCHEMA)
-    expect(result.candidates.length).toEqual(25) // TODO what are they?
+    expect(result.candidates.length).toEqual(13) // TODO what are they?
   })
 })
 
@@ -581,7 +608,7 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates[0].label).toEqual('`with spaces`')
     expect(result.candidates[1].label).toEqual('`with spaces`.`sub space`')
   })
-
+  
   test("getLastToken", () => {
     expect(getLastToken("SELECT  abc")).toEqual("abc")
     expect(getLastToken("SELECT  abc.def")).toEqual("abc.def")
