@@ -199,6 +199,9 @@ Code complete spark sql functions with documentation.
 
 ![functions](https://github.com/cccs-jc/sql-language-server/blob/develop/example/jupyterlab/images/code-completion-functions.gif)
 
+Automatically generate alias for tables. Expand all columns in select statement. Offer join suggestions based on matching column names from other tables in the schema.
+
+![expand-and-join-utility](https://github.com/cccs-jc/sql-language-server/blob/develop/example/jupyterlab/images/expand-and-join-utility.gif)
 
 
 ## Liting
