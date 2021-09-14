@@ -7,7 +7,7 @@ import {
 } from 'vscode-languageserver/node'
 import * as VscodeNode from 'vscode-languageserver/node'
 import { TextDocument } from 'vscode-languageserver-textdocument'
-import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind, WorkspaceEdit } from 'vscode-languageserver-types'
+import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
 import cache from './cache'
 import { complete } from './complete'
 import createDiagnostics from './createDiagnostics'
