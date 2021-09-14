@@ -77,23 +77,19 @@ export class Identifier {
   toCompletionItem(): CompletionItem {
     const idx = this.lastToken.lastIndexOf('.')
     const label = this.identifier.substr(idx + 1)
-    const isSpaceTriggerCharacter = this.lastToken === ''
-    const isDotTriggerCharacter = !isSpaceTriggerCharacter && (idx == (this.lastToken.length - 1))
     let kindName: string
-    let insertText: string = ''
+    let tableAlias: string = ''
     if (this.kind === TABLE_ICON) {
       let tableName = label
       const i = tableName.lastIndexOf('.')
       if (i > 0) {
         tableName = label.substr(i + 1)
       }
-      const tableAlias = makeTableAlias(tableName)
+      tableAlias = makeTableAlias(tableName)
       kindName = 'table'
-      insertText = `${label} AS ${tableAlias}`
     }
     else {
       kindName = 'column'
-      insertText = label
     }
 
     const item: CompletionItem = {
@@ -102,20 +98,13 @@ export class Identifier {
       kind: this.kind,
     }
 
-    if (this.kind === TABLE_ICON) {
-      item.insertText = insertText
-    }
-
-    if (isSpaceTriggerCharacter || isDotTriggerCharacter) {
-      const prefix = isSpaceTriggerCharacter ? ' ' : '.'
-      const text = prefix + insertText
-      item.filterText = text
-      item.insertText = text
+    if (this.kind == TABLE_ICON) {
+      item.insertText = `${label} AS ${tableAlias}`
     }
     return item
   }
-}
 
+}
 
 // Gets the last token from the given string considering that tokens can contain dots.
 export function getLastToken(sql: string): string {
@@ -159,25 +148,30 @@ function makeTableName(table: Table): string {
 }
 
 class Completer {
-  lastToken: string
-  candidates: CompletionItem[]
+  lastToken: string = ''
+  candidates: CompletionItem[] = []
   schema: Schema
-  error: any
+  error: any = ''
   sql: string
   pos: Pos
-  constructor(schema: Schema, sql: string, pos: Pos) {
-    this.lastToken = ''
+  isSpaceTriggerCharacter: boolean = false;
+  isDotTriggerCharacter: boolean = false;
+  jupyterLabMode: boolean;
+  constructor(schema: Schema, sql: string, pos: Pos, jupyterLabMode: boolean) {
     this.schema = schema
-    this.candidates = []
-    this.error = ''
     this.sql = sql
     this.pos = pos
+    this.jupyterLabMode = jupyterLabMode
   }
 
   complete() {
     const target = this.getRidOfAfterCursorString()
     logger.debug(`target: ${target}`)
     this.lastToken = getLastToken(target)
+    const idx = this.lastToken.lastIndexOf('.')
+    this.isSpaceTriggerCharacter = this.lastToken === ''
+    this.isDotTriggerCharacter = !this.isSpaceTriggerCharacter && (idx == (this.lastToken.length - 1))
+
     try {
       const ast = parse(target);
       this.addCandidatesForParsedStatement(ast)
@@ -218,10 +212,6 @@ class Completer {
       kind: FUNCTION_ICON,
       documentation: f.description,
     }
-    if (this.lastToken === '') {
-      item.insertText = ' ' + f.name
-      item.filterText = ' ' + f.name
-    }
     return item
   }
 
@@ -231,10 +221,6 @@ class Completer {
       detail: 'alias',
       kind: ALIAS_ICON,
     }
-    if (this.lastToken === '') {
-      item.insertText = ' ' + alias
-      item.filterText = ' ' + alias
-    }
     return item
   }
 
@@ -243,10 +229,6 @@ class Completer {
       label: name,
       kind: KEYWORD_ICON,
       detail: 'keyword',
-    }
-    if (this.lastToken === '') {
-      item.insertText = ' ' + name
-      item.filterText = ' ' + name
     }
     return item
   }
@@ -365,6 +347,23 @@ class Completer {
   }
 
   addCandidate(item: CompletionItem) {
+    // JupyterLab requires the dot or space character preceeding the <tab> key pressed
+    // If the dot or space character are not added to the label then searching
+    // in the list of suggestion does not work.
+    // Here we fix this issue by adding the dot or space character
+    // to the filterText and insertText.
+    // TODO: report this issue to JupyterLab-LSP project. 
+    if (this.jupyterLabMode) {
+      const text = item.insertText || item.label
+      if (this.isSpaceTriggerCharacter) {
+        item.insertText = ' ' + text
+        item.filterText = ' ' + text
+      }
+      else if (this.isDotTriggerCharacter) {
+        item.insertText = '.' + text
+        item.filterText = '.' + text
+      }
+    }
     this.candidates.push(item)
   }
 
@@ -387,7 +386,7 @@ class Completer {
         line: this.pos.line - (incompleteSubquery.location.start.line - 1),
         column: this.pos.column - incompleteSubquery.location.start.column + 1
       } : { line: 0, column: 0 }
-      const completer = new Completer(this.schema, fromText, newPos)
+      const completer = new Completer(this.schema, fromText, newPos, this.jupyterLabMode)
       completer.complete().forEach(item => this.addCandidate(item))
     }
   }
@@ -635,13 +634,11 @@ class Completer {
             .map(col => this.makeColumnName(alias, col.columnName))
             .join(',\n')
           const label = `Select all columns from ${alias}`
-          let prefix: string
+          let prefix: string = ''
           if (this.lastToken) {
             prefix = this.lastToken + '\n'
           }
-          else {
-            prefix = ' \n'
-          }
+
           return {
             label: label,
             insertText: prefix + columnNames,
@@ -719,10 +716,10 @@ class Completer {
 }
 
 
-export function complete(sql: string, pos: Pos, schema: Schema = { tables: [], functions: [] }) {
+export function complete(sql: string, pos: Pos, schema: Schema = { tables: [], functions: [] }, jupyterLabMode: boolean = false) {
   console.time('complete')
   if (logger.isDebugEnabled()) logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
-  const completer = new Completer(schema, sql, pos)
+  const completer = new Completer(schema, sql, pos, jupyterLabMode)
   const candidates = completer.complete()
   console.timeEnd('complete')
   return { candidates: candidates, error: completer.error }

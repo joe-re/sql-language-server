@@ -216,7 +216,7 @@ describe('TableName completion', () => {
     const result = complete('SELECT  FROM TABLE1', { line: 0, column: 7 }, SIMPLE_SCHEMA)
     expect(result.candidates.length).toEqual(13)
     let expected = [
-      expect.objectContaining({ label: 'Select all columns from TABLE1', insertText: ' \nTABLE1.COLUMN1,\nTABLE1.COLUMN2' }),
+      expect.objectContaining({ label: 'Select all columns from TABLE1', insertText: 'TABLE1.COLUMN1,\nTABLE1.COLUMN2' }),
     ]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
@@ -572,8 +572,8 @@ describe('Nested ColumnName completion', () => {
     const result = complete('SELECT TABLE1.abc. FROM TABLE1', { line: 0, column: 18 }, SIMPLE_NESTED_SCHEMA)
     expect(result.candidates.length).toEqual(2)
     let expected = [
-      expect.objectContaining({ label: 'def', insertText: '.def' }),
-      expect.objectContaining({ label: 'def.ghi', insertText: '.def.ghi' }),
+      expect.objectContaining({ label: 'def' }),
+      expect.objectContaining({ label: 'def.ghi' }),
     ]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
@@ -645,8 +645,6 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('def')
     expect(result.candidates[1].label).toEqual('def.ghi')
-    expect(result.candidates[0].insertText).toEqual('.def')
-    expect(result.candidates[1].insertText).toEqual('.def.ghi')
   })
 
   test("with array subscripted, first char", () => {
@@ -661,8 +659,6 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual("def")
     expect(result.candidates[1].label).toEqual("def.ghi")
-    expect(result.candidates[0].insertText).toEqual(".def")
-    expect(result.candidates[1].insertText).toEqual(".def.ghi")
   })
 
   test("with map subscripted, first char", () => {
@@ -959,8 +955,6 @@ describe('toCompletionItemForIdentifier', () => {
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1')
-    expect(completion.insertText).toBeUndefined()
-    expect(completion.filterText).toBeUndefined()
   })
   test('complete aliased comlumn name', () => {
     const item = new Identifier(
@@ -971,8 +965,6 @@ describe('toCompletionItemForIdentifier', () => {
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1')
-    expect(completion.insertText).toBeUndefined()
-    expect(completion.filterText).toBeUndefined()
   })
   test('complete aliased nested comlumn last part name', () => {
     const item = new Identifier(
@@ -983,8 +975,6 @@ describe('toCompletionItemForIdentifier', () => {
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('subcolumn2')
-    expect(completion.insertText).toBeUndefined()
-    expect(completion.filterText).toBeUndefined()
   })
   test('complete aliased nested comlumn first part name', () => {
     const item = new Identifier(
@@ -995,22 +985,8 @@ describe('toCompletionItemForIdentifier', () => {
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1.subcolumn2')
-    expect(completion.insertText).toBeUndefined()
-    expect(completion.filterText).toBeUndefined()
   })
 
-  test('complete aliased nested comlumn (last char is a dot)', () => {
-    const item = new Identifier(
-      'ali.column1.',
-      'ali.column1.subcolumn2',
-      '',
-      COLUMN_ICON
-    )
-    const completion = item.toCompletionItem()
-    expect(completion.label).toEqual('subcolumn2')
-    expect(completion.insertText).toEqual('.subcolumn2')
-    expect(completion.filterText).toEqual('.subcolumn2')
-  })
 
 })
 

@@ -5,9 +5,9 @@ import {
   CompletionParams,
   CompletionTriggerKind,
 } from 'vscode-languageserver/node'
-import * as VscodeNode  from 'vscode-languageserver/node'
-import { TextDocument } from 'vscode-languageserver-textdocument' 
-import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
+import * as VscodeNode from 'vscode-languageserver/node'
+import { TextDocument } from 'vscode-languageserver-textdocument'
+import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind, WorkspaceEdit } from 'vscode-languageserver-types'
 import cache from './cache'
 import { complete } from './complete'
 import createDiagnostics from './createDiagnostics'
@@ -102,6 +102,7 @@ export function createServerWithConnection(connection: Connection) {
           resolveProvider: true,
           triggerCharacters: [TRIGGER_CHARATER],
         },
+        renameProvider: true,
         codeActionProvider: true,
         executeCommandProvider: {
           commands: [
@@ -211,7 +212,8 @@ export function createServerWithConnection(connection: Connection) {
     }
     logger.debug(text || '')
     let pos = { line: docParams.position.line, column: docParams.position.character }
-    const candidates = complete(text, pos, schema).candidates
+    var setting = SettingStore.getInstance().getSetting()
+    const candidates = complete(text, pos, schema, setting.jupyterLabMode).candidates
     if (logger.isDebugEnabled()) logger.debug('onCompletion returns: ' + JSON.stringify(candidates))
     return candidates
   })
@@ -239,7 +241,7 @@ export function createServerWithConnection(connection: Connection) {
       return []
     }
     const action = CodeAction.create(`fix: ${lintResult.diagnostic.message}`, {
-      documentChanges:[
+      documentChanges: [
         TextDocumentEdit.create({ uri: params.textDocument.uri, version: document.version }, fixes.map(v => {
           const edit = v.range.startOffset === v.range.endOffset
             ? TextEdit.insert(toPosition(text, v.range.startOffset), v.text)
@@ -262,7 +264,7 @@ export function createServerWithConnection(connection: Connection) {
   connection.onExecuteCommand((request) => {
     logger.debug(`received executeCommand request: ${request.command}, ${request.arguments}`)
     if (request.command === 'switchDatabaseConnection') {
-      try{
+      try {
         SettingStore.getInstance().changeConnection(
           request.arguments && request.arguments[0] || ''
         )
