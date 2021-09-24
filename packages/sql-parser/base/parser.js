@@ -592,9 +592,9 @@ function peg$parse(input, options) {
       peg$c117 = peg$classExpectation([["A", "Z"], ["a", "z"], ["0", "9"], "_"], false, false),
       peg$c118 = /^[A-Za-z0-9_:[\]']/,
       peg$c119 = peg$classExpectation([["A", "Z"], ["a", "z"], ["0", "9"], "_", ":", "[", "]", "'"], false, false),
-      peg$c120 = ":",
-      peg$c121 = peg$literalExpectation(":", false),
-      peg$c122 = function(l) { 
+      peg$c120 = /^[:@]/,
+      peg$c121 = peg$classExpectation([":", "@"], false, false),
+      peg$c122 = function(l) {
           var p = {
             type : 'param',
             value: l[1]
@@ -5629,8 +5629,8 @@ function peg$parse(input, options) {
 
     s0 = peg$currPos;
     s1 = peg$currPos;
-    if (input.charCodeAt(peg$currPos) === 58) {
-      s2 = peg$c120;
+    if (peg$c120.test(input.charAt(peg$currPos))) {
+      s2 = input.charAt(peg$currPos);
       peg$currPos++;
     } else {
       s2 = peg$FAILED;
