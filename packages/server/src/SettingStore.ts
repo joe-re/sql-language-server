@@ -24,6 +24,7 @@ export type Connection = {
   filename: string | null // for sqlite3
   projectPaths: string[]
   ssh: SSHConfig | null
+  jupyterLabMode: boolean
 }
 
 type PersonalConfig = {
@@ -57,7 +58,8 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     password: null,
     ssh: null,
     filename: null,
-    projectPaths: []
+    projectPaths: [],
+    jupyterLabMode: false,
   }
   private static instance: SettingStore;
 

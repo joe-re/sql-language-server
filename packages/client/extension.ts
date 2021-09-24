@@ -10,7 +10,8 @@ import { ExecuteCommandParams } from 'vscode-languageserver-protocol'
 import { rebuild } from './rebuild'
 
 export function activate(context: ExtensionContext) {
-  let serverModule = context.asAbsolutePath(path.join('packages', 'server', 'dist', 'cli.js'))
+  // Using the location of the javacript file built by `npm run prepublish`
+  let serverModule = context.asAbsolutePath(path.join('packages', 'server', 'dist', 'bin', 'cli.js'))
   let execArgs = ['up', '--method', 'node-ipc']
   let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
   let connectionNames = []
