@@ -10,165 +10,115 @@ import {
   NodeRange
 } from '@joe-re/sql-parser'
 import log4js from 'log4js'
-import { Schema, Table, Column } from './database_libs/AbstractClient'
+import { Schema, Table, DbFunction } from './database_libs/AbstractClient'
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
 
 type Pos = { line: number, column: number }
 
 const logger = log4js.getLogger()
 
-const FROM_KEYWORD = { label: 'FROM', kind: CompletionItemKind.Text }
+export const KEYWORD_ICON = CompletionItemKind.Text
+export const COLUMN_ICON = CompletionItemKind.Interface
+export const TABLE_ICON = CompletionItemKind.Field
+export const FUNCTION_ICON = CompletionItemKind.Property
+export const ALIAS_ICON = CompletionItemKind.Variable
+export const UTILITY_ICON = CompletionItemKind.Event
 
-const CLAUSES: CompletionItem[] = [
-  { label: 'WHERE', kind: CompletionItemKind.Text },
-  { label: 'ORDER BY', kind: CompletionItemKind.Text },
-  { label: 'GROUP BY', kind: CompletionItemKind.Text },
-  { label: 'LIMIT', kind: CompletionItemKind.Text }
+
+const CLAUSES: string[] = [
+  'SELECT',
+  'WHERE',
+  'ORDER BY',
+  'GROUP BY',
+  'LIMIT',
+  '--',
+  '/*',
+  '('
 ]
 
-function extractExpectedLiterals(expected: { type: string, text: string }[]): CompletionItem[] {
-  return expected.filter(v => v.type === 'literal')
-    .map(v => v.text)
-    .filter((v, i, self) => self.indexOf(v) === i)
-    .map(v => ( { label: v }))
-}
+const UNDESIRED_LITERAL = [
+  '+',
+  '-',
+  '*',
+  '$',
+  ':',
+  'COUNT',
+  'AVG',
+  'SUM',
+  'MIN',
+  'MAX',
+  '`',
+  '"',
+  "'",
+]
 
-function getLastToken(sql: string) {
-  const match = sql.match(/^(?:.|\s)*[^A-z0-9](.*?)$/)
-  if (!match) { return sql }
-  return match[1]
-}
-
-function getColumnRefByPos(columns: ColumnRefNode[], pos: { line: number, column: number }) {
-  return columns.find(v =>
-    (v.location.start.line === pos.line + 1 && v.location.start.column <= pos.column) &&
-    (v.location.end.line === pos.line + 1 && v.location.end.column >= pos.column)
-  )
-}
-
-function isPosInLocation(location: NodeRange, pos: Pos) {
-  return (location.start.line === pos.line + 1 && location.start.column <= pos.column) &&
-    (location.end.line === pos.line + 1 && location.end.column >= pos.column)
-}
-
-function getFromNodeByPos(fromNodes: FromTableNode[], pos: { line: number, column: number }) {
-  return fromNodes.find(v => isPosInLocation(v.location, pos))
-}
-
-function toCompletionItemFromTable(table: Table): CompletionItem {
-  return {
-    label: table.tableName,
-    detail: `table ${table.tableName}`,
-    kind: CompletionItemKind.Text
+export class Identifier {
+  lastToken: string
+  identifier: string
+  detail: string
+  kind: CompletionItemKind
+  constructor(lastToken: string, identifier: string, detail: string, kind: CompletionItemKind) {
+    this.lastToken = lastToken
+    this.identifier = identifier
+    this.detail = detail || ''
+    this.kind = kind
   }
-}
 
-function toCompletionItemFromColumn(column: Column): CompletionItem {
-  return {
-    label: column.columnName,
-    detail: `column ${column.description}`,
-    kind: CompletionItemKind.Text
-  }
-}
-
-function getTableAndColumnCondidates(tablePrefix: string, schema: Schema, option?: { withoutTable?: boolean, withoutColumn?: boolean }): CompletionItem[] {
-  const tableCandidates = schema.tables.filter(v => v.tableName.startsWith(tablePrefix)).map(v => toCompletionItemFromTable(v))
-  const columnCandidates = Array.prototype.concat.apply([],
-    schema.tables.filter(v => tableCandidates.map(v => v.label).includes(v.tableName)).map(v => v.columns)
-  ).map((v: Column) => toCompletionItemFromColumn(v))
-  const candidates: CompletionItem[] = []
-  if (!option?.withoutTable) {
-    candidates.push(...tableCandidates)
-  }
-  if (!option?.withoutColumn) {
-    candidates.push(...columnCandidates)
-  }
-  return candidates
-}
-
-function isCursorOnFromClause(sql: string, pos: Pos) {
-  try {
-    const ast = parse(sql) as SelectStatement
-    return !!getFromNodeByPos(ast.from?.tables || [], pos)
-  } catch (_e) {
-    return false
-  }
-}
-
-function getCandidatedFromIncompleteSubquery(params: {
-  sql: string,
-  incompleteSubquery: IncompleteSubqueryNode,
-  pos: Pos,
-  schema: Schema
-}): CompletionItem[] {
-  let candidates: CompletionItem[] = []
-  const { schema, incompleteSubquery, pos } = params
-  const parsedFromClause = getFromNodesFromClause(incompleteSubquery.text)
-  try {
-    parse(incompleteSubquery.text);
-  } catch (e: any) {
-    if (e.name !== 'SyntaxError') {
-      throw e
+  matchesLastToken(): boolean {
+    if (this.identifier.startsWith(this.lastToken)) {
+      // prevent suggesting the lastToken itself, there is nothing to complete in that case
+      if (this.identifier !== this.lastToken) {
+        return true;
+      }
     }
-    const fromText = incompleteSubquery.text
-    const newPos = parsedFromClause ? {
-      line: pos.line - (incompleteSubquery.location.start.line - 1),
-      column: pos.column - incompleteSubquery.location.start.column + 1
-    } : { line: 0, column: 0 }
-    candidates = complete(fromText, newPos, schema).candidates
+    return false;
   }
-  return candidates
+
+  toCompletionItem(): CompletionItem {
+    const idx = this.lastToken.lastIndexOf('.')
+    const label = this.identifier.substr(idx + 1)
+    let kindName: string
+    let tableAlias: string = ''
+    if (this.kind === TABLE_ICON) {
+      let tableName = label
+      const i = tableName.lastIndexOf('.')
+      if (i > 0) {
+        tableName = label.substr(i + 1)
+      }
+      tableAlias = makeTableAlias(tableName)
+      kindName = 'table'
+    }
+    else {
+      kindName = 'column'
+    }
+
+    const item: CompletionItem = {
+      label: label,
+      detail: `${kindName} ${this.detail}`,
+      kind: this.kind,
+    }
+
+    if (this.kind == TABLE_ICON) {
+      item.insertText = `${label} AS ${tableAlias}`
+    }
+    return item
+  }
+
 }
 
-function createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
-  return fromNodes.reduce((p: any, c) => {
-    if (c.type !== 'subquery') {
-      return p
+// Gets the last token from the given string considering that tokens can contain dots.
+export function getLastToken(sql: string): string {
+  const match = sql.match(/^(?:.|\s)*[^A-z0-9\.:'](.*?)$/)
+  if (match) {
+    let prevToken = '';
+    let currentToken = match[1];
+    while (currentToken != prevToken) {
+      prevToken = currentToken;
+      currentToken = prevToken.replace(/\[.*?\]/, '');
     }
-    if (!Array.isArray(c.subquery.columns)) {
-      return p
-    }
-    const columns = c.subquery.columns.map(v => {
-      if (typeof v === 'string') { return null }
-      return { columnName: v.as || (v.expr.type === 'column_ref' && v.expr.column) || '', description: 'alias' }
-    })
-    return p.concat({ database: null, columns, tableName: c.as })
-  }, [])
-}
-
-function getCandidatesFromError(target: string, schema: Schema, pos: Pos, e: any, fromNodes: FromTableNode[]): CompletionItem[] {
-  switch(e.message) {
-    case 'EXPECTED COLUMN NAME': {
-      return getTableAndColumnCondidates('', schema, { withoutTable: true })
-    }
+    return currentToken;
   }
-  let candidates = extractExpectedLiterals(e.expected || [])
-  const candidatesLiterals = candidates.map(v => v.label)
-  if (candidatesLiterals.includes("'") || candidatesLiterals.includes('"')) {
-    return []
-  }
-  if (candidatesLiterals.includes('.')) {
-    candidates = candidates.concat(schema.tables.map(v => toCompletionItemFromTable(v)))
-  }
-  const lastChar = target[target.length - 1]
-  logger.debug(`lastChar: ${lastChar}`)
-  if (lastChar === '.') {
-    const removedLastDotTarget = target.slice(0, target.length - 1)
-    if (isCursorOnFromClause(removedLastDotTarget, { line: pos.line, column: pos.column - 1})) {
-      return []
-    }
-    const tableName = getLastToken(removedLastDotTarget)
-    const subqueryTables = createTablesFromFromNodes(fromNodes)
-    const attachedAlias = schema.tables.concat(subqueryTables).map(v => {
-      const as = fromNodes.filter((v2: any) => v.tableName === v2.table).map(v => v.as)
-      return Object.assign({}, v, { as: as ? as : [] })
-    })
-    let table = attachedAlias.find(v => v.tableName === tableName || v.as.includes(tableName))
-    if (table) {
-      candidates = table.columns.map(v => toCompletionItemFromColumn(v))
-    }
-  }
-  return candidates
+  return sql;
 }
 
 function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
@@ -180,101 +130,598 @@ function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
   }
 }
 
-function getRidOfAfterCursorString(sql: string, pos: Pos) {
-  return sql.split('\n').filter((_v, idx) => pos.line >= idx).map((v, idx) => idx === pos.line ? v.slice(0, pos.column) : v).join('\n')
-}
-
-function completeDeleteStatement (ast: DeleteStatement, pos: Pos, schema: Schema): CompletionItem[] {
-  if (isPosInLocation(ast.table.location, pos)) {
-    return getTableAndColumnCondidates('', schema, { withoutColumn: true })
-  } else if (ast.where && isPosInLocation(ast.where.expression.location, pos)) {
-    return getTableAndColumnCondidates('', schema, { withoutTable: true })
+function makeTableAlias(tableName: string): string {
+  if (tableName.length > 3) {
+    return tableName.substr(0, 3)
   }
-  return []
+  return tableName
 }
 
-function completeSelectStatement(ast: SelectStatement, _pos: Pos, _schema: Schema): CompletionItem[] {
-  let candidates: CompletionItem[] = []
-  if (Array.isArray(ast.columns)) {
-    const first = ast.columns[0]
-    const rest = ast.columns.slice(1, ast.columns.length)
-    const lastColumn = rest.reduce((p, c) => p.location.end.offset < c.location.end.offset ? c : p ,first)
-    if (
-      (lastColumn.expr.type === 'column_ref' && FROM_KEYWORD.label.startsWith(lastColumn.expr.column)) ||
-      (lastColumn.as && FROM_KEYWORD.label.startsWith(lastColumn.as))
-     ) {
-      candidates.push(FROM_KEYWORD)
-    }
+function makeTableName(table: Table): string {
+  if (table.catalog) {
+    return table.catalog + '.' + table.database + '.' + table.tableName
   }
-  return candidates
+  else if (table.database) {
+    return table.database + '.' + table.tableName
+  }
+  return table.tableName
 }
 
-export default function complete(sql: string, pos: Pos, schema: Schema = {tables:[], functions:[]}) {
-  logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
-  let candidates: CompletionItem[] = []
-  let error = null;
+class Completer {
+  lastToken: string = ''
+  candidates: CompletionItem[] = []
+  schema: Schema
+  error: any = ''
+  sql: string
+  pos: Pos
+  isSpaceTriggerCharacter: boolean = false;
+  isDotTriggerCharacter: boolean = false;
+  jupyterLabMode: boolean;
 
-  const target = getRidOfAfterCursorString(sql, pos)
-  logger.debug(`target: ${target}`)
-  try {
-    candidates = CLAUSES.concat([])
-    const ast = parse(target);
-    logger.debug(`ast: ${JSON.stringify(ast)}`)
-    if (ast.type === 'delete') {
-      candidates = completeDeleteStatement(ast, pos, schema)
-    } else {
-      if (ast.type === 'select' && !ast.distinct) {
-        candidates.push({ label: 'DISTINCT', kind: CompletionItemKind.Text })
+  constructor(schema: Schema, sql: string, pos: Pos, jupyterLabMode: boolean) {
+    this.schema = schema
+    this.sql = sql
+    this.pos = pos
+    this.jupyterLabMode = jupyterLabMode
+  }
+
+  complete() {
+    const target = this.getRidOfAfterCursorString()
+    logger.debug(`target: ${target}`)
+    this.lastToken = getLastToken(target)
+    const idx = this.lastToken.lastIndexOf('.')
+    this.isSpaceTriggerCharacter = this.lastToken === ''
+    this.isDotTriggerCharacter = !this.isSpaceTriggerCharacter && (idx == (this.lastToken.length - 1))
+
+    try {
+      const ast = parse(target);
+      this.addCandidatesForParsedStatement(ast)
+    } catch (e) {
+      logger.debug('error')
+      logger.debug(e)
+      if (e.name !== 'SyntaxError') {
+        throw e
       }
-      if (ast.type === 'select') {
-        candidates = candidates.concat(completeSelectStatement(ast, pos, schema))
-      }
-      const columns = ast.columns
-      if (Array.isArray(columns)) {
-        const selectColumnRefs = (columns as any).map((v: any) => v.expr).filter((v: any) => !!v)
-        const whereColumnRefs = ast.type === 'select' &&  ast.where || []
-        const columnRef = getColumnRefByPos(selectColumnRefs.concat(whereColumnRefs), pos)
-        logger.debug(JSON.stringify(columnRef))
-        if (columnRef) {
-          candidates = candidates.concat(getTableAndColumnCondidates(columnRef.table, schema))
+      const parsedFromClause = getFromNodesFromClause(this.sql)
+      if (parsedFromClause) {
+        const fromNodes = this.getAllNestedFromNodes(parsedFromClause?.from?.tables || [])
+        const fromNodeOnCursor = this.getFromNodeByPos(fromNodes)
+        if (fromNodeOnCursor && fromNodeOnCursor.type === 'incomplete_subquery') {
+          // Incomplete sub query 'SELECT sub FROM (SELECT e. FROM employees e) sub'
+          this.addCandidatesForIncompleteSubquery(fromNodeOnCursor)
+        }
+        else {
+          this.addCandidatesForSelectQuery(e, fromNodes)
+          this.addCandidatesForJoins(e.expected || [], fromNodes)
         }
       }
-
-      if (ast.type === 'select' && Array.isArray(ast.from?.tables)) {
-        const fromTable = getFromNodeByPos(ast.from?.tables || [], pos)
-        if (fromTable && fromTable.type === 'table') {
-          candidates = candidates.concat(schema.tables.map(v => toCompletionItemFromTable(v)))
-            .concat([{ label: 'INNER JOIN' }, { label: 'LEFT JOIN' }])
-          if (fromTable.join && !fromTable.on) {
-            candidates.push({ label: 'ON' })
-          }
-        }
+      else if (e.message === 'EXPECTED COLUMN NAME') {
+        this.addCandidatesForInsert()
       }
+      else {
+        this.addCandidatesForError(e)
+      }
+      this.error = { label: e.name, detail: e.message, line: e.line, offset: e.offset }
     }
-  } catch (e: any) {
-    logger.debug('error')
-    logger.debug(e)
-    if (e.name !== 'SyntaxError') {
-      throw e
+    return this.candidates
+  }
+
+  toCompletionItemForFunction(f: DbFunction): CompletionItem {
+    const item: CompletionItem = {
+      label: f.name,
+      detail: 'function',
+      kind: FUNCTION_ICON,
+      documentation: f.description,
     }
-    const parsedFromClause = getFromNodesFromClause(sql)
-    const fromNodes = parsedFromClause?.from?.tables || []
-    const fromNodeOnCursor = getFromNodeByPos(fromNodes || [], pos)
-    if (fromNodeOnCursor && fromNodeOnCursor.type === 'incomplete_subquery') {
-      candidates = getCandidatedFromIncompleteSubquery({
-        sql,
-        pos,
-        incompleteSubquery: fromNodeOnCursor,
-        schema
+    return item
+  }
+
+  toCompletionItemForAlias(alias: string): CompletionItem {
+    const item: CompletionItem = {
+      label: alias,
+      detail: 'alias',
+      kind: ALIAS_ICON,
+    }
+    return item
+  }
+
+  toCompletionItemForKeyword(name: string): CompletionItem {
+    const item: CompletionItem = {
+      label: name,
+      kind: KEYWORD_ICON,
+      detail: 'keyword',
+    }
+    return item
+  }
+
+  addCandidatesForBasicKeyword() {
+    CLAUSES
+      .map(v => this.toCompletionItemForKeyword(v))
+      .forEach(v => this.addCandidateIfStartsWithLastToken(v))
+  }
+
+  // Check if parser expects us to terminate a single quote value or double quoted column name
+  // SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = "hoge.
+  // We don't offer the ', the ", the ` as suggestions
+  addCandidatesForExpectedLiterals(expected: { type: string, text: string }[]) {
+    const literals = expected.filter(v => v.type === 'literal').map(v => v.text)
+    const uniqueLiterals = [...new Set(literals)];
+    uniqueLiterals
+      .filter(v => !UNDESIRED_LITERAL.includes(v))
+      .map(v => {
+        switch (v) {
+          case 'ORDER':
+            return 'ORDER BY'
+          case 'GROUP':
+            return 'GROUP BY'
+          case 'LEFT':
+            return 'LEFT JOIN'
+          case 'RIGHT':
+            return 'RIGHT JOIN'
+          case 'INNER':
+            return 'INNER JOIN'
+          default:
+            return v
+        }
       })
-    } else {
-      candidates = getCandidatesFromError(target, schema, pos, e, fromNodes)
-    }
-    error = { label: e.name, detail: e.message, line: e.line, offset: e.offset }
+      .map(v => this.toCompletionItemForKeyword(v))
+      .forEach(v => this.addCandidateIfStartsWithLastToken(v))
   }
-  const lastToken = getLastToken(target)
-  logger.debug(`lastToken: ${lastToken}`)
-  logger.debug(JSON.stringify(candidates))
-  candidates = candidates.filter(v => v.label.startsWith(lastToken))
-  return { candidates, error }
+
+  getColumnRefByPos(columns: ColumnRefNode[]) {
+    return columns.find(v =>
+      (v.location.start.line === this.pos.line + 1 && v.location.start.column <= this.pos.column) &&
+      (v.location.end.line === this.pos.line + 1 && v.location.end.column >= this.pos.column)
+    )
+  }
+
+  isPosInLocation(location: NodeRange) {
+    return (location.start.line === this.pos.line + 1 && location.start.column <= this.pos.column) &&
+      (location.end.line === this.pos.line + 1 && location.end.column >= this.pos.column)
+  }
+
+  /**
+   * Finds the most deeply nested FROM node that have a range encompasing the position.
+   * In cases such as SELECT * FROM T1 JOIN (SELECT * FROM (SELECT * FROM T2 <pos>))
+   * We will get a list of nodes like this
+   * SELECT * FROM T1
+   * (SELECT * FROM 
+   *    (SELECT * FROM T2))
+   * The idea is to reverse the list so that the most nested queries come first. Then
+   * apply a filter to keep only the FROM nodes which encompass the position and take
+   * the first one from that resulting list.
+   * @param fromNodes 
+   * @param pos 
+   * @returns 
+   */
+  getFromNodeByPos(fromNodes: FromTableNode[]) {
+    return fromNodes
+      .reverse()
+      .filter(tableNode => this.isPosInLocation(tableNode.location))
+      .shift()
+  }
+
+  /**
+   * Given a table returns all possible ways to refer to it.
+   * That is by table name only, using the database scope,
+   * using the catalog and database scopes.
+   * @param table 
+   * @returns 
+   */
+  allTableNameCombinations(table: Table): string[] {
+    const names = [table.tableName];
+    if (table.database) names.push(table.database + '.' + table.tableName)
+    if (table.catalog) names.push(table.catalog + '.' + table.database + '.' + table.tableName)
+    return names;
+  }
+
+  addCandidatesForTables(tables: Table[]) {
+    tables
+      .flatMap(table => this.allTableNameCombinations(table))
+      .map(aTableNameVariant => {
+        return new Identifier(
+          this.lastToken,
+          aTableNameVariant,
+          '',
+          TABLE_ICON
+        )
+      })
+      .filter(item => item.matchesLastToken())
+      .map(item => item.toCompletionItem())
+      .forEach(item => this.addCandidate(item))
+  }
+
+  addCandidatesForColumnsOfAnyTable(tables: Table[]) {
+    tables
+      .flatMap(table => table.columns)
+      .map(column => {
+        return new Identifier(
+          this.lastToken,
+          column.columnName,
+          column.description,
+          COLUMN_ICON
+        )
+      })
+      .filter(item => item.matchesLastToken())
+      .map(item => item.toCompletionItem())
+      .forEach(item => this.addCandidate(item))
+  }
+
+  addCandidate(item: CompletionItem) {
+    // JupyterLab requires the dot or space character preceeding the <tab> key pressed
+    // If the dot or space character are not added to the label then searching
+    // in the list of suggestion does not work.
+    // Here we fix this issue by adding the dot or space character
+    // to the filterText and insertText.
+    // TODO: report this issue to JupyterLab-LSP project. 
+    if (this.jupyterLabMode) {
+      const text = item.insertText || item.label
+      if (this.isSpaceTriggerCharacter) {
+        item.insertText = ' ' + text
+        item.filterText = ' ' + text
+      }
+      else if (this.isDotTriggerCharacter) {
+        item.insertText = '.' + text
+        item.filterText = '.' + text
+      }
+    }
+    this.candidates.push(item)
+  }
+
+  addCandidateIfStartsWithLastToken(item: CompletionItem) {
+    if (item.label.startsWith(this.lastToken)) {
+      this.addCandidate(item)
+    }
+  }
+
+  addCandidatesForIncompleteSubquery(incompleteSubquery: IncompleteSubqueryNode) {
+    const parsedFromClause = getFromNodesFromClause(incompleteSubquery.text)
+    try {
+      parse(incompleteSubquery.text);
+    } catch (e) {
+      if (e.name !== 'SyntaxError') {
+        throw e
+      }
+      const fromText = incompleteSubquery.text
+      const newPos = parsedFromClause ? {
+        line: this.pos.line - (incompleteSubquery.location.start.line - 1),
+        column: this.pos.column - incompleteSubquery.location.start.column + 1
+      } : { line: 0, column: 0 }
+      const completer = new Completer(this.schema, fromText, newPos, this.jupyterLabMode)
+      completer.complete().forEach(item => this.addCandidate(item))
+    }
+  }
+
+  createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
+    return fromNodes.reduce((p: any, c) => {
+      if (c.type !== 'subquery') {
+        return p
+      }
+      if (!Array.isArray(c.subquery.columns)) {
+        return p
+      }
+      const columns = c.subquery.columns.map(v => {
+        if (typeof v === 'string') { return null }
+        return { columnName: v.as || (v.expr.type === 'column_ref' && v.expr.column) || '', description: 'alias' }
+      })
+      return p.concat({ database: null, columns, tableName: c.as })
+    }, [])
+  }
+
+  /**
+   * INSERT INTO TABLE1 (C
+   */
+  addCandidatesForInsert() {
+    this.addCandidatesForColumnsOfAnyTable(this.schema.tables)
+  }
+
+  addCandidatesForError(e: any) {
+    this.addCandidatesForExpectedLiterals(e.expected || [])
+    this.addCandidatesForFunctions()
+    this.addCandidatesForTables(this.schema.tables)
+  }
+
+  addCandidatesForSelectQuery(e: any, fromNodes: FromTableNode[]) {
+    const subqueryTables = this.createTablesFromFromNodes(fromNodes)
+    const schemaAndSubqueries = this.schema.tables.concat(subqueryTables)
+    this.addCandidatesForSelectStar(fromNodes, schemaAndSubqueries)
+    this.addCandidatesForExpectedLiterals(e.expected || [])
+    this.addCandidatesForFunctions()
+    this.addCandidatesForScopedColumns(fromNodes, schemaAndSubqueries)
+    this.addCandidatesForAliases(fromNodes)
+    this.addCandidatesForTables(schemaAndSubqueries)
+    if (logger.isDebugEnabled()) logger.debug(`candidates for error returns: ${JSON.stringify(this.candidates)}`)
+  }
+
+  addCandidatesForJoins(expected: { type: string, text: string }[], fromNodes: FromTableNode[]) {
+    let joinType: string = ''
+    if ('INNER'.startsWith(this.lastToken)) joinType = 'INNER'
+    if ('LEFT'.startsWith(this.lastToken)) joinType = 'LEFT'
+    if ('RIGH'.startsWith(this.lastToken)) joinType = 'RIGHT'
+
+    if (joinType && (expected.map(v => v.text).find(v => v === 'JOIN'))) {
+
+      if (fromNodes && fromNodes.length > 0) {
+        const fromNode: any = fromNodes[0]
+        const fromAlias = fromNode.as || fromNode.table
+        const fromTable = this.schema.tables.find(table => this.tableMatch(fromNode, table))
+
+        this.schema.tables
+          .filter(table => table != fromTable)
+          .forEach(table => {
+            table.columns
+              .filter(column =>
+                fromTable?.columns
+                  .map(col => col.columnName).includes(column.columnName))
+              .map(column => {
+                return {
+                  tableName: makeTableName(table),
+                  alias: makeTableAlias(table.tableName),
+                  columnName: column.columnName
+                }
+              })
+              .map(match => {
+                const label = `${joinType} JOIN ${match.tableName} AS ${match.alias} ON ${match.alias}.${match.columnName} = ${fromAlias}.${match.columnName}`
+                return {
+                  label: label,
+                  detail: 'utility',
+                  kind: UTILITY_ICON,
+                }
+              })
+              .forEach(item => this.addCandidate(item))
+          })
+      }
+    }
+  }
+
+  getRidOfAfterCursorString() {
+    return this.sql.split('\n').filter((_v, idx) => this.pos.line >= idx).map((v, idx) => idx === this.pos.line ? v.slice(0, this.pos.column) : v).join('\n')
+  }
+
+  addCandidatesForParsedDeleteStatement(ast: DeleteStatement) {
+    if (this.isPosInLocation(ast.table.location)) {
+      this.addCandidatesForTables(this.schema.tables)
+    }
+    else if (ast.where && this.isPosInLocation(ast.where.expression.location)) {
+      const expr = ast.where.expression
+      if (expr.type === 'column_ref') {
+        this.addCandidatesForColumnsOfAnyTable(this.schema.tables)
+      }
+    }
+  }
+
+  completeSelectStatement(ast: SelectStatement) {
+    if (Array.isArray(ast.columns)) {
+      this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('FROM'))
+      this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('AS'))
+    }
+  }
+
+  /**
+   * Recursively pull out the FROM nodes (including sub-queries)
+   * @param tableNodes
+   * @returns 
+   */
+  getAllNestedFromNodes(tableNodes: FromTableNode[]): FromTableNode[] {
+    return tableNodes.flatMap(tableNode => {
+      let result = [tableNode]
+      if (tableNode.type == 'subquery') {
+        const subTableNodes = tableNode.subquery.from?.tables || []
+        result = result.concat(this.getAllNestedFromNodes(subTableNodes))
+      }
+      return result
+    })
+  }
+
+  addCandidatesForParsedSelectQuery(ast: any) {
+    this.addCandidatesForBasicKeyword()
+    this.completeSelectStatement(ast)
+    if (!ast.distinct) {
+      this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('DISTINCT'))
+    }
+    const columnRef = this.findColumnAtPosition(ast)
+    if (!columnRef) {
+      this.addJoinCondidates(ast)
+    }
+    else {
+      const parsedFromClause = getFromNodesFromClause(this.sql)
+      const fromNodes = parsedFromClause?.from?.tables || []
+      const subqueryTables = this.createTablesFromFromNodes(fromNodes)
+      const schemaAndSubqueries = this.schema.tables.concat(subqueryTables)
+      if (columnRef.table) {
+        // We know what table/alias this column belongs to
+        // Find the corresponding table and suggest it's columns
+        this.addCandidatesForScopedColumns(fromNodes, schemaAndSubqueries)
+      }
+      else {
+        // Column is not scoped to a table/alias yet
+        // Could be an alias, a talbe or a function
+        this.addCandidatesForAliases(fromNodes)
+        this.addCandidatesForTables(schemaAndSubqueries)
+        this.addCandidatesForFunctions()
+      }
+    }
+    if (logger.isDebugEnabled()) logger.debug(`parse query returns: ${JSON.stringify(this.candidates)}`)
+  }
+
+  addCandidatesForParsedStatement(ast: any) {
+    if (logger.isDebugEnabled()) logger.debug(`getting candidates for parse query ast: ${JSON.stringify(ast)}`)
+    if (!ast.type) {
+      this.addCandidatesForBasicKeyword()
+    }
+    else if (ast.type === 'delete') {
+      this.addCandidatesForParsedDeleteStatement(ast)
+    }
+    else if (ast.type === 'select') {
+      this.addCandidatesForParsedSelectQuery(ast)
+    }
+    else {
+      console.log(`AST type not supported yet: ${ast.type}`)
+    }
+  }
+
+  addJoinCondidates(ast: any) {
+    // from clause: complete 'ON' keyword on 'INNER JOIN'
+    if (ast.type === 'select' && Array.isArray(ast.from?.tables)) {
+      const fromTable = this.getFromNodeByPos(ast.from?.tables || [])
+      if (fromTable && fromTable.type === 'table') {
+        this.addCandidatesForTables(this.schema.tables)
+        this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('INNER JOIN'))
+        this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('LEFT JOIN'))
+        if (fromTable.join && !fromTable.on) {
+          this.addCandidateIfStartsWithLastToken(this.toCompletionItemForKeyword('ON'))
+        }
+      }
+    }
+  }
+
+  findColumnAtPosition(ast: any): ColumnRefNode | undefined {
+    const columns = ast.columns
+    if (Array.isArray(columns)) {
+      // columns in select clause
+      const columnRefs = (columns as any).map((col: any) => col.expr).filter((expr: any) => !!expr)
+      if (ast.type === 'select' && ast.where?.expression) {
+        // columns in where clause  
+        columnRefs.push(ast.where.expression)
+      }
+      // column at position
+      const columnRef = this.getColumnRefByPos(columnRefs)
+      if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef))
+      return columnRef
+    }
+    return undefined
+  }
+
+  addCandidatesForFunctions() {
+    console.time('addCandidatesForFunctions')
+    if (!this.lastToken) {
+      // Nothing was typed, return all lowercase functions
+      this.schema.functions
+        .map(func => this.toCompletionItemForFunction(func))
+        .forEach(item => this.addCandidate(item))
+    }
+    else {
+      // If user typed the start of the function
+      const lower = this.lastToken.toLowerCase()
+      const isTypedUpper = (this.lastToken != lower)
+      this.schema.functions
+        // Search using lowercase prefix
+        .filter(v => v.name.startsWith(lower))
+        // If typed string is in upper case, then return upper case suggestions
+        .map(v => {
+          if (isTypedUpper) v.name = v.name.toUpperCase()
+          return v
+        })
+        .map(v => this.toCompletionItemForFunction(v))
+        .forEach(item => this.addCandidate(item))
+    }
+    console.timeEnd('addCandidatesForFunctions')
+  }
+
+  makeColumnName(alias: string, columnName: string) {
+    return alias ? alias + '.' + columnName : columnName;
+  }
+
+  addCandidatesForSelectStar(fromNodes: FromTableNode[], tables: Table[]) {
+    console.time('addCandidatesForSelectStar')
+    tables.flatMap(table => {
+      return fromNodes.filter((fromNode: any) => this.tableMatch(fromNode, table))
+        .map((fromNode: any) => fromNode.as || fromNode.table)
+        .filter(_alias =>
+          this.lastToken.toUpperCase() === 'SELECT' // complete SELECT keyword
+          || this.lastToken === '') // complete at space after SELECT
+        .map(alias => {
+          const columnNames = table.columns
+            .map(col => this.makeColumnName(alias, col.columnName))
+            .join(',\n')
+          const label = `Select all columns from ${alias}`
+          let prefix: string = ''
+          if (this.lastToken) {
+            prefix = this.lastToken + '\n'
+          }
+
+          return {
+            label: label,
+            insertText: prefix + columnNames,
+            filterText: prefix + label,
+            detail: 'utility',
+            kind: UTILITY_ICON,
+          }
+        })
+    }).forEach(item => this.addCandidate(item))
+    console.timeEnd('addCandidatesForSelectStar')
+  }
+
+  addCandidatesForScopedColumns(fromNodes: FromTableNode[], tables: Table[]) {
+    console.time('addCandidatesForScopedColumns')
+    tables.flatMap(table => {
+      return fromNodes.filter((fromNode: any) => this.tableMatch(fromNode, table))
+        .map((fromNode: any) => fromNode.as || fromNode.table)
+        .filter(alias => this.lastToken.startsWith(alias + '.'))
+        .flatMap(alias =>
+          table.columns.map(col => {
+            return new Identifier(
+              this.lastToken,
+              this.makeColumnName(alias, col.columnName),
+              col.description,
+              COLUMN_ICON
+            )
+          })
+        )
+    })
+      .filter(item => item.matchesLastToken())
+      .map(item => item.toCompletionItem())
+      .forEach(item => this.addCandidate(item))
+    console.timeEnd('addCandidatesForScopedColumns')
+  }
+
+  /**
+   * Test if the given table matches the fromNode.
+   * @param fromNode 
+   * @param table 
+   * @returns 
+   */
+  tableMatch(fromNode: any, table: Table) {
+    // Assume table matches from node and disprove
+    let matchingTable = true
+    if (fromNode.type == 'subquery') {
+      // If we have an alias it should match the subquery table name
+      if (fromNode.as && fromNode.as != table.tableName) {
+        matchingTable = false;
+      }
+    }
+    // Regular tables
+    // If we have a from node with a table name
+    // and it does not match the table, we know it's not a match 
+    else {
+      if (fromNode.table && fromNode.table != table.tableName) {
+        matchingTable = false;
+      }
+      else if (fromNode.db && fromNode.db != table.database) {
+        matchingTable = false;
+      }
+      else if (fromNode.catalog && fromNode.catalog != table.catalog) {
+        matchingTable = false;
+      }
+    }
+    return matchingTable;
+  }
+
+  addCandidatesForAliases(fromNodes: FromTableNode[]) {
+    fromNodes
+      .map((fromNode: any) => fromNode.as)
+      .filter(aliasName => aliasName && aliasName.startsWith(this.lastToken))
+      .map(aliasName => this.toCompletionItemForAlias(aliasName))
+      .forEach(item => this.addCandidate(item))
+  }
+}
+
+
+export function complete(sql: string, pos: Pos, schema: Schema = { tables: [], functions: [] }, jupyterLabMode: boolean = false) {
+  console.time('complete')
+  if (logger.isDebugEnabled()) logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
+  const completer = new Completer(schema, sql, pos, jupyterLabMode)
+  const candidates = completer.complete()
+  console.timeEnd('complete')
+  return { candidates: candidates, error: completer.error }
 }
