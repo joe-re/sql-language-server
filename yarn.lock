@@ -673,8 +673,8 @@ __metadata:
 
 "@joe-re/sql-parser@file:../sql-parser::locator=sql-language-server_server%40workspace%3Apackages%2Fserver":
   version: 0.11.4
-  resolution: "@joe-re/sql-parser@file:../sql-parser#../sql-parser::hash=24beb3&locator=sql-language-server_server%40workspace%3Apackages%2Fserver"
-  checksum: 52335a746dd49388c9a679a1f2de83165c224a57118aed1f7f8c63e01e88950f35b0f9c56c64a1f1e8c218ba4b016305e9accafb604d2a1a6823f8ddacf43617
+  resolution: "@joe-re/sql-parser@file:../sql-parser#../sql-parser::hash=f14fda&locator=sql-language-server_server%40workspace%3Apackages%2Fserver"
+  checksum: c79676eb7a5c9d1a78315b7cc834e64ad9b403a9c07e871645d4b6d113dbdd36b8c9e1dba4d3fa595e9b67c6df18b1eba840446673fc73f100197eb048eec6d4
   languageName: node
   linkType: hard
 
