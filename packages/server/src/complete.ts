@@ -176,7 +176,7 @@ class Completer {
     try {
       const ast = parse(target);
       this.addCandidatesForParsedStatement(ast)
-    } catch (e) {
+    } catch (e: any) {
       logger.debug('error')
       logger.debug(e)
       if (e.name !== 'SyntaxError') {
@@ -378,7 +378,7 @@ class Completer {
     const parsedFromClause = getFromNodesFromClause(incompleteSubquery.text)
     try {
       parse(incompleteSubquery.text);
-    } catch (e) {
+    } catch (e: any) {
       if (e.name !== 'SyntaxError') {
         throw e
       }

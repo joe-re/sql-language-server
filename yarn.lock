@@ -671,6 +671,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@joe-re/sql-parser@file:../sql-parser::locator=sql-language-server_server%40workspace%3Apackages%2Fserver":
+  version: 0.11.4
+  resolution: "@joe-re/sql-parser@file:../sql-parser#../sql-parser::hash=24beb3&locator=sql-language-server_server%40workspace%3Apackages%2Fserver"
+  checksum: 52335a746dd49388c9a679a1f2de83165c224a57118aed1f7f8c63e01e88950f35b0f9c56c64a1f1e8c218ba4b016305e9accafb604d2a1a6823f8ddacf43617
+  languageName: node
+  linkType: hard
+
 "@joe-re/sql-parser@npm:^0.11.5":
   version: 0.11.5
   resolution: "@joe-re/sql-parser@npm:0.11.5"
@@ -9017,7 +9024,7 @@ fsevents@^1.2.7:
   version: 0.0.0-use.local
   resolution: "sql-language-server_server@workspace:packages/server"
   dependencies:
-    "@joe-re/sql-parser": ^0.11.5
+    "@joe-re/sql-parser": "file:../sql-parser"
     "@rollup/plugin-commonjs": ^11.1.0
     "@rollup/plugin-json": ^4.0.3
     "@rollup/plugin-replace": ^2.3.2
