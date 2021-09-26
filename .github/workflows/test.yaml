@@ -1,22 +1,25 @@
 name: build-and-test
 on: [push]
-defaults:
-  run:
-    working-directory: ~/repo
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: borales/actions-yarn@v2.3.0
+      - uses: actions/setup-node@v2
         with:
-          cmd: install
-      - uses: borales/actions-yarn@v2.3.0
+          node-version: 14.x
+      - uses: actions/setup-python@v2
         with:
-          cmd: vsc-compile-client
-      - uses: borales/actions-yarn@v2.3.0
-        with:
-          cmd: vsc-compile-server
-      - uses: borales/actions-yarn@v2.3.0
-        with:
-          cmd: test:server
+          python-version: 3.8.12
+        env:
+          PYTHON_VERSION: 3.8.12
+      - name: Display Python version
+        run: echo $pythonLocation
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Display Python version
+        run: which python
+      - run: yarn install
+      - run: yarn vsc-compile:client
+      - run: yarn vsc-compile:server
+      - run: yarn test:server
