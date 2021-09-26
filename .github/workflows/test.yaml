@@ -1,0 +1,22 @@
+name: build-and-test
+on: [push]
+defaults:
+  run:
+    working-directory: ~/repo
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: install
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: vsc-compile-client
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: vsc-compile-server
+      - uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: test:server
