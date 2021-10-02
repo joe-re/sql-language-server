@@ -10,7 +10,7 @@ export default {
     sourcemap: true
   },
   plugins: [
-    typescript(),
+    typescript({ noEmitOnError: true }),
     resolve(),
     commonjs({
       include: ["node_modules/**/*", "../../node_modules/**/*"]

@@ -13,7 +13,7 @@ export default {
     sourcemap: true
   },
   plugins: [
-    typescript({ tsconfig: 'tsconfig.cli.json' }),
+    typescript({ tsconfig: 'tsconfig.cli.json', noEmitOnError: true }),
     json(),
     replace({
       delimiters: ['', ''],
