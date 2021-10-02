@@ -3,7 +3,6 @@ import {
   InitializeResult,
   CompletionItem,
   CompletionParams,
-  CompletionTriggerKind,
 } from 'vscode-languageserver/node'
 import * as VscodeNode from 'vscode-languageserver/node'
 import { TextDocument } from 'vscode-languageserver-textdocument'
@@ -201,7 +200,7 @@ export function createServerWithConnection(connection: Connection) {
   connection.onCompletion((docParams: CompletionParams): CompletionItem[] => {
     // Make sure the client does not send use completion request for characters
     // other than the dot which we asked for.
-    if (docParams.context?.triggerKind == CompletionTriggerKind.TriggerCharacter) {
+    if (docParams.context?.triggerKind == VscodeNode.CompletionTriggerKind.TriggerCharacter) {
       if (docParams.context?.triggerCharacter != TRIGGER_CHARATER) {
         return []
       }
