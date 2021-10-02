@@ -1,0 +1,25 @@
+name: build-and-test
+on: [push]
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8.12
+        env:
+          PYTHON_VERSION: 3.8.12
+      - name: Display Python version
+        run: echo $pythonLocation
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Display Python version
+        run: which python
+      - run: yarn install
+      - run: yarn vsc-compile:client
+      - run: yarn vsc-compile:server
+      - run: yarn test:server

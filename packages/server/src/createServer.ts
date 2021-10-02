@@ -3,7 +3,6 @@ import {
   InitializeResult,
   CompletionItem,
   CompletionParams,
-  CompletionTriggerKind,
 } from 'vscode-languageserver/node'
 import * as VscodeNode from 'vscode-languageserver/node'
 import { TextDocument } from 'vscode-languageserver-textdocument'
@@ -33,7 +32,7 @@ const TRIGGER_CHARATER = '.'
 export function createServerWithConnection(connection: Connection) {
   initializeLogging()
   const logger = log4js.getLogger()
-  let documents: VscodeNode.TextDocuments<TextDocument> = new VscodeNode.TextDocuments(TextDocument)
+  let documents = new VscodeNode.TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = { tables: [], functions: [] }
   let hasConfigurationCapability = false
@@ -47,7 +46,7 @@ export function createServerWithConnection(connection: Connection) {
     try {
       schema = JSON.parse(data);
     }
-    catch (e) {
+    catch (e: any) {
       logger.error("failed to read schema file " + e.message)
       connection.sendNotification('sqlLanguageServer.error', {
         message: "Failed to read schema file: " + filePath + " error: " + e.message
@@ -201,7 +200,7 @@ export function createServerWithConnection(connection: Connection) {
   connection.onCompletion((docParams: CompletionParams): CompletionItem[] => {
     // Make sure the client does not send use completion request for characters
     // other than the dot which we asked for.
-    if (docParams.context?.triggerKind == CompletionTriggerKind.TriggerCharacter) {
+    if (docParams.context?.triggerKind == VscodeNode.CompletionTriggerKind.TriggerCharacter) {
       if (docParams.context?.triggerCharacter != TRIGGER_CHARATER) {
         return []
       }
@@ -268,7 +267,7 @@ export function createServerWithConnection(connection: Connection) {
         SettingStore.getInstance().changeConnection(
           request.arguments && request.arguments[0] || ''
         )
-      } catch (e) {
+      } catch (e: any) {
         connection.sendNotification('sqlLanguageServer.error', {
           message: e.message
         })

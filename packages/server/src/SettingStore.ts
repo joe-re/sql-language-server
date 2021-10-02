@@ -34,7 +34,7 @@ type PersonalConfig = {
 function fileExists(path: string) {
   try {
     return fs.statSync(path).isFile()
-  } catch (error) {
+  } catch (error: any) {
     if (error && error.code === "ENOENT") {
         return false;
     }

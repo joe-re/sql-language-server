@@ -1,5 +1,7 @@
 # SQLLanguageServer
 
+[![build-and-test](https://github.com/joe-re/sql-language-server/actions/workflows/test.yaml/badge.svg)](https://github.com/joe-re/sql-language-server/actions/workflows/test.yaml)
+
 SQL Language Server
 
 ![completion](https://user-images.githubusercontent.com/4954534/47268897-36b70500-d589-11e8-98b2-65cffdcd60b8.gif)
