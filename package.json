@@ -22,10 +22,11 @@
   "license": "MIT",
   "publisher": "joe-re",
   "scripts": {
-    "vsc-compile": "npm run vsc-compile:client && npm run vsc-compile:server",
+    "vsc-compile": "yarn vsc-compile:client && yarn vsc-compile:server",
     "vsc-compile:client": "cd ./packages/client && yarn run compile",
-    "vsc-compile:server": "cd ./packages/server && yarn run prepare-vsc-extension",
+    "vsc-compile:server": "yarn build:sqlint && cd ./packages/server && yarn run prepare-vsc-extension",
     "test:server": "cd ./packages/server && yarn run test",
+    "build:sqlint": "cd ./packages/sqlint && yarn run build",
     "watch": "run-p watch:client watch:server",
     "watch:client": "cd ./packages/client && yarn run watch",
     "watch:sqlint": "cd ./packages/sqlint && yarn run watch",
