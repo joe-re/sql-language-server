@@ -270,6 +270,9 @@ class Completer {
 
   getColumnRefByPos(columns: ColumnRefNode[]) {
     return columns.find(v =>
+      // guard against ColumnRefNode that don't have a location,
+      // for example sql functions that are not known to the parser
+      v.location &&
       (v.location.start.line === this.pos.line + 1 && v.location.start.column <= this.pos.column) &&
       (v.location.end.line === this.pos.line + 1 && v.location.end.column >= this.pos.column)
     )
