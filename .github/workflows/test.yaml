@@ -13,12 +13,6 @@ jobs:
           python-version: 3.8.12
         env:
           PYTHON_VERSION: 3.8.12
-      - name: Display Python version
-        run: echo $pythonLocation
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
-      - name: Display Python version
-        run: which python
       - run: yarn install
       - run: yarn vsc-compile:client
       - run: yarn vsc-compile:server

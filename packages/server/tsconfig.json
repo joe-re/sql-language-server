@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
     "outDir": "dist"
   },
   "exclude": [
@@ -8,4 +9,5 @@
     "dist",
     "test"
   ],
+  "references": [{ "path": "../../packages/sqlint" }]
 }
