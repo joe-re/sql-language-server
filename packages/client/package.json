@@ -1,7 +1,7 @@
 {
   "name": "sql-language-server_vsc",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "./out/extension",
   "author": "joe-re <joe.tialtngo@gmail.com>",
   "license": "MIT",
