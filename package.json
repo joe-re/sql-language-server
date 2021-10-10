@@ -22,6 +22,7 @@
   "license": "MIT",
   "publisher": "joe-re",
   "scripts": {
+    "bootstrap": "lerna bootstrap",
     "vsc-compile": "yarn vsc-compile:client && yarn vsc-compile:server",
     "vsc-compile:client": "cd ./packages/client && yarn run compile",
     "vsc-compile:server": "yarn build:sqlint && cd ./packages/server && yarn run prepare-vsc-extension",

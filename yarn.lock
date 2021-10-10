@@ -529,14 +529,6 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@joe-re/sql-parser@^0.11.5":
-  version "0.11.5"
-  resolved "https://registry.yarnpkg.com/@joe-re/sql-parser/-/sql-parser-0.11.5.tgz#8382dac1aaec3ebd1acd245bbbab1825e96e0648"
-  integrity sha512-0WL/ibfrcY00MoDS/zffNTQqnvxpeWVwslODCLgMr96A6bC8huEzQh3byk1gEkSIjClCb1TLOjwr37mSbei6Fw==
-
-"@joe-re/sql-parser@file:packages/sql-parser":
-  version "0.11.4"
-
 "@lerna/add@4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@lerna/add/-/add-4.0.0.tgz#c36f57d132502a57b9e7058d1548b7a565ef183f"
