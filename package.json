@@ -1,5 +1,5 @@
 {
-  "name": "sql-language-server",
+  "name": "sql-language-server_ws",
   "displayName": "SQL Language Server",
   "description": "SQL Language Server Extension for VSC",
   "version": "0.12.0",
@@ -33,7 +33,7 @@
     "watch:server": "wait-on ./packages/sqlint/dist/src/index.js && cd ./packages/server && yarn run watch:index",
     "watch:dev-server:client": "cd ./example/monaco_editor && yarn run watch",
     "watch:dev-server:server": "wait-on ./packages/server/dist/src/index.js && cd ./example/monaco_editor && yarn run start",
-    "dev": "run-p watch:sqlint watch:server watch:dev-server:client watch:dev-server:server",
+    "dev": "yarn build:sqlint && run-p watch:sqlint watch:server watch:dev-server:client watch:dev-server:server",
     "vscode:prepublish": "yarn run vsc-compile"
   },
   "engines": {
@@ -85,7 +85,7 @@
     "example/*"
   ],
   "devDependencies": {
-    "npm-run-all": "^4.1.3",
+    "npm-run-all": "^4.1.5",
     "wait-on": "^5.0.1"
   },
   "dependencies": {

@@ -8,7 +8,7 @@
     "tsc": "tsc",
     "tsc:watch": "tsc -w",
     "webpack:watch": "webpack -w",
-    "copy": "cp src/index.html dist/index.html",
+    "copy": "mkdir -p dist && cp src/index.html dist/index.html",
     "build": "yarn tsc && webpack && yarn run copy",
     "watch": "run-p webpack:watch copy ",
     "start": "ts-node-dev --transpile-only ./src/server/server.ts",

@@ -1,26 +1,15 @@
 {
-  "extends": "@tsconfig/svelte/tsconfig.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "strict": true,
-    "target": "ES2015",
-    "module": "CommonJS",
-    "moduleResolution": "Node",
-    "outDir": "dist",
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "declarationMap": true,
-    "inlineSources": false,
-    "esModuleInterop": true,
-    "declaration": true,
-    "stripInternal": true,
-    "lib": [
-      "es2016",
-      "dom"
-    ],
+    "outDir": "dist"
   },
-  "include": [
-    "src"
+  "lib": [
+    "es2016",
+    "dom"
   ],
-  "exclude": [ "node_modules" ]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test"
+  ],
 }
-
