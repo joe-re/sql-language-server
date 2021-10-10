@@ -31,7 +31,8 @@ export const whereClauseNewLine: Rule<SelectStatement, RuleConfig<Options>> = {
       return invalidClauses
     }
 
-    const invalidClauses = findInvalidClauses(context.node.where.expression)
+    const invalidClauses = context.node.where.expression.type === 'binary_expr' ?
+      findInvalidClauses(context.node.where.expression) : []
     if (invalidClauses.length === 0) {
       return
     }
