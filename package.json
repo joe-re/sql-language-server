@@ -85,6 +85,7 @@
     "example/*"
   ],
   "devDependencies": {
+    "lerna": "^4.0.0",
     "npm-run-all": "^4.1.5",
     "wait-on": "^5.0.1"
   },
