@@ -31,7 +31,7 @@
   ],
   "types": "./dist/src",
   "dependencies": {
-    "@joe-re/sql-parser": "^0.11.5",
+    "@joe-re/sql-parser": "^1.0.0",
     "ajv": "^6.12.2",
     "chalk": "^4.0.0",
     "js-yaml": "^3.14.0",

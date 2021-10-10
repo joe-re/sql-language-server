@@ -36,7 +36,8 @@
     "dist"
   ],
   "dependencies": {
-    "@joe-re/sql-parser": "file:../sql-parser",
+    "@joe-re/sql-parser": "^1.0.0",
+    "sqlint": "^1.0.0",
     "@types/pg": "^7.4.10",
     "cardinal": "^2.1.1",
     "jest": "^26.0.1",
