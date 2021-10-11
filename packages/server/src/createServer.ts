@@ -4,7 +4,8 @@ import {
   CompletionItem,
   CompletionParams,
 } from 'vscode-languageserver/node'
-import * as VscodeNode from 'vscode-languageserver/node'
+import { TextDocuments } from 'vscode-languageserver/lib/common/server'
+import { CompletionTriggerKind } from 'vscode-languageserver-protocol/lib/common/protocol'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
 import cache from './cache'
@@ -32,7 +33,7 @@ const TRIGGER_CHARATER = '.'
 export function createServerWithConnection(connection: Connection) {
   initializeLogging()
   const logger = log4js.getLogger()
-  let documents = new VscodeNode.TextDocuments(TextDocument)
+  let documents = new TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = { tables: [], functions: [] }
   let hasConfigurationCapability = false
@@ -200,7 +201,7 @@ export function createServerWithConnection(connection: Connection) {
   connection.onCompletion((docParams: CompletionParams): CompletionItem[] => {
     // Make sure the client does not send use completion request for characters
     // other than the dot which we asked for.
-    if (docParams.context?.triggerKind == VscodeNode.CompletionTriggerKind.TriggerCharacter) {
+    if (docParams.context?.triggerKind == CompletionTriggerKind.TriggerCharacter) {
       if (docParams.context?.triggerCharacter != TRIGGER_CHARATER) {
         return []
       }

@@ -6,7 +6,7 @@ services:
       dockerfile: dockerfile
     volumes:
       - .:/opt/sql-language-server:rw
-    command: bash -c "yarn && npm rebuild && yarn dev"
+    command: bash -c "yarn && yarn bootstrap && yarn dev"
     ports:
       - '3000:3000'
   postgres:

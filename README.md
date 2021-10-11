@@ -420,7 +420,7 @@ Please follows below steps.
 2. Start development process on your docker.
 
 ```sh
-$ docker-compose up
+$ docker compose up
 ```
 
 3. Open `http://localhost:3000` on your browser.
@@ -430,7 +430,7 @@ $ docker-compose up
 1. Login into development docker container
 
 ```sh
-$ docker-compose exec assets bash
+$ docker compose exec assets bash
 ```
 
 2. Migrate database
