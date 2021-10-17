@@ -21,10 +21,10 @@
   ],
   "license": "MIT",
   "scripts": {
-    "compile:cli": "rollup -c",
+    "compile:cli": "esbuild bin/cli.ts --bundle --platform=node --external:pg-native --outfile=dist/cli.js",
     "compile:index": "tsc -p .",
     "clean": "rm -rf dist",
-    "watch:cli": "rollup -c -w",
+    "watch:cli": "yarn compile:cli --watch",
     "watch:index": "tsc -w",
     "test": "jest",
     "prepare-vsc-extension": "yarn clean && yarn compile:cli",
@@ -53,14 +53,11 @@
     "yargs": "^12.0.1"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^11.1.0",
-    "@rollup/plugin-json": "^4.0.3",
-    "@rollup/plugin-replace": "^2.3.2",
-    "@rollup/plugin-typescript": "^4.1.1",
     "@types/jest": "^25.2.2",
     "@types/mysql": "^2.15.5",
     "@types/node": "14.0.26",
     "@types/sqlite3": "^3.1.6",
+    "esbuild": "^0.13.8",
     "jest": "^26.0.1",
     "rollup": "^2.10.2",
     "ts-jest": "^26.0.0",
