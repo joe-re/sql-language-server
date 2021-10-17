@@ -1003,7 +1003,8 @@ function peg$parse(input, options) {
               type: 'create_table',
               keyword: keyword,
               if_not_exist: if_not_exist_keyword,
-              fields: fields
+              fields: fields,
+              location: location(),
             }
           },
       peg$c356 = function(keyword, table, fields) {
@@ -1011,7 +1012,8 @@ function peg$parse(input, options) {
               type: 'create_table',
               if_not_exist: null,
               keyword: keyword,
-              fields: fields
+              fields: fields,
+              location: location(),
             }
           },
       peg$c357 = function(name, type) {

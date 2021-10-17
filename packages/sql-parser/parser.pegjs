@@ -1285,7 +1285,8 @@ create_table_stml
         type: 'create_table',
         keyword: keyword,
         if_not_exist: if_not_exist_keyword,
-        fields: fields
+        fields: fields,
+        location: location(),
       }
     }
   / keyword: create_table_keyword __
@@ -1298,7 +1299,8 @@ create_table_stml
         type: 'create_table',
         if_not_exist: null,
         keyword: keyword,
-        fields: fields
+        fields: fields,
+        location: location(),
       }
     }
 
@@ -1322,18 +1324,18 @@ if_not_exist_keyword
 
 field_list
   = head:field tail:(__ COMMA __ field)* {
-      return createList(head, tail);
-    }
+    return createList(head, tail);
+  }
 
 field
   = name:ident __ type:field_data_type {
-      return {
-        type: 'field',
-        name: name,
-        data_type: type,
-        location: location()
-      }
+    return {
+      type: 'field',
+      name: name,
+      data_type: type,
+      location: location()
     }
+  }
 
 field_data_type
   = name:ident __ LPAREN __? val:int __? RPAREN {
