@@ -1026,6 +1026,7 @@ KW_SELECT       = "SELECT"i       !ident_start
 KW_UPDATE       = "UPDATE"i       !ident_start
 KW_CREATE       = "CREATE"i       !ident_start
 KW_CREATE_TABLE = "CREATE TABLE"i !ident_start
+KW_IF_NOT_EXIST = "IF NOT EXIST"i !ident_start
 KW_DELETE       = "DELETE"i       !ident_start
 KW_INSERT       = "INSERT"i       !ident_start
 KW_REPLACE      = "REPLACE"i      !ident_start
@@ -1274,6 +1275,7 @@ delete_table
 
 create_table_stml
   = keyword: create_table_keyword __
+    if_not_exist_keyword: if_not_exist_keyword __
     table: ident __
     LPAREN __
     fields: field_list __
@@ -1282,12 +1284,35 @@ create_table_stml
       return {
         type: 'create_table',
         keyword: keyword,
+        if_not_exist: if_not_exist_keyword,
+        fields: fields
+      }
+    }
+  / keyword: create_table_keyword __
+    table: ident __
+    LPAREN __
+    fields: field_list __
+    RPAREN
+   {
+      return {
+        type: 'create_table',
+        if_not_exist: null,
+        keyword: keyword,
         fields: fields
       }
     }
 
 create_table_keyword
   = val: KW_CREATE_TABLE {
+    return {
+      type: 'keyword',
+      value: val && val[0],
+      location: location()
+    }
+  }
+
+if_not_exist_keyword
+  = val: KW_IF_NOT_EXIST {
     return {
       type: 'keyword',
       value: val && val[0],
