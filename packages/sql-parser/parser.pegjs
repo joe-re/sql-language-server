@@ -35,10 +35,10 @@
     }  
   }
 
-  function createList(head, tail) {
+  function createList(head, tail, idx=3) {
     var result = [head];
     for (var i = 0; i < tail.length; i++) {
-      result.push(tail[i][3]);
+      result.push(tail[i][idx]);
     }
     return result;
   }
@@ -1017,6 +1017,11 @@ e
 
 
 KW_NULL         = "NULL"i         !ident_start
+KW_NOT_NULL     = "NOT NULL"i     !ident_start
+KW_UNIQUE       = "UNIQUE"i       !ident_start
+KW_PRIMARY_KEY  = "PRIMARY KEY"i  !ident_start
+KW_DEFAULT      = "DEFAULT"i      !ident_start
+KW_CHECK        = "CHECK"i        !ident_start
 KW_TRUE         = "TRUE"i         !ident_start
 KW_FALSE        = "FALSE"i        !ident_start
 
@@ -1328,11 +1333,21 @@ field_list
   }
 
 field
-  = name:ident __ type:field_data_type {
+  = name:ident __ type:field_data_type __ constraints: field_constraint_list {
     return {
       type: 'field',
       name: name,
       data_type: type,
+      constraints: constraints,
+      location: location()
+    }
+  }
+  / name:ident __ type:field_data_type {
+    return {
+      type: 'field',
+      name: name,
+      data_type: type,
+      constraints: [],
       location: location()
     }
   }
@@ -1354,3 +1369,34 @@ field_data_type
       location: location()
     }
   }
+
+field_constraint_list
+  = head:field_constraint tail:(__ field_constraint)* {
+    return createList(head, tail, 1);
+  }
+
+field_constraint
+  = field_constraint_not_null
+  / field_constraint_primary_key
+  / field_constraint_unique
+
+field_constraint_not_null = k: keyword_not_null {
+  return { type: 'constraint_not_null', keyword: k, location: location() }
+}
+keyword_not_null = k: KW_NOT_NULL {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+
+field_constraint_primary_key = k: keyword_primary_key {
+  return { type: 'constraint_primary_key', keyword: k, location: location() }
+}
+keyword_primary_key = k: KW_PRIMARY_KEY {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+
+field_constraint_unique = k: keyword_unique {
+  return { type: 'constraint_unique', keyword: k, location: location() }
+}
+keyword_unique = k: KW_UNIQUE {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}

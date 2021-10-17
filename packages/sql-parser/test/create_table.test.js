@@ -44,4 +44,20 @@ describe('CREATE TABLE statement', () => {
       })
     })
   })
+
+  describe('Constraints', () => {
+    it('should success to parse', () => {
+      const sql = `
+        CREATE TABLE Persons (
+          PersonID int NOT NULL UNIQUE PRIMARY KEY,
+          LastName varchar(255)
+        );`
+      const result = parse(sql)
+      expect(result.fields[0].constraints).toBeDefined()
+      expect(result.fields[0].constraints.length).toEqual(3)
+      expect(result.fields[0].constraints[0].type).toEqual('constraint_not_null')
+      expect(result.fields[0].constraints[1].type).toEqual('constraint_unique')
+      expect(result.fields[0].constraints[2].type).toEqual('constraint_primary_key')
+    })
+  })
 })

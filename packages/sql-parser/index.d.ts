@@ -184,6 +184,7 @@ export type FieldNode = {
   type: 'field',
   name: string,
   data_type: FieldDataTypeNode | null,
+  constraints: FieldConstraint[],
   location: NodeRange
 }
 
@@ -193,6 +194,15 @@ export type FieldDataTypeNode = {
   value: string | null,
   location: NodeRange
 }
+
+export type FieldConstraint =
+  FieldConstraintNotNull |
+  FieldConstraintPrimaryKey |
+  FieldConstraintUnique
+
+export type FieldConstraintNotNull = { type: 'constraint_not_null', keyword: KeywordNode }
+export type FieldConstraintPrimaryKey = { type: 'constraint_primary_key', keyword: KeywordNode }
+export type FieldConstraintUnique = { type: 'constraint_unique', keyword: KeywordNode }
 
 export function parseFromClause(sql: string): FromClauseParserResult
 export function parse(sql: string): AST
