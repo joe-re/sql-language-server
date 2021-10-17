@@ -103,7 +103,7 @@
 }
 
 start 
-  = &{ params = []; return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stml) __ EOSQL? __ {
+  = &{ params = []; return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt) __ EOSQL? __ {
       return {
         ast   : ast,
         param : params
@@ -1278,7 +1278,7 @@ delete_table
       }
     }
 
-create_table_stml
+create_table_stmt
   = keyword: create_table_keyword __
     if_not_exist_keyword: if_not_exist_keyword __
     table: ident __

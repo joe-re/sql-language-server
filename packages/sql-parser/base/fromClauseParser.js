@@ -1237,7 +1237,7 @@ function peg$parse(input, options) {
             if (s3 === peg$FAILED) {
               s3 = peg$parsedelete_stmt();
               if (s3 === peg$FAILED) {
-                s3 = peg$parsecreate_table_stml();
+                s3 = peg$parsecreate_table_stmt();
               }
             }
           }
@@ -10266,7 +10266,7 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parsecreate_table_stml() {
+  function peg$parsecreate_table_stmt() {
     var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11;
 
     s0 = peg$currPos;
