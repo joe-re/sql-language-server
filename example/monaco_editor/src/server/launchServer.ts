@@ -1,10 +1,10 @@
-import * as rpc from "vscode-ws-jsonrpc";
-import { createConnection } from 'vscode-languageserver';
+import * as rpc from "@codingame/monaco-jsonrpc";
+import { createConnection } from 'vscode-languageserver/node';
 import { createServerWithConnection } from 'sql-language-server/src/createServer'
 
 export function launchServer(socket: rpc.IWebSocket) {
-  const reader: any = new rpc.WebSocketMessageReader(socket);
-  const writer: any = new rpc.WebSocketMessageWriter(socket);
+  const reader = new rpc.WebSocketMessageReader(socket);
+  const writer = new rpc.WebSocketMessageWriter(socket);
   const asExternalProccess =
     process.argv.findIndex((value) => value === "--external") !== -1;
   if (asExternalProccess) {
