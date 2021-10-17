@@ -5,7 +5,7 @@ import {
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
-} from 'vscode-languageclient'
+} from 'vscode-languageclient/node'
 import { ExecuteCommandParams } from 'vscode-languageserver-protocol'
 import { rebuild } from './rebuild'
 

@@ -7,7 +7,7 @@
   "license": "MIT",
   "publisher": "joe-re",
   "scripts": {
-    "compile": "esbuild ./extension.ts --bundle --external:vscode --platform=node --outfile=out/extension.js",
+    "compile": "esbuild ./extension.ts --bundle --platform=node --external:vscode --outfile=out/extension.js",
     "watch": "yarn compile --watch"
   },
   "engines": {
@@ -18,6 +18,7 @@
   ],
   "dependencies": {
     "electron-rebuild": "^1.11.0",
+    "vscode": "^1.1.37",
     "vscode-languageclient": "^7.0.0",
     "vscode-test": "^1.3.0"
   },

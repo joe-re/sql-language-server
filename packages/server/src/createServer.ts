@@ -263,7 +263,10 @@ export function createServerWithConnection(connection: Connection) {
 
   connection.onExecuteCommand((request) => {
     logger.debug(`received executeCommand request: ${request.command}, ${request.arguments}`)
-    if (request.command === 'switchDatabaseConnection') {
+    if (
+      request.command === 'switchDatabaseConnection' ||
+      request.command === 'sqlLanguageServer.switchDatabaseConnection'
+    ) {
       try {
         SettingStore.getInstance().changeConnection(
           request.arguments && request.arguments[0] || ''
@@ -273,7 +276,10 @@ export function createServerWithConnection(connection: Connection) {
           message: e.message
         })
       }
-    } else if (request.command === 'fixAllFixableProblems') {
+    } else if (
+      request.command === 'fixAllFixableProblems' ||
+      request.command === 'sqlLanguageServer.fixAllFixableProblems'
+    ) {
       const uri = request.arguments ? request.arguments[0] : null
       if (!uri) {
         connection.sendNotification('sqlLanguageServer.error', {
