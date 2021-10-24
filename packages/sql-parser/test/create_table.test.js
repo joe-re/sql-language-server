@@ -60,4 +60,16 @@ describe('CREATE TABLE statement', () => {
       expect(result.fields[0].constraints[2].type).toEqual('constraint_primary_key')
     })
   })
+
+  describe('Using another table', () => {
+    it('should success to parse', () => {
+      const sql = `
+        CREATE TABLE TestTable AS
+        SELECT customername, contactname
+        FROM customers;
+      `
+      const result = parse(sql)
+      expect(result).toBeDefined()
+    })
+  })
 })

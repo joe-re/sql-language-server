@@ -177,6 +177,7 @@ export type CreateTableStatement = {
   keyword: KeywordNode,
   if_not_exist: KeywordNode | null,
   fields: FieldNode[],
+  select: SelectStatement | null,
   location: NodeRange
 }
 

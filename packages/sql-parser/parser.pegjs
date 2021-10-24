@@ -1280,6 +1280,20 @@ delete_table
 
 create_table_stmt
   = keyword: create_table_keyword __
+    table: ident __
+    as: KW_AS __
+    select: select_stmt
+   {
+      return {
+        type: 'create_table',
+        keyword: keyword,
+        if_not_exist: null,
+        fields: [],
+        select: select,
+        location: location(),
+      }
+    }
+  / keyword: create_table_keyword __
     if_not_exist_keyword: if_not_exist_keyword __
     table: ident __
     LPAREN __
@@ -1291,6 +1305,7 @@ create_table_stmt
         keyword: keyword,
         if_not_exist: if_not_exist_keyword,
         fields: fields,
+        select: null,
         location: location(),
       }
     }
@@ -1305,6 +1320,7 @@ create_table_stmt
         if_not_exist: null,
         keyword: keyword,
         fields: fields,
+        select: null,
         location: location(),
       }
     }
