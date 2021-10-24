@@ -986,7 +986,4 @@ describe('toCompletionItemForIdentifier', () => {
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1.subcolumn2')
   })
-
-
 })
-
