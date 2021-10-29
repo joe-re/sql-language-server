@@ -103,7 +103,7 @@
 }
 
 start 
-  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) __ EOSQL? __ {
+  = &{ params = []; return true; } __ ast:(with_stmt / union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) __ EOSQL? __ {
       return {
         ast   : ast,
         param : params
@@ -113,6 +113,30 @@ start
       return {
         ast : ast  
       }
+    }
+
+with_stmt
+  = KW_WITH __ l:with_alias_list __ s:select_stmt {
+    return {
+      type: 'with',
+      with: l,
+      stmt: s,
+      location: location()
+    }
+  }
+
+with_alias_list
+  = head:with_alias tail:(__ COMMA __ with_alias)* {
+    return createList(head, tail);
+  }
+
+with_alias
+  = alias:ident __ KW_AS __ LPAREN __ s:select_stmt __ RPAREN {
+      return {
+        alias: alias,
+        stmt: s,
+        location: location()
+      };
     }
 
 union_stmt
@@ -127,7 +151,7 @@ union_stmt
 
 select_stmt
   =  select_stmt_nake
-  / s:('(' __ select_stmt __ ')') {
+  / s:(LPAREN __ select_stmt __ RPAREN) {
       return s[2];
     }
 
@@ -1029,6 +1053,7 @@ KW_DELETE    = "DELETE"i   !ident_start
 KW_INSERT    = "INSERT"i   !ident_start
 KW_REPLACE   = "REPLACE"i  !ident_start
 KW_EXPLAIN   = "EXPLAIN"i  !ident_start
+KW_WITH      = "WITH"i     !ident_start
 
 KW_INTO      = "INTO"i     !ident_start
 KW_FROM      = "FROM"i     !ident_start

@@ -61,10 +61,17 @@ export type BinaryExpressionNode = {
   operator: Operator
   left: BaseNode | BinaryExpressionNode
   right: BaseNode | BinaryExpressionNode
-  location: NodeRange 
+  location: NodeRange
 }
 
 export type AST = SelectStatement | DeleteStatement | InsertStatement
+
+export type WithStatement = {
+  type: 'with'
+  with: {alias: string, stmt: SelectStatement, location: NodeRange}[]
+  stmt: SelectStatement
+  location: NodeRange
+}
 
 export type SelectStatement = {
   type: 'select'
