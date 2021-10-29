@@ -7,7 +7,8 @@ import {
   IncompleteSubqueryNode,
   FromClauseParserResult,
   DeleteStatement,
-  NodeRange
+  NodeRange,
+  WithStatement
 } from '@joe-re/sql-parser'
 import log4js from 'log4js'
 import { Schema, Table, DbFunction } from './database_libs/AbstractClient'
@@ -268,13 +269,12 @@ class Completer {
       .forEach(v => this.addCandidateIfStartsWithLastToken(v))
   }
 
-  getColumnRefByPos(columns: ColumnRefNode[]) {
+  getRefByPos<T extends { location?: NodeRange }>(columns: T[]) {
     return columns.find(v =>
       // guard against ColumnRefNode that don't have a location,
       // for example sql functions that are not known to the parser
       v.location &&
-      (v.location.start.line === this.pos.line + 1 && v.location.start.column <= this.pos.column) &&
-      (v.location.end.line === this.pos.line + 1 && v.location.end.column >= this.pos.column)
+      this.isPosInLocation(v.location)
     )
   }
 
@@ -558,6 +558,9 @@ class Completer {
     else if (ast.type === 'select') {
       this.addCandidatesForParsedSelectQuery(ast)
     }
+    else if (ast.type === 'with') {
+      this.addCandidatesForCte(ast);
+    }
     else {
       console.log(`AST type not supported yet: ${ast.type}`)
     }
@@ -584,11 +587,11 @@ class Completer {
       // columns in select clause
       const columnRefs = (columns as any).map((col: any) => col.expr).filter((expr: any) => !!expr)
       if (ast.type === 'select' && ast.where?.expression) {
-        // columns in where clause  
+        // columns in where clause
         columnRefs.push(ast.where.expression)
       }
       // column at position
-      const columnRef = this.getColumnRefByPos(columnRefs)
+      const columnRef = this.getRefByPos<ColumnRefNode>(columnRefs)
       if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef))
       return columnRef
     }
@@ -716,6 +719,18 @@ class Completer {
       .filter(aliasName => aliasName && aliasName.startsWith(this.lastToken))
       .map(aliasName => this.toCompletionItemForAlias(aliasName))
       .forEach(item => this.addCandidate(item))
+  }
+  addCandidatesForCte(withNode: WithStatement) {
+    withNode.with
+      .map((asNode) => asNode.alias)
+      .filter(aliasName => aliasName && aliasName.startsWith(this.lastToken))
+      .map(aliasName => this.toCompletionItemForAlias(aliasName))
+      .forEach(item => this.addCandidate(item))
+    const select = this.getRefByPos(withNode.with)?.stmt || (this.isPosInLocation(withNode.stmt.location) && withNode.stmt);
+    if (select) {
+      const tables = select.from?.tables;
+      if (tables) this.addCandidatesForSelectQuery({}, tables)
+    }
   }
 }
 
