@@ -412,18 +412,14 @@ Code contributions are always appreciated. Feel free to fork the repo and submit
 
 #### Development environment
 
-You can start to develop sql-language-server on docker-compose.
-Please follows below steps.
-
-1. Setup docker-compose on your machine.
-  - https://docs.docker.com/compose/install/
-2. Start development process on your docker.
+You can start to develop sql-language-server on docker compose.
+Start development process on your docker by the bellow:
 
 ```sh
 $ docker compose up
 ```
 
-3. Open `http://localhost:3000` on your browser.
+Open `http://localhost:3000` on your browser.
 
 #### Migrate database
 
