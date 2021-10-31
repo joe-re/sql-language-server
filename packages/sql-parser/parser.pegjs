@@ -68,6 +68,14 @@
     return result;
   }
 
+  function createKeyword(k) {
+    return {
+      type: 'keyword',
+      value: k && k[0],
+      location: location()
+    }
+  }
+
   var cmpPrefixMap = {
     '+' : true,
     '-' : true,
@@ -143,7 +151,7 @@ extract_from_clause
     }
 
 select_stmt_nake
-  = val:select_keyword  __
+  = val:KW_SELECT  __
     d:KW_DISTINCT?      __
     c:column_clause     __
     f:from_clause?      __
@@ -153,7 +161,7 @@ select_stmt_nake
     l:limit_clause?  {
       return {
         type      : 'select',
-        keyword   : val,
+        keyword   : createKeyword(val),
         distinct  : d,
         columns   : c,
         from      : f,
@@ -163,15 +171,6 @@ select_stmt_nake
         limit     : l,
         location  : location()
       }
-  }
-
-select_keyword
-  = val: KW_SELECT {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
   }
 
 column_clause
@@ -200,23 +199,14 @@ alias_clause
   = KW_AS? __ i:ident { return i; }
 
 from_clause
-  = k:from_keyword __
+  = k:KW_FROM __
     l:table_ref_list {
       return {
         type: 'from',
-        keyword: k,
+        keyword: createKeyword(k),
         tables: l,
         location: location()
       }
-  }
-
-from_keyword
-  = val: KW_FROM {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
   }
 
 table_ref_list
@@ -330,25 +320,15 @@ on_clause
   = KW_ON __ e:expr { return e; }
 
 where_clause 
-  = k: where_keyword __
+  = k: KW_WHERE __
     e:expr {
       return {
         type: 'where',
-        keyword: k,
+        keyword: createKeyword(k),
         expression: e,
         location: location()
       }
     } 
-
-where_keyword
-  = val: KW_WHERE {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
-  }
-
 
 group_by_clause
   = KW_GROUP __ KW_BY __ l:column_ref_list { return l; }
@@ -1240,25 +1220,17 @@ mem_chain
  KW_ASSIGN = ':='
 
 delete_stmt
-  = val:delete_keyword    __
+  = val:KW_DELETE    __
     KW_FROM      __
     t:delete_table __
     w:where_clause? {
       return {
         type    : 'delete',
+        keyword: createKeyword(val),
         table   : t,
         where   : w
       }
     }
-
-delete_keyword
-  = val: KW_DELETE {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
-  }
 
 delete_table
   = db:db_name __ DOT __ t:table_name {
@@ -1279,22 +1251,22 @@ delete_table
     }
 
 create_table_stmt
-  = keyword: create_table_keyword __
+  = keyword: KW_CREATE_TABLE __
     table: ident __
     as: KW_AS __
     select: select_stmt
    {
       return {
         type: 'create_table',
-        keyword: keyword,
+        keyword: createKeyword(keyword),
         if_not_exists: null,
         fields: [],
         select: select,
         location: location(),
       }
     }
-  / keyword: create_table_keyword __
-    if_not_exists_keyword: if_not_exists_keyword __
+  / keyword: KW_CREATE_TABLE __
+    if_not_exists_keyword: KW_IF_NOT_EXISTS __
     table: ident __
     LPAREN __
     fields: field_list __
@@ -1302,14 +1274,14 @@ create_table_stmt
    {
       return {
         type: 'create_table',
-        keyword: keyword,
-        if_not_exists: if_not_exists_keyword,
+        keyword: createKeyword(keyword),
+        if_not_exists: createKeyword(if_not_exists_keyword),
         fields: fields,
         select: null,
         location: location(),
       }
     }
-  / keyword: create_table_keyword __
+  / keyword: KW_CREATE_TABLE __
     table: ident __
     LPAREN __
     fields: field_list __
@@ -1318,30 +1290,12 @@ create_table_stmt
       return {
         type: 'create_table',
         if_not_exists: null,
-        keyword: keyword,
+        keyword: createKeyword(keyword),
         fields: fields,
         select: null,
         location: location(),
       }
     }
-
-create_table_keyword
-  = val: KW_CREATE_TABLE {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
-  }
-
-if_not_exists_keyword
-  = val: KW_IF_NOT_EXISTS {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
-  }
 
 field_list
   = head:field tail:(__ COMMA __ field)* {
@@ -1396,23 +1350,14 @@ field_constraint
   / field_constraint_primary_key
   / field_constraint_unique
 
-field_constraint_not_null = k: keyword_not_null {
-  return { type: 'constraint_not_null', keyword: k, location: location() }
-}
-keyword_not_null = k: KW_NOT_NULL {
-  return { type: 'keyword', value: k && k[0], location: location() }
+field_constraint_not_null = k: KW_NOT_NULL {
+  return { type: 'constraint_not_null', keyword: createKeyword(k), location: location() }
 }
 
-field_constraint_primary_key = k: keyword_primary_key {
-  return { type: 'constraint_primary_key', keyword: k, location: location() }
-}
-keyword_primary_key = k: KW_PRIMARY_KEY {
-  return { type: 'keyword', value: k && k[0], location: location() }
+field_constraint_primary_key = k: KW_PRIMARY_KEY {
+  return { type: 'constraint_primary_key', keyword: createKeyword(k), location: location() }
 }
 
-field_constraint_unique = k: keyword_unique {
-  return { type: 'constraint_unique', keyword: k, location: location() }
-}
-keyword_unique = k: KW_UNIQUE {
-  return { type: 'keyword', value: k && k[0], location: location() }
+field_constraint_unique = k: KW_UNIQUE {
+  return { type: 'constraint_unique', keyword: createKeyword(k), location: location() }
 }
