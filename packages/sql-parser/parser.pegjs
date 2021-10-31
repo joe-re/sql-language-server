@@ -996,74 +996,75 @@ e
   = e:[eE] sign:[+-]? { return e + (sign || ''); }
 
 
-KW_NULL          = "NULL"i          !ident_start
-KW_NOT_NULL      = "NOT NULL"i      !ident_start
-KW_UNIQUE        = "UNIQUE"i        !ident_start
-KW_PRIMARY_KEY   = "PRIMARY KEY"i   !ident_start
-KW_DEFAULT       = "DEFAULT"i       !ident_start
-KW_CHECK         = "CHECK"i         !ident_start
-KW_TRUE          = "TRUE"i          !ident_start
-KW_FALSE         = "FALSE"i         !ident_start
+KW_NULL           = "NULL"i           !ident_start
+KW_NOT_NULL       = "NOT NULL"i       !ident_start
+KW_UNIQUE         = "UNIQUE"i         !ident_start
+KW_PRIMARY_KEY    = "PRIMARY KEY"i    !ident_start
+KW_AUTO_INCREMENT = "AUTO_INCREMENT"i !ident_start
+KW_DEFAULT        = "DEFAULT"i        !ident_start
+KW_CHECK          = "CHECK"i          !ident_start
+KW_TRUE           = "TRUE"i           !ident_start
+KW_FALSE          = "FALSE"i          !ident_start
 
-KW_SHOW          = "SHOW"i          !ident_start
-KW_DROP          = "DROP"i          !ident_start
-KW_SELECT        = "SELECT"i        !ident_start
-KW_UPDATE        = "UPDATE"i        !ident_start
-KW_CREATE        = "CREATE"i        !ident_start
-KW_CREATE_TABLE  = "CREATE TABLE"i  !ident_start
-KW_IF_NOT_EXISTS = "IF NOT EXISTS"i !ident_start
-KW_DELETE        = "DELETE"i        !ident_start
-KW_INSERT        = "INSERT"i        !ident_start
-KW_REPLACE       = "REPLACE"i       !ident_start
-KW_EXPLAIN       = "EXPLAIN"i       !ident_start
+KW_SHOW           = "SHOW"i           !ident_start
+KW_DROP           = "DROP"i           !ident_start
+KW_SELECT         = "SELECT"i         !ident_start
+KW_UPDATE         = "UPDATE"i         !ident_start
+KW_CREATE         = "CREATE"i         !ident_start
+KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
+KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
+KW_DELETE         = "DELETE"i         !ident_start
+KW_INSERT         = "INSERT"i         !ident_start
+KW_REPLACE        = "REPLACE"i        !ident_start
+KW_EXPLAIN        = "EXPLAIN"i        !ident_start
 
-KW_INTO          = "INTO"i          !ident_start
-KW_FROM          = "FROM"i          !ident_start
-KW_SET           = "SET"i           !ident_start
+KW_INTO           = "INTO"i           !ident_start
+KW_FROM           = "FROM"i           !ident_start
+KW_SET            = "SET"i            !ident_start
 
-KW_AS            = "AS"i            !ident_start
-KW_TABLE         = "TABLE"i         !ident_start
+KW_AS             = "AS"i             !ident_start
+KW_TABLE          = "TABLE"i          !ident_start
 
-KW_ON            = "ON"i            !ident_start
-KW_LEFT          = "LEFT"i          !ident_start
-KW_INNER         = "INNER"i         !ident_start
-KW_JOIN          = "JOIN"i          !ident_start
-KW_UNION         = "UNION"i         !ident_start
-KW_VALUES        = "VALUES"i        !ident_start
+KW_ON             = "ON"i             !ident_start
+KW_LEFT           = "LEFT"i           !ident_start
+KW_INNER          = "INNER"i          !ident_start
+KW_JOIN           = "JOIN"i           !ident_start
+KW_UNION          = "UNION"i          !ident_start
+KW_VALUES         = "VALUES"i         !ident_start
 
-KW_EXISTS        = "EXISTS"i        !ident_start
+KW_EXISTS         = "EXISTS"i         !ident_start
 
-KW_WHERE         = "WHERE"i         !ident_start
+KW_WHERE          = "WHERE"i          !ident_start
 
-KW_GROUP         = "GROUP"i         !ident_start
-KW_BY            = "BY"i            !ident_start
-KW_ORDER         = "ORDER"i         !ident_start
-KW_HAVING        = "HAVING"i        !ident_start
+KW_GROUP          = "GROUP"i          !ident_start
+KW_BY             = "BY"i             !ident_start
+KW_ORDER          = "ORDER"i          !ident_start
+KW_HAVING         = "HAVING"i         !ident_start
 
-KW_LIMIT         = "LIMIT"i         !ident_start
+KW_LIMIT          = "LIMIT"i          !ident_start
 
-KW_ASC           = "ASC"i           !ident_start    { return 'ASC';      }
-KW_DESC          = "DESC"i          !ident_start    { return 'DESC';     }
+KW_ASC            = "ASC"i            !ident_start    { return 'ASC';      }
+KW_DESC           = "DESC"i           !ident_start    { return 'DESC';     }
 
-KW_ALL           = "ALL"i           !ident_start    { return 'ALL';      }
-KW_DISTINCT      = "DISTINCT"i      !ident_start    { return 'DISTINCT'; }
-KW_DUPLICATE     = "DUPLICATE"i     !ident_start    { return 'DUPLICATE';}
-KW_BETWEEN       = "BETWEEN"i       !ident_start    { return 'BETWEEN';  }
-KW_IN            = "IN"i            !ident_start    { return 'IN';       }
-KW_IS            = "IS"i            !ident_start    { return 'IS';       }
-KW_LIKE          = "LIKE"i          !ident_start    { return 'LIKE';     }
-KW_CONTAINS      = "CONTAINS"i      !ident_start    { return 'CONTAINS'; }
-KW_KEY           = "KEY"i           !ident_start    { return 'KEY';      }
+KW_ALL            = "ALL"i            !ident_start    { return 'ALL';      }
+KW_DISTINCT       = "DISTINCT"i       !ident_start    { return 'DISTINCT'; }
+KW_DUPLICATE      = "DUPLICATE"i      !ident_start    { return 'DUPLICATE';}
+KW_BETWEEN        = "BETWEEN"i        !ident_start    { return 'BETWEEN';  }
+KW_IN             = "IN"i             !ident_start    { return 'IN';       }
+KW_IS             = "IS"i             !ident_start    { return 'IS';       }
+KW_LIKE           = "LIKE"i           !ident_start    { return 'LIKE';     }
+KW_CONTAINS       = "CONTAINS"i       !ident_start    { return 'CONTAINS'; }
+KW_KEY            = "KEY"i            !ident_start    { return 'KEY';      }
 
-KW_NOT           = "NOT"i           !ident_start    { return 'NOT';      }
-KW_AND           = "AND"i           !ident_start    { return 'AND';      }
-KW_OR            = "OR"i            !ident_start    { return 'OR';       }
+KW_NOT            = "NOT"i            !ident_start    { return 'NOT';      }
+KW_AND            = "AND"i            !ident_start    { return 'AND';      }
+KW_OR             = "OR"i             !ident_start    { return 'OR';       }
 
-KW_COUNT         = "COUNT"i         !ident_start    { return 'COUNT';    }
-KW_MAX           = "MAX"i           !ident_start    { return 'MAX';      }
-KW_MIN           = "MIN"i           !ident_start    { return 'MIN';      }
-KW_SUM           = "SUM"i           !ident_start    { return 'SUM';      }
-KW_AVG           = "AVG"i           !ident_start    { return 'AVG';      }
+KW_COUNT          = "COUNT"i          !ident_start    { return 'COUNT';    }
+KW_MAX            = "MAX"i            !ident_start    { return 'MAX';      }
+KW_MIN            = "MIN"i            !ident_start    { return 'MIN';      }
+KW_SUM            = "SUM"i            !ident_start    { return 'SUM';      }
+KW_AVG            = "AVG"i            !ident_start    { return 'AVG';      }
 
 //specail character
 DOT       = '.'
@@ -1349,6 +1350,7 @@ field_constraint
   = field_constraint_not_null
   / field_constraint_primary_key
   / field_constraint_unique
+  / field_constraint_auto_increment
 
 field_constraint_not_null = k: KW_NOT_NULL {
   return { type: 'constraint_not_null', keyword: createKeyword(k), location: location() }
@@ -1360,4 +1362,8 @@ field_constraint_primary_key = k: KW_PRIMARY_KEY {
 
 field_constraint_unique = k: KW_UNIQUE {
   return { type: 'constraint_unique', keyword: createKeyword(k), location: location() }
+}
+
+field_constraint_auto_increment = k: KW_AUTO_INCREMENT {
+  return { type: 'constraint_auto_increment', keyword: createKeyword(k), location: location() }
 }
