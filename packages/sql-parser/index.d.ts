@@ -175,7 +175,7 @@ type FromClauseParserResult = {
 export type CreateTableStatement = {
   type: 'create_table',
   keyword: KeywordNode,
-  if_not_exist: KeywordNode | null,
+  if_not_exists: KeywordNode | null,
   fields: FieldNode[],
   select: SelectStatement | null,
   location: NodeRange

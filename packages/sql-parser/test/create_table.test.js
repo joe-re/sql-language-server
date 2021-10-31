@@ -12,7 +12,7 @@ describe('CREATE TABLE statement', () => {
           type: 'keyword',
           value: 'CREATE TABLE'
         },
-        if_not_exist: null,
+        if_not_exists: null,
         fields: [
           { type: 'field', name: 'PersonID', data_type: { name: 'int', value: null } },
           { type: 'field', name: 'LastName', data_type: { name: 'varchar', value: '255' } }
@@ -24,7 +24,7 @@ describe('CREATE TABLE statement', () => {
 
   describe('With IF NOT EXIST', () => {
     it('should success to parse', () => {
-      const sql = `CREATE TABLE IF NOT EXIST Persons ( PersonID int, LastName varchar(255));`
+      const sql = `CREATE TABLE IF NOT EXISTS Persons ( PersonID int, LastName varchar(255));`
       const result = parse(sql)
       expect(result).toBeDefined()
       expect(result).toMatchObject({
@@ -33,9 +33,9 @@ describe('CREATE TABLE statement', () => {
           type: 'keyword',
           value: 'CREATE TABLE'
         },
-        if_not_exist: {
+        if_not_exists: {
           type: 'keyword',
-          value: 'IF NOT EXIST'
+          value: 'IF NOT EXISTS'
         },
         fields: [
           { type: 'field', name: 'PersonID', data_type: { name: 'int', value: null } },

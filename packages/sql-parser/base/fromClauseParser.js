@@ -798,8 +798,8 @@ function peg$parse(input, options) {
       peg$c225 = peg$literalExpectation("CREATE", true),
       peg$c226 = "create table",
       peg$c227 = peg$literalExpectation("CREATE TABLE", true),
-      peg$c228 = "if not exist",
-      peg$c229 = peg$literalExpectation("IF NOT EXIST", true),
+      peg$c228 = "if not exists",
+      peg$c229 = peg$literalExpectation("IF NOT EXISTS", true),
       peg$c230 = "delete",
       peg$c231 = peg$literalExpectation("DELETE", true),
       peg$c232 = "insert",
@@ -1012,17 +1012,17 @@ function peg$parse(input, options) {
             return {
               type: 'create_table',
               keyword: keyword,
-              if_not_exist: null,
+              if_not_exists: null,
               fields: [],
               select: select,
               location: location(),
             }
           },
-      peg$c366 = function(keyword, if_not_exist_keyword, table, fields) {
+      peg$c366 = function(keyword, if_not_exists_keyword, table, fields) {
             return {
               type: 'create_table',
               keyword: keyword,
-              if_not_exist: if_not_exist_keyword,
+              if_not_exists: if_not_exists_keyword,
               fields: fields,
               select: null,
               location: location(),
@@ -1031,7 +1031,7 @@ function peg$parse(input, options) {
       peg$c367 = function(keyword, table, fields) {
             return {
               type: 'create_table',
-              if_not_exist: null,
+              if_not_exists: null,
               keyword: keyword,
               fields: fields,
               select: null,
@@ -7470,13 +7470,13 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parseKW_IF_NOT_EXIST() {
+  function peg$parseKW_IF_NOT_EXISTS() {
     var s0, s1, s2, s3;
 
     s0 = peg$currPos;
-    if (input.substr(peg$currPos, 12).toLowerCase() === peg$c228) {
-      s1 = input.substr(peg$currPos, 12);
-      peg$currPos += 12;
+    if (input.substr(peg$currPos, 13).toLowerCase() === peg$c228) {
+      s1 = input.substr(peg$currPos, 13);
+      peg$currPos += 13;
     } else {
       s1 = peg$FAILED;
       if (peg$silentFails === 0) { peg$fail(peg$c229); }
@@ -10333,7 +10333,7 @@ function peg$parse(input, options) {
       if (s1 !== peg$FAILED) {
         s2 = peg$parse__();
         if (s2 !== peg$FAILED) {
-          s3 = peg$parseif_not_exist_keyword();
+          s3 = peg$parseif_not_exists_keyword();
           if (s3 !== peg$FAILED) {
             s4 = peg$parse__();
             if (s4 !== peg$FAILED) {
@@ -10477,11 +10477,11 @@ function peg$parse(input, options) {
     return s0;
   }
 
-  function peg$parseif_not_exist_keyword() {
+  function peg$parseif_not_exists_keyword() {
     var s0, s1;
 
     s0 = peg$currPos;
-    s1 = peg$parseKW_IF_NOT_EXIST();
+    s1 = peg$parseKW_IF_NOT_EXISTS();
     if (s1 !== peg$FAILED) {
       peg$savedPos = s0;
       s1 = peg$c13(s1);
