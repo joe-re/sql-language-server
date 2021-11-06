@@ -23,7 +23,10 @@ export function activate(context: ExtensionContext) {
   }
 
   let clientOptions: LanguageClientOptions = {
-    documentSelector: [{scheme: 'file', language: 'sql', pattern: '**/*.sql'}],
+    documentSelector: [
+      {language: 'sql'},
+      {scheme: 'file', language: 'sql', pattern: '**/*.sql'}
+    ],
     diagnosticCollectionName: 'sqlLanguageServer',
     synchronize: {
       configurationSection: 'sqlLanguageServer',
