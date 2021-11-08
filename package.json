@@ -43,7 +43,10 @@
     "vscode": "^1.45.1"
   },
   "activationEvents": [
-    "onLanguage:sql"
+    "onLanguage:sql",
+    "onLanguage:python",
+    "onNotebook:kusto-notebook",
+    "onNotebook:jupyter-notebook"
   ],
   "contributes": {
     "commands": [
