@@ -116,7 +116,7 @@ There are two ways to use configuration files.
     },
     {
       "name": "postgres-project",
-      "adapter": "prostgres",
+      "adapter": "postgres",
       "host": "localhost",
       "port": 5432,
       "user": "postgres",
@@ -182,7 +182,7 @@ Example:
 ```json
 {
   "name": "postgres-project",
-  "adapter": "prostgres",
+  "adapter": "postgres",
   "host": "localhost",
   "port": 5432,
   "user": "postgres",
@@ -215,7 +215,7 @@ It will merge them as following:
 ```json
 {
   "name": "postgres-project",
-  "adapter": "prostgres",
+  "adapter": "postgres",
   "host": "localhost",
   "port": 5432,
   "user": "postgres",

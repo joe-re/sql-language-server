@@ -1,6 +1,6 @@
 {
   "name": "project2",
-  "adapter": "prostgres",
+  "adapter": "postgres",
   "host": "localhost",
   "port": 5432,
   "user": "postgres",
