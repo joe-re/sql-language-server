@@ -1012,15 +1012,32 @@ e
   = e:[eE] sign:[+-]? { return e + (sign || ''); }
 
 
-KW_NULL           = "NULL"i           !ident_start
-KW_NOT_NULL       = "NOT NULL"i       !ident_start
-KW_UNIQUE         = "UNIQUE"i         !ident_start
-KW_PRIMARY_KEY    = "PRIMARY KEY"i    !ident_start
-KW_AUTO_INCREMENT = "AUTO_INCREMENT"i !ident_start
-KW_DEFAULT        = "DEFAULT"i        !ident_start
-KW_CHECK          = "CHECK"i          !ident_start
-KW_TRUE           = "TRUE"i           !ident_start
-KW_FALSE          = "FALSE"i          !ident_start
+KW_NULL               = "NULL"i               !ident_start
+KW_NOT_NULL           = "NOT NULL"i           !ident_start
+KW_UNIQUE             = "UNIQUE"i             !ident_start
+KW_PRIMARY_KEY        = "PRIMARY KEY"i        !ident_start
+KW_INCREMENT          = "INCREMENT"i          !ident_start
+KW_AUTO_INCREMENT     = "AUTO_INCREMENT"i     !ident_start
+KW_DEFAULT            = "DEFAULT"i            !ident_start
+KW_GENERATED          = "GENERATED"i          !ident_start
+KW_ALWAYS             = "ALWAYS"i             !ident_start
+KW_BY_DEFAULT         = "BY DEFAULT"i         !ident_start
+KW_BY_DEFAULT_ON_NULL = "BY DEFAULT ON NULL"i !ident_start
+KW_IDENTITY           = "IDENTITY"i           !ident_start
+KW_START              = "START"i              !ident_start
+KW_WITH               = "WITH"i               !ident_start
+KW_MINVALUE           = "MINVALUE"i           !ident_start
+KW_NO_MINVALUE        = "NO MINVALUE"i        !ident_start
+KW_MAXVALUE           = "MAXVALUE"i           !ident_start
+KW_NO_MAXVALUE        = "NO MAXVALUE"i        !ident_start
+KW_OWNED_BY           = "OWNED BY"i           !ident_start
+KW_OWNED_BY_NONE      = "OWNED BY NONE"i      !ident_start
+KW_CACHE              = "CACHE"i              !ident_start
+KW_CYCLE              = "CYCLE"i              !ident_start
+KW_NO_CYCLE           = "NO CYCLE"i           !ident_start
+KW_CHECK              = "CHECK"i              !ident_start
+KW_TRUE               = "TRUE"i               !ident_start
+KW_FALSE              = "FALSE"i              !ident_start
 
 KW_SHOW           = "SHOW"i           !ident_start
 KW_DROP           = "DROP"i           !ident_start
@@ -1393,6 +1410,7 @@ field_constraint
   / field_constraint_primary_key
   / field_constraint_unique
   / field_constraint_auto_increment
+  / field_constraint_generated
 
 field_constraint_not_null = k: keyword_not_null {
   return { type: 'constraint_not_null', keyword: k, location: location() }
@@ -1420,4 +1438,92 @@ field_constraint_auto_increment = k: keyword_auto_increment {
 }
 keyword_auto_increment = k: KW_AUTO_INCREMENT {
   return { type: 'keyword', value: k && k[0], location: location() }
+}
+
+field_constraint_generated =
+  g: KW_GENERATED __
+  opt: constraint_generated_option __
+  data: constraint_generated_data_type? __
+  seq: sequence_option_list_wrap? {
+    return { type: 'constraint_generated', option: opt, data_type: data, sequence_options: seq }
+}
+
+constraint_generated_option = k: keyword_always {
+  return { type: 'constraint_generated_option', option: 'ALWAYS', keyword: k }
+} / k: keyword_by_default {
+  return { type: 'constraint_generated_option', option: 'BY_DEFAULT', keyword: k }
+} / k: keyword_by_default_on_null {
+  return { type: 'constraint_generated_option', option: 'BY_DEFAULT_ON_NULL', keyword: k }
+}
+
+keyword_always = k: KW_ALWAYS {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+keyword_by_default = k: KW_BY_DEFAULT {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+keyword_by_default_on_null = k: KW_BY_DEFAULT_ON_NULL {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+
+constraint_generated_data_type = KW_AS __ val:ident {
+  return { type: 'sequence_option_data_type', value: val, location: location() }
+}
+
+sequence_option_list_wrap = sequence_option_list
+/ s: (LPAREN __ sequence_option_list __ RPAREN) {
+  return s[2]
+}
+
+sequence_option_list
+  = head:sequence_option tail:(__ sequence_option)* {
+    return createList(head, tail, 1);
+  }
+
+sequence_option =
+  sequence_option_increment
+  / sequence_option_start
+  / sequence_option_maxvalue
+  / sequence_option_minvalue
+  / sequence_option_no_maxvalue
+  / sequence_option_no_minvalue
+  / sequence_option_cache
+  / sequence_option_cycle
+  / sequence_option_no_cycle
+  / sequence_option_owned_by
+  / sequence_option_owned_by_none
+
+
+sequence_option_increment = KW_INCREMENT __ KW_BY __ val:int {
+  return { type: 'sequence_option_increment', value: val, location: location() }
+}
+sequence_option_start = KW_START __ KW_WITH __ val:int {
+  return { type: 'sequence_option_increment', value: val, location: location() }
+}
+sequence_option_maxvalue = KW_MAXVALUE __ val:int {
+  return { type: 'sequence_option_maxvalue', value: val, location: location() }
+}
+sequence_option_minvalue = KW_MINVALUE __ val:int {
+  return { type: 'sequence_option_maxvalue', value: val, location: location() }
+}
+sequence_option_no_maxvalue = KW_NO_MAXVALUE {
+  return { type: 'sequence_option_no_maxvalue', location: location() }
+}
+sequence_option_no_minvalue = KW_NO_MINVALUE {
+  return { type: 'sequence_option_no_minvalue', location: location() }
+}
+sequence_option_cache = KW_CACHE __ val: int {
+  return { type: 'sequence_option_cache', value: val, location: location() }
+}
+sequence_option_cycle = KW_CYCLE {
+  return { type: 'sequence_option_cycle', location: location() }
+}
+sequence_option_no_cycle = KW_NO_CYCLE {
+  return { type: 'sequence_option_no_cycle', location: location() }
+}
+sequence_option_owned_by = KW_OWNED_BY __ val: column_ref {
+  return { type: 'sequence_option_owned_by', value: val, location: location() }
+}
+sequence_option_owned_by_none = KW_OWNED_BY_NONE {
+  return { type: 'sequence_option_owned_by_none', location: location() }
 }
