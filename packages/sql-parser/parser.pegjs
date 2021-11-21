@@ -167,11 +167,7 @@ select_stmt_nake
 
 select_keyword
   = val: KW_SELECT {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
+    return { type: 'keyword', value: val && val[0], location: location() }
   }
 
 column_clause
@@ -1419,6 +1415,9 @@ keyword_unique = k: KW_UNIQUE {
   return { type: 'keyword', value: k && k[0], location: location() }
 }
 
-field_constraint_auto_increment = k: KW_AUTO_INCREMENT {
-  return { type: 'constraint_auto_increment', keyword: createKeyword(k), location: location() }
+field_constraint_auto_increment = k: keyword_auto_increment {
+  return { type: 'constraint_auto_increment', keyword: k, location: location() }
+}
+keyword_auto_increment = k: KW_AUTO_INCREMENT {
+  return { type: 'keyword', value: k && k[0], location: location() }
 }

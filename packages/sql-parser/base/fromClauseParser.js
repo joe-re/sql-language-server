@@ -1093,7 +1093,7 @@ function peg$parse(input, options) {
         return { type: 'constraint_unique', keyword: k, location: location() }
       },
       peg$c380 = function(k) {
-        return { type: 'constraint_auto_increment', keyword: createKeyword(k), location: location() }
+        return { type: 'constraint_auto_increment', keyword: k, location: location() }
       },
 
       peg$currPos          = 0,
@@ -10907,10 +10907,24 @@ function peg$parse(input, options) {
     var s0, s1;
 
     s0 = peg$currPos;
-    s1 = peg$parseKW_AUTO_INCREMENT();
+    s1 = peg$parsekeyword_auto_increment();
     if (s1 !== peg$FAILED) {
       peg$savedPos = s0;
       s1 = peg$c380(s1);
+    }
+    s0 = s1;
+
+    return s0;
+  }
+
+  function peg$parsekeyword_auto_increment() {
+    var s0, s1;
+
+    s0 = peg$currPos;
+    s1 = peg$parseKW_AUTO_INCREMENT();
+    if (s1 !== peg$FAILED) {
+      peg$savedPos = s0;
+      s1 = peg$c377(s1);
     }
     s0 = s1;
 
