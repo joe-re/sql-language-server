@@ -14,7 +14,9 @@
     "vscode": "^1.52.0"
   },
   "activationEvents": [
-    "onLanguage:sql"
+    "onLanguage:sql",
+    "onLanguage:python",
+    "onNotebook:jupyter-notebook"
   ],
   "dependencies": {
     "electron-rebuild": "^1.11.0",
