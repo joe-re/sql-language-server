@@ -11,9 +11,11 @@
     "esModuleInterop": true,
     "declaration": true,
     "baseUrl": ".",
+    "composite": true,
     "paths": {
+      "sql-language-server": ["packages/server/*"],
       "@joe-re/sql-parser": ["packages/sql-parser/*"],
-      "sqlint": ["packages/sqlint"]
+      "sqlint": ["packages/sqlint/*"]
     }
   },
 }

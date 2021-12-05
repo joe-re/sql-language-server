@@ -39,7 +39,7 @@ export default function createDiagnostics(uri: string, sql: string, config?: Raw
     const ast = parse(sql)
     logger.debug(`ast: ${JSON.stringify(ast)}`)
     diagnostics = doLint(uri, sql, config)
-  } catch (e) {
+  } catch (e: any) {
     logger.debug('parse error')
     logger.debug(e)
     cache.setLintCache(uri, [])

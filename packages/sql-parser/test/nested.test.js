@@ -1,6 +1,31 @@
 const { parse } = require('../index')
 
 describe('nested columns', () => {
+  it('database.table should parse', () => {
+    const sql = `
+      SELECT
+      tab1.col1
+      FROM database.table1 as tab1
+    `
+     const result = parse(sql)
+     expect(result).toBeDefined()
+     expect(result).toMatchObject({ type: 'select' })
+     expect(result.columns[0].expr).toMatchObject({ column: 'col1', table: 'tab1', type: 'column_ref' })
+     expect(result.from.tables[0]).toMatchObject({ db: 'database', table: 'table1', catalog: '' })
+  })
+  it('catalog.database.table should parse', () => {
+    const sql = `
+      SELECT
+      tab1.col1
+      FROM catalog1.database2.table3 as tab1
+    `
+     const result = parse(sql)
+     expect(result).toBeDefined()
+     expect(result).toMatchObject({ type: 'select' })
+     expect(result.columns[0].expr).toMatchObject({ column: 'col1', table: 'tab1', type: 'column_ref' })
+     expect(result.from.tables[0]).toMatchObject({ db: 'database2', table: 'table3', catalog: 'catalog1' })
+  })
+
   it('column name y.z should success to parse', () => {
     const sql = '\
       SELECT\

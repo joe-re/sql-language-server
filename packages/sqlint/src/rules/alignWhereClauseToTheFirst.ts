@@ -35,7 +35,8 @@ export const alignWhereClauseToTheFirst: Rule<SelectStatement, RuleConfig> = {
       return invalidClauses
     }
 
-    const invalidClauses = findInvalidClauses(where.expression)
+    const invalidClauses = where.expression.type === 'binary_expr' ?
+      findInvalidClauses(where.expression) : []
     if (invalidClauses.length === 0) {
       return
     }

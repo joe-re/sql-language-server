@@ -1,5 +1,7 @@
 # SQLLanguageServer
 
+[![build-and-test](https://github.com/joe-re/sql-language-server/actions/workflows/test.yaml/badge.svg)](https://github.com/joe-re/sql-language-server/actions/workflows/test.yaml)
+
 SQL Language Server
 
 ![completion](https://user-images.githubusercontent.com/4954534/47268897-36b70500-d589-11e8-98b2-65cffdcd60b8.gif)
@@ -114,7 +116,7 @@ There are two ways to use configuration files.
     },
     {
       "name": "postgres-project",
-      "adapter": "prostgres",
+      "adapter": "postgres",
       "host": "localhost",
       "port": 5432,
       "user": "postgres",
@@ -180,7 +182,7 @@ Example:
 ```json
 {
   "name": "postgres-project",
-  "adapter": "prostgres",
+  "adapter": "postgres",
   "host": "localhost",
   "port": 5432,
   "user": "postgres",
@@ -213,7 +215,7 @@ It will merge them as following:
 ```json
 {
   "name": "postgres-project",
-  "adapter": "prostgres",
+  "adapter": "postgres",
   "host": "localhost",
   "port": 5432,
   "user": "postgres",
@@ -418,7 +420,7 @@ Please follows below steps.
 2. Start development process on your docker.
 
 ```sh
-$ docker-compose up
+$ docker compose up
 ```
 
 3. Open `http://localhost:3000` on your browser.
@@ -428,7 +430,7 @@ $ docker-compose up
 1. Login into development docker container
 
 ```sh
-$ docker-compose exec assets bash
+$ docker compose exec assets bash
 ```
 
 2. Migrate database

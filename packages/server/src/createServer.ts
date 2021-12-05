@@ -1,14 +1,15 @@
-import type {
+import {
   Connection,
   InitializeResult,
-  TextDocumentPositionParams,
   CompletionItem,
+  CompletionParams,
 } from 'vscode-languageserver/node'
-import * as VscodeNode  from 'vscode-languageserver/node'
-import { TextDocument } from 'vscode-languageserver-textdocument' 
+import { TextDocuments } from 'vscode-languageserver/lib/common/server'
+import { CompletionTriggerKind } from 'vscode-languageserver-protocol/lib/common/protocol'
+import { TextDocument } from 'vscode-languageserver-textdocument'
 import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
 import cache from './cache'
-import complete from './complete'
+import { complete } from './complete'
 import createDiagnostics from './createDiagnostics'
 import createConnection from './createConnection'
 import yargs from 'yargs'
@@ -27,10 +28,12 @@ type Args = {
   method?: ConnectionMethod
 }
 
+const TRIGGER_CHARATER = '.'
+
 export function createServerWithConnection(connection: Connection) {
   initializeLogging()
   const logger = log4js.getLogger()
-  let documents: VscodeNode.TextDocuments<TextDocument> = new VscodeNode.TextDocuments(TextDocument)
+  let documents = new TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = { tables: [], functions: [] }
   let hasConfigurationCapability = false
@@ -44,8 +47,8 @@ export function createServerWithConnection(connection: Connection) {
     try {
       schema = JSON.parse(data);
     }
-    catch (e) {
-      logger.error("failed to read schema file")
+    catch (e: any) {
+      logger.error("failed to read schema file " + e.message)
       connection.sendNotification('sqlLanguageServer.error', {
         message: "Failed to read schema file: " + filePath + " error: " + e.message
       })
@@ -54,11 +57,13 @@ export function createServerWithConnection(connection: Connection) {
   }
 
   function readAndMonitorJsonSchemaFile(filePath: string) {
-    readJsonSchemaFile(filePath)
     fs.watchFile(filePath, (_curr, _prev) => {
       logger.info(`change detected, reloading schema file: ${filePath}`)
       readJsonSchemaFile(filePath)
     })
+    // The readJsonSchemaFile function can throw exceptions so
+    // read file only after setting up monitoring
+    readJsonSchemaFile(filePath)
   }
 
   async function makeDiagnostics(document: TextDocument) {
@@ -95,8 +100,9 @@ export function createServerWithConnection(connection: Connection) {
         textDocumentSync: 1,
         completionProvider: {
           resolveProvider: true,
-          triggerCharacters: ['.'],
+          triggerCharacters: [TRIGGER_CHARATER],
         },
+        renameProvider: true,
         codeActionProvider: true,
         executeCommandProvider: {
           commands: [
@@ -192,17 +198,23 @@ export function createServerWithConnection(connection: Connection) {
     }
   })
 
-  connection.onCompletion((docParams: TextDocumentPositionParams): CompletionItem[] => {
+  connection.onCompletion((docParams: CompletionParams): CompletionItem[] => {
+    // Make sure the client does not send use completion request for characters
+    // other than the dot which we asked for.
+    if (docParams.context?.triggerKind == CompletionTriggerKind.TriggerCharacter) {
+      if (docParams.context?.triggerCharacter != TRIGGER_CHARATER) {
+        return []
+      }
+    }
     let text = documents.get(docParams.textDocument.uri)?.getText()
     if (!text) {
       return []
     }
     logger.debug(text || '')
-    const candidates = complete(text, {
-  		line: docParams.position.line,
-  		column: docParams.position.character
-  	}, schema).candidates
-  	logger.debug(candidates.map(v => v.label).join(","))
+    let pos = { line: docParams.position.line, column: docParams.position.character }
+    var setting = SettingStore.getInstance().getSetting()
+    const candidates = complete(text, pos, schema, setting.jupyterLabMode).candidates
+    if (logger.isDebugEnabled()) logger.debug('onCompletion returns: ' + JSON.stringify(candidates))
     return candidates
   })
 
@@ -229,7 +241,7 @@ export function createServerWithConnection(connection: Connection) {
       return []
     }
     const action = CodeAction.create(`fix: ${lintResult.diagnostic.message}`, {
-      documentChanges:[
+      documentChanges: [
         TextDocumentEdit.create({ uri: params.textDocument.uri, version: document.version }, fixes.map(v => {
           const edit = v.range.startOffset === v.range.endOffset
             ? TextEdit.insert(toPosition(text, v.range.startOffset), v.text)
@@ -251,17 +263,23 @@ export function createServerWithConnection(connection: Connection) {
 
   connection.onExecuteCommand((request) => {
     logger.debug(`received executeCommand request: ${request.command}, ${request.arguments}`)
-    if (request.command === 'switchDatabaseConnection') {
-      try{
+    if (
+      request.command === 'switchDatabaseConnection' ||
+      request.command === 'sqlLanguageServer.switchDatabaseConnection'
+    ) {
+      try {
         SettingStore.getInstance().changeConnection(
           request.arguments && request.arguments[0] || ''
         )
-      } catch (e) {
+      } catch (e: any) {
         connection.sendNotification('sqlLanguageServer.error', {
           message: e.message
         })
       }
-    } else if (request.command === 'fixAllFixableProblems') {
+    } else if (
+      request.command === 'fixAllFixableProblems' ||
+      request.command === 'sqlLanguageServer.fixAllFixableProblems'
+    ) {
       const uri = request.arguments ? request.arguments[0] : null
       if (!uri) {
         connection.sendNotification('sqlLanguageServer.error', {

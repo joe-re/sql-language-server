@@ -26,6 +26,7 @@ export type Connection = {
   projectId: string | null // for BigQuery
   projectPaths: string[]
   ssh: SSHConfig | null
+  jupyterLabMode: boolean
 }
 
 type PersonalConfig = {
@@ -35,7 +36,7 @@ type PersonalConfig = {
 function fileExists(path: string) {
   try {
     return fs.statSync(path).isFile()
-  } catch (error) {
+  } catch (error: any) {
     if (error && error.code === "ENOENT") {
         return false;
     }
@@ -61,7 +62,8 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     filename: null,
     keyFile: null,
     projectId: null,
-    projectPaths: []
+    projectPaths: [],
+    jupyterLabMode: false,
   }
   private static instance: SettingStore;
 

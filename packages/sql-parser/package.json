@@ -2,7 +2,7 @@
   "author": "joe-re<joe.tialtngo@gmail.com>",
   "name": "@joe-re/sql-parser",
   "description": "sql parser for nodejs",
-  "version": "0.11.4",
+  "version": "1.0.0",
   "typings": "index.d.ts",
   "scripts": {
     "test": "jest",
@@ -19,7 +19,6 @@
   "engines": {
     "node": ">=0.8.0"
   },
-  "dependencies": {},
   "devDependencies": {
     "jest": "^26.0.1",
     "pegjs": "=0.10.0"

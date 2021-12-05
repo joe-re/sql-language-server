@@ -1,4 +1,4 @@
-import * as monaco from 'monaco-editor-core'
+import * as monaco from 'monaco-editor-core';
 import { listen } from '@codingame/monaco-jsonrpc';
 import {
   MonacoLanguageClient,

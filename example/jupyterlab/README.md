@@ -38,10 +38,10 @@ We have extended `sql-language-server` to support
 	- Table alias followed by dot
 	- Partially typed columns including multi-part fields (needed insertText)
     - Map and Array subscripts `map_col['key'].<tab>`, `array_col[0].<tab>`
-
-
-- no support for fully qualified table names `databaseName.schemaName.tableName` (might be something we want to support)
-
+    - Fully qualified table names `databaseName.schemaName.tableName`
+- Added utility to automatically generate all column names for a given table in a SELECT statement
+- Added utility to automatically generate join conditions on matching columns from other tables
+- When completing tables automatically generate table alias
 
 
 
@@ -199,6 +199,9 @@ Code complete spark sql functions with documentation.
 
 ![functions](https://github.com/cccs-jc/sql-language-server/blob/develop/example/jupyterlab/images/code-completion-functions.gif)
 
+Automatically generate alias for tables. Expand all columns in select statement. Offer join suggestions based on matching column names from other tables in the schema.
+
+![expand-and-join-utility](https://github.com/cccs-jc/sql-language-server/blob/code-complete-nested-columns/example/jupyterlab/images/expand-and-join-utility.gif)
 
 
 ## Liting

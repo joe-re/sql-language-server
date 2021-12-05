@@ -1,10 +1,8 @@
 {
   "name": "sqlint",
-  "version": "0.12.0",
+  "version": "1.1.0",
   "main": "dist/src/index",
-  "bin": {
-    "sqlint": "bin/cli.js"
-  },
+  "bin": "bin/cli.js",
   "author": "joe-re<joe.tialtngo@gmail.com>",
   "license": "MIT",
   "scripts": {
@@ -33,7 +31,7 @@
   ],
   "types": "./dist/src",
   "dependencies": {
-    "@joe-re/sql-parser": "^0.11.5",
+    "@joe-re/sql-parser": "^1.0.0",
     "ajv": "^6.12.2",
     "chalk": "^4.0.0",
     "js-yaml": "^3.14.0",
@@ -46,6 +44,6 @@
     "@types/yargs": "^15.0.5",
     "jest": "^26.0.1",
     "ts-jest": "^26.0.0",
-    "typescript": "^3.9.3"
+    "typescript": "^4.4.2"
   }
 }

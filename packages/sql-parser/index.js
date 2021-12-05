@@ -1,6 +1,7 @@
 const Parser = require('./base/parser');
 const FromClauseParser = require('./base/fromClauseParser')
 Parser.reservedMap = require('./base/reservedmap');
+FromClauseParser.reservedMap = require('./base/reservedmap');
 
 exports.parse = function (sql){
   var ap = Parser.parse(sql);

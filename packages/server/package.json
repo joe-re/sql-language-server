@@ -1,6 +1,6 @@
 {
   "name": "sql-language-server",
-  "version": "0.12.0",
+  "version": "1.1.0",
   "main": "dist/src/index.js",
   "bin": {
     "sql-language-server": "./npm_bin/cli.js"
@@ -21,10 +21,10 @@
   ],
   "license": "MIT",
   "scripts": {
-    "compile:cli": "rollup -c",
+    "compile:cli": "esbuild bin/cli.ts --bundle --platform=node --external:pg-native --outfile=dist/cli.js",
     "compile:index": "tsc -p .",
     "clean": "rm -rf dist",
-    "watch:cli": "rollup -c -w",
+    "watch:cli": "yarn compile:cli --watch",
     "watch:index": "tsc -w",
     "test": "jest",
     "prepare-vsc-extension": "yarn clean && yarn compile:cli",
@@ -37,7 +37,7 @@
   ],
   "dependencies": {
     "@google-cloud/bigquery": "^5.9.0",
-    "@joe-re/sql-parser": "^0.11.5",
+    "@joe-re/sql-parser": "^1.0.0",
     "@types/pg": "^7.4.10",
     "cardinal": "^2.1.1",
     "jest": "^26.0.1",
@@ -45,26 +45,24 @@
     "mysql2": "^2.3.0",
     "node-ssh-forward": "^0.6.3",
     "pg": "^7.4.3",
-    "sqlint": "^0.12.0",
+    "sqlint": "^1.1.0",
     "sqlite3": "^4.2.0",
     "vscode-languageclient": "^6.1.3",
-    "vscode-languageserver": "^7.0.0",
+    "vscode-languageserver": "^8.0.0-next.3",
     "vscode-languageserver-protocol": "^3.15.3",
     "vscode-languageserver-textdocument": "^1.0.1",
     "yargs": "^12.0.1"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^11.1.0",
-    "@rollup/plugin-json": "^4.0.3",
-    "@rollup/plugin-replace": "^2.3.2",
-    "@rollup/plugin-typescript": "^4.1.1",
     "@types/jest": "^25.2.2",
     "@types/mysql": "^2.15.5",
     "@types/node": "14.0.26",
     "@types/sqlite3": "^3.1.6",
+    "esbuild": "^0.13.8",
     "jest": "^26.0.1",
     "rollup": "^2.10.2",
     "ts-jest": "^26.0.0",
-    "typescript": "^3.9.2"
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.2"
   }
 }
