@@ -36,6 +36,7 @@
     "dist"
   ],
   "dependencies": {
+    "@google-cloud/bigquery": "^5.9.0",
     "@joe-re/sql-parser": "^1.0.0",
     "@types/pg": "^7.4.10",
     "cardinal": "^2.1.1",
