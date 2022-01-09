@@ -22,6 +22,8 @@ import log4js from 'log4js'
 import { RequireSqlite3Error } from './database_libs/Sqlite3Client'
 import * as fs from 'fs'
 import { RawConfig } from 'sqlint'
+import path from 'path'
+import process from 'process'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
 type Args = {
@@ -42,6 +44,11 @@ export function createServerWithConnection(connection: Connection) {
 
   // Read schema file
   function readJsonSchemaFile(filePath: string) {
+    if (filePath[0] === '~') {
+      const home = process.env.HOME || ""
+      filePath = path.join(home, filePath.slice(1));
+    }
+
     logger.info(`loading schema file: ${filePath}`)
     const data = fs.readFileSync(filePath, "utf8").replace(/^\ufeff/u, "");
     try {
