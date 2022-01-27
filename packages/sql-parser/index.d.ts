@@ -64,7 +64,7 @@ export type BinaryExpressionNode = {
   location: NodeRange 
 }
 
-export type AST = SelectStatement | DeleteStatement | InsertStatement
+export type AST = SelectStatement | DeleteStatement | InsertStatement | CreateTableStatement
 
 export type SelectStatement = {
   type: 'select'
@@ -171,6 +171,39 @@ type FromClauseParserResult = {
   from: FromClause | null,
   after: string
 }
+
+export type CreateTableStatement = {
+  type: 'create_table',
+  keyword: KeywordNode,
+  if_not_exists: KeywordNode | null,
+  fields: FieldNode[],
+  select: SelectStatement | null,
+  location: NodeRange
+}
+
+export type FieldNode = {
+  type: 'field',
+  name: string,
+  data_type: FieldDataTypeNode | null,
+  constraints: FieldConstraint[],
+  location: NodeRange
+}
+
+export type FieldDataTypeNode = {
+  type: 'field_data_type',
+  name: string,
+  value: string | null,
+  location: NodeRange
+}
+
+export type FieldConstraint =
+  FieldConstraintNotNull |
+  FieldConstraintPrimaryKey |
+  FieldConstraintUnique
+
+export type FieldConstraintNotNull = { type: 'constraint_not_null', keyword: KeywordNode }
+export type FieldConstraintPrimaryKey = { type: 'constraint_primary_key', keyword: KeywordNode }
+export type FieldConstraintUnique = { type: 'constraint_unique', keyword: KeywordNode }
 
 export function parseFromClause(sql: string): FromClauseParserResult
 export function parse(sql: string): AST

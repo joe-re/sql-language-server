@@ -35,10 +35,10 @@
     }  
   }
 
-  function createList(head, tail) {
+  function createList(head, tail, idx=3) {
     var result = [head];
     for (var i = 0; i < tail.length; i++) {
-      result.push(tail[i][3]);
+      result.push(tail[i][idx]);
     }
     return result;
   }
@@ -103,7 +103,7 @@
 }
 
 start 
-  = &{ params = []; return true; } __ ast:(union_stmt  / update_stmt / replace_insert_stmt / delete_stmt) __ EOSQL? __ {
+  = &{ params = []; return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt) __ EOSQL? __ {
       return {
         ast   : ast,
         param : params
@@ -167,11 +167,7 @@ select_stmt_nake
 
 select_keyword
   = val: KW_SELECT {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
+    return { type: 'keyword', value: val && val[0], location: location() }
   }
 
 column_clause
@@ -1016,67 +1012,92 @@ e
   = e:[eE] sign:[+-]? { return e + (sign || ''); }
 
 
-KW_NULL      = "NULL"i     !ident_start
-KW_TRUE      = "TRUE"i     !ident_start
-KW_FALSE     = "FALSE"i    !ident_start
+KW_NULL               = "NULL"i               !ident_start
+KW_NOT_NULL           = "NOT NULL"i           !ident_start
+KW_UNIQUE             = "UNIQUE"i             !ident_start
+KW_PRIMARY_KEY        = "PRIMARY KEY"i        !ident_start
+KW_INCREMENT          = "INCREMENT"i          !ident_start
+KW_AUTO_INCREMENT     = "AUTO_INCREMENT"i     !ident_start
+KW_DEFAULT            = "DEFAULT"i            !ident_start
+KW_GENERATED          = "GENERATED"i          !ident_start
+KW_ALWAYS             = "ALWAYS"i             !ident_start
+KW_BY_DEFAULT         = "BY DEFAULT"i         !ident_start
+KW_BY_DEFAULT_ON_NULL = "BY DEFAULT ON NULL"i !ident_start
+KW_IDENTITY           = "IDENTITY"i           !ident_start
+KW_START              = "START"i              !ident_start
+KW_WITH               = "WITH"i               !ident_start
+KW_MINVALUE           = "MINVALUE"i           !ident_start
+KW_NO_MINVALUE        = "NO MINVALUE"i        !ident_start
+KW_MAXVALUE           = "MAXVALUE"i           !ident_start
+KW_NO_MAXVALUE        = "NO MAXVALUE"i        !ident_start
+KW_OWNED_BY           = "OWNED BY"i           !ident_start
+KW_OWNED_BY_NONE      = "OWNED BY NONE"i      !ident_start
+KW_CACHE              = "CACHE"i              !ident_start
+KW_CYCLE              = "CYCLE"i              !ident_start
+KW_NO_CYCLE           = "NO CYCLE"i           !ident_start
+KW_CHECK              = "CHECK"i              !ident_start
+KW_TRUE               = "TRUE"i               !ident_start
+KW_FALSE              = "FALSE"i              !ident_start
 
-KW_SHOW      = "SHOW"i     !ident_start
-KW_DROP      = "DROP"i     !ident_start
-KW_SELECT    = "SELECT"i   !ident_start
-KW_UPDATE    = "UPDATE"i   !ident_start
-KW_CREATE    = "CREATE"i   !ident_start
-KW_DELETE    = "DELETE"i   !ident_start
-KW_INSERT    = "INSERT"i   !ident_start
-KW_REPLACE   = "REPLACE"i  !ident_start
-KW_EXPLAIN   = "EXPLAIN"i  !ident_start
+KW_SHOW           = "SHOW"i           !ident_start
+KW_DROP           = "DROP"i           !ident_start
+KW_SELECT         = "SELECT"i         !ident_start
+KW_UPDATE         = "UPDATE"i         !ident_start
+KW_CREATE         = "CREATE"i         !ident_start
+KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
+KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
+KW_DELETE         = "DELETE"i         !ident_start
+KW_INSERT         = "INSERT"i         !ident_start
+KW_REPLACE        = "REPLACE"i        !ident_start
+KW_EXPLAIN        = "EXPLAIN"i        !ident_start
 
-KW_INTO      = "INTO"i     !ident_start
-KW_FROM      = "FROM"i     !ident_start
-KW_SET       = "SET"i      !ident_start
+KW_INTO           = "INTO"i           !ident_start
+KW_FROM           = "FROM"i           !ident_start
+KW_SET            = "SET"i            !ident_start
 
-KW_AS        = "AS"i       !ident_start
-KW_TABLE     = "TABLE"i    !ident_start
+KW_AS             = "AS"i             !ident_start
+KW_TABLE          = "TABLE"i          !ident_start
 
-KW_ON        = "ON"i       !ident_start
-KW_LEFT      = "LEFT"i     !ident_start
-KW_INNER     = "INNER"i    !ident_start
-KW_JOIN      = "JOIN"i     !ident_start
-KW_UNION     = "UNION"i    !ident_start
-KW_VALUES    = "VALUES"i   !ident_start
+KW_ON             = "ON"i             !ident_start
+KW_LEFT           = "LEFT"i           !ident_start
+KW_INNER          = "INNER"i          !ident_start
+KW_JOIN           = "JOIN"i           !ident_start
+KW_UNION          = "UNION"i          !ident_start
+KW_VALUES         = "VALUES"i         !ident_start
 
-KW_EXISTS    = "EXISTS"i   !ident_start
+KW_EXISTS         = "EXISTS"i         !ident_start
 
-KW_WHERE     = "WHERE"i    !ident_start
+KW_WHERE          = "WHERE"i          !ident_start
 
-KW_GROUP     = "GROUP"i    !ident_start
-KW_BY        = "BY"i       !ident_start
-KW_ORDER     = "ORDER"i    !ident_start
-KW_HAVING    = "HAVING"i   !ident_start
+KW_GROUP          = "GROUP"i          !ident_start
+KW_BY             = "BY"i             !ident_start
+KW_ORDER          = "ORDER"i          !ident_start
+KW_HAVING         = "HAVING"i         !ident_start
 
-KW_LIMIT     = "LIMIT"i    !ident_start
+KW_LIMIT          = "LIMIT"i          !ident_start
 
-KW_ASC       = "ASC"i      !ident_start    { return 'ASC';      }
-KW_DESC      = "DESC"i     !ident_start    { return 'DESC';     }
+KW_ASC            = "ASC"i            !ident_start    { return 'ASC';      }
+KW_DESC           = "DESC"i           !ident_start    { return 'DESC';     }
 
-KW_ALL       = "ALL"i      !ident_start    { return 'ALL';      }
-KW_DISTINCT  = "DISTINCT"i !ident_start    { return 'DISTINCT'; }
-KW_DUPLICATE = "DUPLICATE"i!ident_start    { return 'DUPLICATE';}
-KW_BETWEEN   = "BETWEEN"i  !ident_start    { return 'BETWEEN';  }
-KW_IN        = "IN"i       !ident_start    { return 'IN';       }
-KW_IS        = "IS"i       !ident_start    { return 'IS';       }
-KW_LIKE      = "LIKE"i     !ident_start    { return 'LIKE';     }
-KW_CONTAINS  = "CONTAINS"i !ident_start    { return 'CONTAINS'; }
-KW_KEY       = "KEY"i      !ident_start    { return 'KEY';      }
+KW_ALL            = "ALL"i            !ident_start    { return 'ALL';      }
+KW_DISTINCT       = "DISTINCT"i       !ident_start    { return 'DISTINCT'; }
+KW_DUPLICATE      = "DUPLICATE"i      !ident_start    { return 'DUPLICATE';}
+KW_BETWEEN        = "BETWEEN"i        !ident_start    { return 'BETWEEN';  }
+KW_IN             = "IN"i             !ident_start    { return 'IN';       }
+KW_IS             = "IS"i             !ident_start    { return 'IS';       }
+KW_LIKE           = "LIKE"i           !ident_start    { return 'LIKE';     }
+KW_CONTAINS       = "CONTAINS"i       !ident_start    { return 'CONTAINS'; }
+KW_KEY            = "KEY"i            !ident_start    { return 'KEY';      }
 
-KW_NOT       = "NOT"i      !ident_start    { return 'NOT';      }
-KW_AND       = "AND"i      !ident_start    { return 'AND';      }
-KW_OR        = "OR"i       !ident_start    { return 'OR';       }
+KW_NOT            = "NOT"i            !ident_start    { return 'NOT';      }
+KW_AND            = "AND"i            !ident_start    { return 'AND';      }
+KW_OR             = "OR"i             !ident_start    { return 'OR';       }
 
-KW_COUNT     = "COUNT"i    !ident_start    { return 'COUNT';    }
-KW_MAX       = "MAX"i      !ident_start    { return 'MAX';      }
-KW_MIN       = "MIN"i      !ident_start    { return 'MIN';      }
-KW_SUM       = "SUM"i      !ident_start    { return 'SUM';      }
-KW_AVG       = "AVG"i      !ident_start    { return 'AVG';      }
+KW_COUNT          = "COUNT"i          !ident_start    { return 'COUNT';    }
+KW_MAX            = "MAX"i            !ident_start    { return 'MAX';      }
+KW_MIN            = "MIN"i            !ident_start    { return 'MIN';      }
+KW_SUM            = "SUM"i            !ident_start    { return 'SUM';      }
+KW_AVG            = "AVG"i            !ident_start    { return 'AVG';      }
 
 //specail character
 DOT       = '.'
@@ -1270,3 +1291,239 @@ delete_table
         location: location()
       }
     }
+
+create_table_stmt
+  = keyword: create_table_keyword __
+    table: ident __
+    as: KW_AS __
+    select: select_stmt
+   {
+      return {
+        type: 'create_table',
+        keyword: keyword,
+        if_not_exists: null,
+        fields: [],
+        select: select,
+        location: location(),
+      }
+    }
+  / keyword: create_table_keyword __
+    if_not_exists_keyword: if_not_exists_keyword __
+    table: ident __
+    LPAREN __
+    fields: field_list __
+    RPAREN
+   {
+      return {
+        type: 'create_table',
+        keyword: keyword,
+        if_not_exists: if_not_exists_keyword,
+        fields: fields,
+        select: null,
+        location: location(),
+      }
+    }
+  / keyword: create_table_keyword __
+    table: ident __
+    LPAREN __
+    fields: field_list __
+    RPAREN
+   {
+      return {
+        type: 'create_table',
+        if_not_exists: null,
+        keyword: keyword,
+        fields: fields,
+        select: null,
+        location: location(),
+      }
+    }
+
+create_table_keyword
+  = val: KW_CREATE_TABLE {
+    return {
+      type: 'keyword',
+      value: val && val[0],
+      location: location()
+    }
+  }
+
+if_not_exists_keyword
+  = val: KW_IF_NOT_EXISTS {
+    return {
+      type: 'keyword',
+      value: val && val[0],
+      location: location()
+    }
+  }
+
+field_list
+  = head:field tail:(__ COMMA __ field)* {
+    return createList(head, tail);
+  }
+
+field
+  = name:ident __ type:field_data_type __ constraints: field_constraint_list {
+    return {
+      type: 'field',
+      name: name,
+      data_type: type,
+      constraints: constraints,
+      location: location()
+    }
+  }
+  / name:ident __ type:field_data_type {
+    return {
+      type: 'field',
+      name: name,
+      data_type: type,
+      constraints: [],
+      location: location()
+    }
+  }
+
+field_data_type
+  = name:ident __ LPAREN __? val:int __? RPAREN {
+    return {
+      type: 'field_data_type',
+      name: name,
+      value: val,
+      location: location()
+    }
+  }
+  / name:ident {
+    return {
+      type: 'field_data_type',
+      name: name,
+      value: null,
+      location: location()
+    }
+  }
+
+field_constraint_list
+  = head:field_constraint tail:(__ field_constraint)* {
+    return createList(head, tail, 1);
+  }
+
+field_constraint
+  = field_constraint_not_null
+  / field_constraint_primary_key
+  / field_constraint_unique
+  / field_constraint_auto_increment
+  / field_constraint_generated
+
+field_constraint_not_null = k: keyword_not_null {
+  return { type: 'constraint_not_null', keyword: k, location: location() }
+}
+keyword_not_null = k: KW_NOT_NULL {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+
+field_constraint_primary_key = k: keyword_primary_key {
+  return { type: 'constraint_primary_key', keyword: k, location: location() }
+}
+keyword_primary_key = k: KW_PRIMARY_KEY {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+
+field_constraint_unique = k: keyword_unique {
+  return { type: 'constraint_unique', keyword: k, location: location() }
+}
+keyword_unique = k: KW_UNIQUE {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+
+field_constraint_auto_increment = k: keyword_auto_increment {
+  return { type: 'constraint_auto_increment', keyword: k, location: location() }
+}
+keyword_auto_increment = k: KW_AUTO_INCREMENT {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+
+field_constraint_generated =
+  g: KW_GENERATED __
+  opt: constraint_generated_option __
+  data: constraint_generated_data_type? __
+  seq: sequence_option_list_wrap? {
+    return { type: 'constraint_generated', option: opt, data_type: data, sequence_options: seq }
+}
+
+constraint_generated_option = k: keyword_always {
+  return { type: 'constraint_generated_option', option: 'ALWAYS', keyword: k }
+} / k: keyword_by_default {
+  return { type: 'constraint_generated_option', option: 'BY_DEFAULT', keyword: k }
+} / k: keyword_by_default_on_null {
+  return { type: 'constraint_generated_option', option: 'BY_DEFAULT_ON_NULL', keyword: k }
+}
+
+keyword_always = k: KW_ALWAYS {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+keyword_by_default = k: KW_BY_DEFAULT {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+keyword_by_default_on_null = k: KW_BY_DEFAULT_ON_NULL {
+  return { type: 'keyword', value: k && k[0], location: location() }
+}
+
+constraint_generated_data_type = KW_AS __ val:ident {
+  return { type: 'sequence_option_data_type', value: val, location: location() }
+}
+
+sequence_option_list_wrap = sequence_option_list
+/ s: (LPAREN __ sequence_option_list __ RPAREN) {
+  return s[2]
+}
+
+sequence_option_list
+  = head:sequence_option tail:(__ sequence_option)* {
+    return createList(head, tail, 1);
+  }
+
+sequence_option =
+  sequence_option_increment
+  / sequence_option_start
+  / sequence_option_maxvalue
+  / sequence_option_minvalue
+  / sequence_option_no_maxvalue
+  / sequence_option_no_minvalue
+  / sequence_option_cache
+  / sequence_option_cycle
+  / sequence_option_no_cycle
+  / sequence_option_owned_by
+  / sequence_option_owned_by_none
+
+
+sequence_option_increment = KW_INCREMENT __ KW_BY __ val:int {
+  return { type: 'sequence_option_increment', value: val, location: location() }
+}
+sequence_option_start = KW_START __ KW_WITH __ val:int {
+  return { type: 'sequence_option_increment', value: val, location: location() }
+}
+sequence_option_maxvalue = KW_MAXVALUE __ val:int {
+  return { type: 'sequence_option_maxvalue', value: val, location: location() }
+}
+sequence_option_minvalue = KW_MINVALUE __ val:int {
+  return { type: 'sequence_option_maxvalue', value: val, location: location() }
+}
+sequence_option_no_maxvalue = KW_NO_MAXVALUE {
+  return { type: 'sequence_option_no_maxvalue', location: location() }
+}
+sequence_option_no_minvalue = KW_NO_MINVALUE {
+  return { type: 'sequence_option_no_minvalue', location: location() }
+}
+sequence_option_cache = KW_CACHE __ val: int {
+  return { type: 'sequence_option_cache', value: val, location: location() }
+}
+sequence_option_cycle = KW_CYCLE {
+  return { type: 'sequence_option_cycle', location: location() }
+}
+sequence_option_no_cycle = KW_NO_CYCLE {
+  return { type: 'sequence_option_no_cycle', location: location() }
+}
+sequence_option_owned_by = KW_OWNED_BY __ val: column_ref {
+  return { type: 'sequence_option_owned_by', value: val, location: location() }
+}
+sequence_option_owned_by_none = KW_OWNED_BY_NONE {
+  return { type: 'sequence_option_owned_by_none', location: location() }
+}

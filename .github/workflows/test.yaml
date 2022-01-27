@@ -17,3 +17,5 @@ jobs:
       - run: yarn vsc-compile:client
       - run: yarn vsc-compile:server
       - run: yarn test:server
+      - run: yarn test:parser
+      - run: yarn test:sqlint
