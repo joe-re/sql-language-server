@@ -833,7 +833,7 @@ column_char  = [A-Za-z0-9_:\[\]\']
 
 
 param 
-  = l:(':' ident_name) { 
+  = l:([:@] ident_name) {
     var p = {
       type : 'param',
       value: l[1]

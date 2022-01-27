@@ -15,13 +15,15 @@ export type SSHConfig = {
 }
 export type Connection = {
   name: string | null,
-  adapter: 'json' | 'mysql' | 'postgresql' | 'postgres' | 'sqlite3' | null,
+  adapter: 'json' | 'mysql' | 'postgresql' | 'postgres' | 'sqlite3' | 'bigquery' | null,
   host: string | null
   port: number | null
   user: string | null
   database: string | null
   password: string | null
   filename: string | null // for sqlite3
+  keyFile: string | null // for BigQuery
+  projectId: string | null // for BigQuery
   projectPaths: string[]
   ssh: SSHConfig | null
   jupyterLabMode: boolean
@@ -58,6 +60,8 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     password: null,
     ssh: null,
     filename: null,
+    keyFile: null,
+    projectId: null,
     projectPaths: [],
     jupyterLabMode: false,
   }

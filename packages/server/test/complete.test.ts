@@ -169,6 +169,26 @@ describe('on blank space', () => {
     ]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
+
+  test("complete function inside WHERE select star", () => {
+    const result = complete('SELECT * FROM tab1 WHERE arr', { line: 0, column: 28 }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(2) // TODO whare are they?
+    let expected = [
+      expect.objectContaining({ label: 'array_concat()' }),
+      expect.objectContaining({ label: 'array_contains()' }),
+    ]
+    expect(result.candidates).toEqual(expect.arrayContaining(expected))
+  })
+
+  test("complete function inside WHERE", () => {
+    const result = complete('SELECT col1 FROM tab1 WHERE arr', { line: 0, column: 31 }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(2) // TODO whare are they?
+    let expected = [
+      expect.objectContaining({ label: 'array_concat()' }),
+      expect.objectContaining({ label: 'array_contains()' }),
+    ]
+    expect(result.candidates).toEqual(expect.arrayContaining(expected))
+  })
 })
 
 describe('TableName completion', () => {
