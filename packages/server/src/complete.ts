@@ -592,6 +592,16 @@ class Completer {
       if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef))
       return columnRef
     }
+    else if (columns.type == 'star') {
+      if (ast.type === 'select' && ast.where?.expression) {
+        // columns in where clause  
+        const columnRefs = [ast.where.expression]
+        // column at position
+        const columnRef = this.getColumnRefByPos(columnRefs)
+        if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef))
+        return columnRef
+      }
+    }
     return undefined
   }
 
