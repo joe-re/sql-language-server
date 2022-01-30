@@ -12,7 +12,7 @@ describe('setSetting', () => {
   })
   it('should replace ${env:VARIABLE_NAME} syntax with environment variable', () => {
     const setting = {
-      "adapter": 'mysql' as 'mysql',
+      "adapter": 'mysql' as const,
       "host": "localhost",
       "port": 3307,
       "user": "username",

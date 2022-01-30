@@ -6,6 +6,7 @@ import url from "url";
 import type rpc from "vscode-ws-jsonrpc";
 import { launchServer } from "./launchServer";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 process.on("uncaughtException", function (err: any) {
   console.error("Uncaught Exception: ", err.toString());
   if (err.stack) {

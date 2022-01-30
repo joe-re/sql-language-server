@@ -6,7 +6,7 @@ const META = {
   type: 'keyword'
 };
 
-export const linebreakAfterClauseKeyword: Rule<KeywordNode, RuleConfig<{}>> = {
+export const linebreakAfterClauseKeyword: Rule<KeywordNode, RuleConfig> = {
   meta: META,
   create: (context) => {
     if (![

@@ -49,7 +49,7 @@ export default class PosgresClient extends AbstractClient {
           reject(new Error(err.message))
           return
         }
-        const tables = results.rows.map((v: any) => v[`table_name`])
+        const tables = results.rows.map((v: { [key: string]: string }) => v[`table_name`])
         resolve(tables)
       })
     })

@@ -3,8 +3,8 @@ import * as fs from 'fs'
 export function fileExists(path: string) {
   try {
     return fs.statSync(path).isFile()
-  } catch (error: any) {
-    if (error && error.code === "ENOENT") {
+  } catch (error) {
+    if (error && (error as NodeJS.ErrnoException).code === "ENOENT") {
         return false;
     }
     throw error;
@@ -14,8 +14,8 @@ export function fileExists(path: string) {
 export function directoryExists(path: string) {
   try {
     return fs.statSync(path).isDirectory()
-  } catch (error: any) {
-    if (error && error.code === "ENOENT") {
+  } catch (error) {
+    if (error && (error as NodeJS.ErrnoException).code === "ENOENT") {
         return false;
     }
     throw error;
@@ -23,14 +23,14 @@ export function directoryExists(path: string) {
 }
 
 function readdirSafeSync(path: string) {
-    try {
-        return fs.readdirSync(path, { withFileTypes: true });
-    } catch (error: any) {
-        if (error.code !== "ENOENT") {
-            throw error;
-        }
-        return [];
+  try {
+    return fs.readdirSync(path, { withFileTypes: true });
+  } catch (error) {
+    if (error && (error as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw error;
     }
+    return [];
+  }
 }
 
 export function getFileList(path: string): string[] {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import App from './App.svelte'
 import { initClient } from './client'
 

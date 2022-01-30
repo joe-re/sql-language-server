@@ -17,7 +17,7 @@ export default function initializeLogging() {
         ackups: MAX_LOG_BACKUPS
       }
     },
-    categories: { default: { appenders: ['server'], level: (yargs.argv as any).debug ? 'debug' : 'debug' } }
+    categories: { default: { appenders: ['server'], level: yargs.argv.debug ? 'debug' : 'debug' } }
   })
 
   const logger = log4js.getLogger()

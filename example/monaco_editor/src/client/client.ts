@@ -111,7 +111,7 @@ export function executeSwitchDatabaseCommand(db: string) {
   languageClient.sendRequest('workspace/executeCommand', params)
 }
 
-export function executeWorkspaceConfig(db: string) {
+export function executeWorkspaceConfig(_db: string) {
   // TODO: implement
   // languageClient.sendRequest('workspace/configuration', { test: 'test' }).catch(e => {
   //   console.log('--- error ---')

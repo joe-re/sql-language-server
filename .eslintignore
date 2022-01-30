@@ -1,0 +1,13 @@
+node_modules
+jest.config.js
+schema.conf.js
+dist/
+bin/
+sql-parser/
+npm_bin/
+out/
+migrations/
+webpack.config.js
+*/monaco_editor/models/
+*/monaco_editor/config/config.js
+.eslintrc.js

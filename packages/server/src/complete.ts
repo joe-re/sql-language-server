@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TODO: remove all "any" types from this file
 import {
   parse,
   parseFromClause,
@@ -78,7 +80,7 @@ export class Identifier {
     const idx = this.lastToken.lastIndexOf('.')
     const label = this.identifier.substr(idx + 1)
     let kindName: string
-    let tableAlias: string = ''
+    let tableAlias = ''
     if (this.kind === TABLE_ICON) {
       let tableName = label
       const i = tableName.lastIndexOf('.')
@@ -108,7 +110,7 @@ export class Identifier {
 
 // Gets the last token from the given string considering that tokens can contain dots.
 export function getLastToken(sql: string): string {
-  const match = sql.match(/^(?:.|\s)*[^A-z0-9\.:'](.*?)$/)
+  const match = sql.match(/^(?:.|\s)*[^A-z0-9\\.:'](.*?)$/)
   if (match) {
     let prevToken = '';
     let currentToken = match[1];
@@ -123,7 +125,7 @@ export function getLastToken(sql: string): string {
 
 function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
   try {
-    return parseFromClause(sql) as any
+    return parseFromClause(sql)
   } catch (_e) {
     // no-op
     return null
@@ -148,14 +150,14 @@ function makeTableName(table: Table): string {
 }
 
 class Completer {
-  lastToken: string = ''
+  lastToken = ''
   candidates: CompletionItem[] = []
   schema: Schema
   error: any = ''
   sql: string
   pos: Pos
-  isSpaceTriggerCharacter: boolean = false;
-  isDotTriggerCharacter: boolean = false;
+  isSpaceTriggerCharacter = false;
+  isDotTriggerCharacter = false;
   jupyterLabMode: boolean;
 
   constructor(schema: Schema, sql: string, pos: Pos, jupyterLabMode: boolean) {
@@ -437,7 +439,7 @@ class Completer {
   }
 
   addCandidatesForJoins(expected: { type: string, text: string }[], fromNodes: FromTableNode[]) {
-    let joinType: string = ''
+    let joinType = ''
     if ('INNER'.startsWith(this.lastToken)) joinType = 'INNER'
     if ('LEFT'.startsWith(this.lastToken)) joinType = 'LEFT'
     if ('RIGH'.startsWith(this.lastToken)) joinType = 'RIGHT'
@@ -640,7 +642,7 @@ class Completer {
     tables.flatMap(table => {
       return fromNodes.filter((fromNode: any) => this.tableMatch(fromNode, table))
         .map((fromNode: any) => fromNode.as || fromNode.table)
-        .filter(_alias =>
+        .filter(() =>
           this.lastToken.toUpperCase() === 'SELECT' // complete SELECT keyword
           || this.lastToken === '') // complete at space after SELECT
         .map(alias => {
@@ -648,7 +650,7 @@ class Completer {
             .map(col => this.makeColumnName(alias, col.columnName))
             .join(',\n')
           const label = `Select all columns from ${alias}`
-          let prefix: string = ''
+          let prefix = ''
           if (this.lastToken) {
             prefix = this.lastToken + '\n'
           }
@@ -730,7 +732,7 @@ class Completer {
 }
 
 
-export function complete(sql: string, pos: Pos, schema: Schema = { tables: [], functions: [] }, jupyterLabMode: boolean = false) {
+export function complete(sql: string, pos: Pos, schema: Schema = { tables: [], functions: [] }, jupyterLabMode = false) {
   console.time('complete')
   if (logger.isDebugEnabled()) logger.debug(`complete: ${sql}, ${JSON.stringify(pos)}`)
   const completer = new Completer(schema, sql, pos, jupyterLabMode)

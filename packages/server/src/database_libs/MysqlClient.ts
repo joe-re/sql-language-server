@@ -2,6 +2,7 @@ import type { Connection as MySqlConnection } from 'mysql2'
 import { Connection } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
 
 export default class MysqlClient extends AbstractClient {
@@ -44,12 +45,12 @@ export default class MysqlClient extends AbstractClient {
         reject(new Error("Don't have database connection."))
         return
       }
-      this.connection.query(sql, (err, results) => {
+      this.connection.query(sql, (err, results: { [key: string]: string }[]) => {
         if (err) {
           reject(new Error(err.message))
           return
         }
-        const tables = (results as any).map((v: any) => v['table_name'] || v['TABLE_NAME'])
+        const tables = results.map((v) => v['table_name'] || v['TABLE_NAME'])
         resolve(tables)
       })
     })
@@ -67,6 +68,7 @@ export default class MysqlClient extends AbstractClient {
           reject(new Error(err.message))
           return
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const columns: RawField[] = (results as any).map((v: any) => ({
           field: v.Field,
           type: v.Type,

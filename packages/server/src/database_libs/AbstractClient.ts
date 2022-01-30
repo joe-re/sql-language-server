@@ -9,7 +9,7 @@ export type RawField = {
   field: string,
   type: string,
   null: 'Yes' | 'No',
-  default: any,
+  default: string,
   comment: string
 }
 export type Column = {
@@ -33,7 +33,7 @@ export type Schema = {
 }
 
 export default abstract class AbstractClient {
-  connection: any
+  connection: unknown
 
   constructor(protected settings: Connection) {}
 
@@ -46,7 +46,7 @@ export default abstract class AbstractClient {
   abstract DefaultUser: string
 
   async getSchema(): Promise<Schema> {
-    let schema: Schema = {tables:[], functions: []}
+    const schema: Schema = {tables:[], functions: []}
     const sshConnection =
       this.settings.ssh?.remoteHost ? new SSHConnection({
         endHost: this.settings.ssh.remoteHost,

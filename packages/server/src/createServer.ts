@@ -35,7 +35,7 @@ const TRIGGER_CHARATER = '.'
 export function createServerWithConnection(connection: Connection) {
   initializeLogging()
   const logger = log4js.getLogger()
-  let documents = new TextDocuments(TextDocument)
+  const documents = new TextDocuments(TextDocument)
   documents.listen(connection);
   let schema: Schema = { tables: [], functions: [] }
   let hasConfigurationCapability = false
@@ -54,17 +54,18 @@ export function createServerWithConnection(connection: Connection) {
     try {
       schema = JSON.parse(data);
     }
-    catch (e: any) {
-      logger.error("failed to read schema file " + e.message)
+    catch (e) {
+      const err = e as NodeJS.ErrnoException
+      logger.error("failed to read schema file " + err.message)
       connection.sendNotification('sqlLanguageServer.error', {
-        message: "Failed to read schema file: " + filePath + " error: " + e.message
+        message: "Failed to read schema file: " + filePath + " error: " + err.message
       })
       throw e
     }
   }
 
   function readAndMonitorJsonSchemaFile(filePath: string) {
-    fs.watchFile(filePath, (_curr, _prev) => {
+    fs.watchFile(filePath, () => {
       logger.info(`change detected, reloading schema file: ${filePath}`)
       readJsonSchemaFile(filePath)
     })
@@ -74,8 +75,7 @@ export function createServerWithConnection(connection: Connection) {
   }
 
   async function makeDiagnostics(document: TextDocument) {
-
-    const hasRules = lintConfig?.hasOwnProperty('rules')
+    const hasRules = Object.prototype.hasOwnProperty.call(lintConfig, 'rules')
     const diagnostics = createDiagnostics(
       document.uri,
       document.getText(),
@@ -133,10 +133,10 @@ export function createServerWithConnection(connection: Connection) {
         } catch (e) {
           logger.error(e)
         }
-        var setting = SettingStore.getInstance().getSetting()
+        const setting = SettingStore.getInstance().getSetting()
         if (setting.adapter == 'json') {
           // Loading schema from json file
-          var path = setting.filename || ""
+          const path = setting.filename || ""
           if (path == "") {
             logger.error("filename must be provided")
             connection.sendNotification('sqlLanguageServer.error', {
@@ -213,13 +213,13 @@ export function createServerWithConnection(connection: Connection) {
         return []
       }
     }
-    let text = documents.get(docParams.textDocument.uri)?.getText()
+    const text = documents.get(docParams.textDocument.uri)?.getText()
     if (!text) {
       return []
     }
     logger.debug(text || '')
-    let pos = { line: docParams.position.line, column: docParams.position.character }
-    var setting = SettingStore.getInstance().getSetting()
+    const pos = { line: docParams.position.line, column: docParams.position.character }
+    const setting = SettingStore.getInstance().getSetting()
     const candidates = complete(text, pos, schema, setting.jupyterLabMode).candidates
     if (logger.isDebugEnabled()) logger.debug('onCompletion returns: ' + JSON.stringify(candidates))
     return candidates
@@ -278,9 +278,10 @@ export function createServerWithConnection(connection: Connection) {
         SettingStore.getInstance().changeConnection(
           request.arguments && request.arguments[0] || ''
         )
-      } catch (e: any) {
+      } catch (e) {
+        const err = e as NodeJS.ErrnoException
         connection.sendNotification('sqlLanguageServer.error', {
-          message: e.message
+          message: err.message
         })
       }
     } else if (
@@ -325,6 +326,6 @@ export function createServerWithConnection(connection: Connection) {
 }
 
 export function createServer() {
-  let connection: Connection = createConnection((yargs.argv as Args).method || 'node-ipc')
+  const connection: Connection = createConnection((yargs.argv as Args).method || 'node-ipc')
   return createServerWithConnection(connection)
 }
