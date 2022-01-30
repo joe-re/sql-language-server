@@ -6,7 +6,7 @@ import log4js from 'log4js'
 const logger = log4js.getLogger()
 
 export class RequireSqlite3Error extends Error {
-  constructor(message: any) {
+  constructor(message: string) {
     super(message)
     this.name = "RequireSQLite3Error"
   }
@@ -29,6 +29,7 @@ export default class Sqlite3Client extends AbstractClient {
     }
     try {
       // use commonjs to avoid dynamic import build error
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const sqlite3: SQLite3 = require('sqlite3')
 
       this.connection = new sqlite3.Database(
@@ -37,7 +38,9 @@ export default class Sqlite3Client extends AbstractClient {
       )
     } catch (e) {
       logger.error('Sqlite3Client: failed to connect to database', e)
-      throw new RequireSqlite3Error(e)
+      if (e instanceof Error) {
+        throw new RequireSqlite3Error(e.message)
+      }
     }
     return true
   }
@@ -80,7 +83,7 @@ export default class Sqlite3Client extends AbstractClient {
         name: string
         type: string
         notnull: number
-        dflt_value: any
+        dflt_value: string
         pk: number
       }[]) => {
         if (err) {

@@ -32,7 +32,7 @@ function formatErrors(errors: Ajv.ErrorObject[]) {
   }).map(message => `\t- ${message}.\n`).join("");
 }
 
-function validateSchema(config: Object) {
+function validateSchema(config: Record<string, unknown>) {
   const ajv = new Ajv({ verbose: true, schemaId: 'auto', missingRefs: 'ignore' })
   const validate = ajv.compile(schemaConf)
   if (!validate(config)) {
@@ -41,9 +41,11 @@ function validateSchema(config: Object) {
   return true
 }
 
+type RuleLevel = string | number
+type RuleVelue = (RuleLevel | { level: RuleLevel, option: unknown })
 export type RawConfig = {
   rules: {
-    [key: string]: string | number | { level: string | number, option: any }
+    [key: string]: RuleVelue
   }
 }
 
@@ -51,7 +53,7 @@ export function convertToConfig(rawConfig: RawConfig): Config {
   return Object.entries(rawConfig.rules).reduce((p, c) => {
     let level = 0
     let option = null
-    const getLevel = (v: any) => {
+    const getLevel = (v: RuleVelue) => {
       if (typeof v === 'number') {
         return v
       }
@@ -102,7 +104,7 @@ export function loadConfig(directoryOrFile: string): Config {
       break
     case '.yaml':
     case '.yml':
-      config = yaml.safeLoad(fileContent) as any
+      config = yaml.safeLoad(fileContent) as RawConfig
       break
     default:
       config = JSON.parse(fileContent)

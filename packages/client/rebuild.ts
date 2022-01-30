@@ -23,6 +23,7 @@ const run = function(cmd): Promise<void> {
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const electronVersion = (process.versions as any).electron
 
 export function rebuild(): Promise<void> {

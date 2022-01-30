@@ -8,42 +8,189 @@ export type NodeRange = {
   start: NodePosition
   end: NodePosition
 }
-
-export type BaseNode = {
+interface ParseError extends Error {
+  location: NodeRange
+}
+interface BaseNode {
   type: string
   location: NodeRange
 }
 
-export type KeywordNode = {
+interface KeywordNode extends BaseNode {
   type: 'keyword'
   value: string
-  location: NodeRange
 }
 
-export type LiteralStringNode = {
+interface LiteralStringNode extends BaseNode {
   type: 'string'
   value: string
-  location: NodeRange
 }
 
-export type LiteralBoolNode = {
+interface LiteralBoolNode extends BaseNode {
   type: 'bool'
   value: boolean
-  location: NodeRange
 }
 
-export type LiteralNumberNode = {
+interface LiteralNumberNode extends BaseNode {
   type: 'number'
   value: number
-  location: NodeRange
 }
 
-export type LiteralNullNode = {
+interface LiteralNullNode extends BaseNode {
   type: 'null'
   value: null
-  location: NodeRange
 }
 
+interface BinaryExpressionNode extends BaseNode {
+  type: 'binary_expr'
+  operator: Operator
+  left: BaseNode | BinaryExpressionNode
+  right: BaseNode | BinaryExpressionNode
+}
+
+interface SelectStatement extends BaseNode {
+  type: 'select'
+  keyword: KeywordNode
+  distinct: 'distinct' | null
+  columns: ColumnListItemNode[] | StarNode
+  from: FromClause | null
+  where: WhereClause | null
+  groupBy: any
+  orderBy: any
+}
+
+interface FromClause extends BaseNode {
+  type: 'from',
+  keyword: KeywordNode,
+  tables: FromTableNode[],
+}
+
+interface WhereClause extends BaseNode {
+  type: 'where',
+  keyword: KeywordNode,
+  expression: BinaryExpressionNode | ColumnRefNode,
+}
+
+interface DeleteStatement extends BaseNode {
+  type: 'delete'
+  keyword: KeywordNode
+  db: string
+  table: TableNode
+  where: WhereClause | null
+}
+
+interface InsertStatement extends BaseNode {
+  type: 'insert'
+  table: string
+  columns: string[]
+  values: ValuesClause
+}
+
+interface ValuesClause extends BaseNode {
+  type: 'values',
+  values: (SelectStatement | LiteralNode)[]
+}
+
+interface ColumnListItemNode extends BaseNode {
+  type: 'column_list_item',
+  expr: ColumnRefNode | AggrFuncNode,
+  as: string | null,
+}
+
+interface ColumnRefNode extends BaseNode {
+  type: 'column_ref',
+  table: string,
+  column: string,
+}
+
+interface AggrFuncNode extends BaseNode {
+  type: 'aggr_func'
+  name: string
+  args: {
+    expr: ColumnRefNode
+  },
+}
+
+interface TableNode extends BaseNode {
+  type: 'table',
+  catalog: string | null,
+  db: string | null,
+  table: string,
+  as: string | null,
+  join?: 'INNER JOIN' | 'LEFT JOIN',
+  on?: any
+}
+
+interface SubqueryNode extends BaseNode {
+  type: 'subquery',
+  as: 'string' | null,
+  subquery: SelectStatement,
+}
+
+interface IncompleteSubqueryNode extends BaseNode {
+  type: 'incomplete_subquery',
+  as: 'string' | null,
+  text: string,
+}
+
+interface CreateTableStatement extends BaseNode {
+  type: 'create_table',
+  keyword: KeywordNode,
+  if_not_exists: KeywordNode | null,
+  fields: FieldNode[],
+  select: SelectStatement | null,
+}
+
+interface FieldNode extends BaseNode {
+  type: 'field',
+  name: string,
+  data_type: FieldDataTypeNode | null,
+  constraints: FieldConstraint[],
+}
+
+interface FieldDataTypeNode extends BaseNode {
+  type: 'field_data_type',
+  name: string,
+  value: string | null,
+}
+
+type Node =
+| KeywordNode
+| LiteralStringNode
+| LiteralBoolNode
+| LiteralNumberNode
+| LiteralNullNode
+| BinaryExpressionNode
+| SelectStatement
+| FromClause
+| WhereClause
+| DeleteStatement
+| InsertStatement
+| ValuesClause
+| ColumnListItemNode
+| ColumnRefNode
+| AggrFuncNode
+| TableNode
+| SubqueryNode
+| IncompleteSubqueryNode
+| CreateTableStatement
+| FieldNode
+| FieldDataTypeNode
+
+export type StarNode = { type: 'star', value: '*' }
+
+export type FieldConstraint =
+  FieldConstraintNotNull |
+  FieldConstraintPrimaryKey |
+  FieldConstraintUnique
+
+export type FieldConstraintNotNull = { type: 'constraint_not_null', keyword: KeywordNode }
+export type FieldConstraintPrimaryKey = { type: 'constraint_primary_key', keyword: KeywordNode }
+export type FieldConstraintUnique = { type: 'constraint_unique', keyword: KeywordNode }
+
+export type FromTableNode = TableNode | SubqueryNode | IncompleteSubqueryNode
+
+export type AST = SelectStatement | DeleteStatement | InsertStatement | CreateTableStatement
 export type LiteralNode =
   LiteralStringNode |
   LiteralBoolNode |
@@ -56,154 +203,11 @@ export type ComparisonOperator =
 export type Operator =
    ComparisonOperator | 'OR' | 'AND' | 'NOT'
 
-export type BinaryExpressionNode = {
-  type: 'binary_expr'
-  operator: Operator
-  left: BaseNode | BinaryExpressionNode
-  right: BaseNode | BinaryExpressionNode
-  location: NodeRange 
-}
-
-export type AST = SelectStatement | DeleteStatement | InsertStatement | CreateTableStatement
-
-export type SelectStatement = {
-  type: 'select'
-  keyword: KeywordNode
-  distinct: 'distinct' | null
-  columns: ColumnListItemNode[] | StarNode
-  from: FromClause | null
-  where: WhereClause | null
-  groupBy: any
-  orderBy: any
-  location: NodeRange
-}
-
-export type FromClause = {
-  type: 'from',
-  keyword: KeywordNode,
-  tables: FromTableNode[],
-  location: NodeRange
-}
-
-export type WhereClause = {
-  type: 'where',
-  keyword: KeywordNode,
-  expression: BinaryExpressionNode | ColumnRefNode,
-  location: NodeRange
-}
-
-export type DeleteStatement = {
-  type: 'delete'
-  keyword: KeywordNode
-  db: string
-  table: TableNode
-  where: WhereClause | null
-  location: NodeRange
-}
-
-export type InsertStatement = {
-  type: 'insert'
-  table: string
-  columns: string[]
-  values: ValuesClause
-  location: NodeRange
-}
-
-export type ValuesClause = {
-  type: 'values',
-  values: (SelectStatement | LiteralNode)[]
-}
-
-export type ColumnListItemNode = {
-  type: 'column_list_item',
-  expr: ColumnRefNode | AggrFuncNode,
-  as: string | null,
-  location: NodeRange
-}
-
-export type ColumnRefNode = {
-  type: 'column_ref',
-  table: string,
-  column: string,
-  location: NodeRange
-}
-
-export type AggrFuncNode = {
-  type: 'aggr_func'
-  name: string
-  args: {
-    expr: ColumnRefNode
-  },
-  location: NodeRange
-}
-
-export type StarNode = { type: 'star', value: '*' }
-
-export type FromTableNode = TableNode | SubqueryNode | IncompleteSubqueryNode
-
-export type TableNode = {
-  type: 'table',
-  catalog: string | null,
-  db: string | null,
-  table: string,
-  as: string | null,
-  location: NodeRange,
-  join?: 'INNER JOIN' | 'LEFT JOIN',
-  on?: any
-}
-
-export type SubqueryNode = {
-  type: 'subquery',
-  as: 'string' | null,
-  subquery: SelectStatement,
-  location: NodeRange
-}
-
-export type IncompleteSubqueryNode = {
-  type: 'incomplete_subquery',
-  as: 'string' | null,
-  text: string,
-  location: NodeRange
-}
-
 type FromClauseParserResult = {
   before: string,
   from: FromClause | null,
   after: string
 }
-
-export type CreateTableStatement = {
-  type: 'create_table',
-  keyword: KeywordNode,
-  if_not_exists: KeywordNode | null,
-  fields: FieldNode[],
-  select: SelectStatement | null,
-  location: NodeRange
-}
-
-export type FieldNode = {
-  type: 'field',
-  name: string,
-  data_type: FieldDataTypeNode | null,
-  constraints: FieldConstraint[],
-  location: NodeRange
-}
-
-export type FieldDataTypeNode = {
-  type: 'field_data_type',
-  name: string,
-  value: string | null,
-  location: NodeRange
-}
-
-export type FieldConstraint =
-  FieldConstraintNotNull |
-  FieldConstraintPrimaryKey |
-  FieldConstraintUnique
-
-export type FieldConstraintNotNull = { type: 'constraint_not_null', keyword: KeywordNode }
-export type FieldConstraintPrimaryKey = { type: 'constraint_primary_key', keyword: KeywordNode }
-export type FieldConstraintUnique = { type: 'constraint_unique', keyword: KeywordNode }
 
 export function parseFromClause(sql: string): FromClauseParserResult
 export function parse(sql: string): AST

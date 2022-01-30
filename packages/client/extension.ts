@@ -115,18 +115,18 @@ export function activate(context: ExtensionContext) {
 	});
 
   // Using the location of the javacript file built by `npm run prepublish`
-  let serverModule = context.asAbsolutePath(path.join('packages', 'server', 'dist', 'cli.js'))
-  let execArgs = ['up', '--method', 'node-ipc']
-  let debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
+  const serverModule = context.asAbsolutePath(path.join('packages', 'server', 'dist', 'cli.js'))
+  const execArgs = ['up', '--method', 'node-ipc']
+  const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
   let connectionNames = []
   let connectedConnectionName = ''
 
-  let serverOptions: ServerOptions = {
+  const serverOptions: ServerOptions = {
     run : { module: serverModule, transport: TransportKind.ipc, args: execArgs },
     debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions, args: execArgs }
   }
 
-  let clientOptions: LanguageClientOptions = {
+  const clientOptions: LanguageClientOptions = {
     documentSelector: SELECTORS,
     diagnosticCollectionName: 'sqlLanguageServer',
     synchronize: {
@@ -135,7 +135,7 @@ export function activate(context: ExtensionContext) {
     },
     middleware: {
       provideCompletionItem: async (document, position, context, token, next) => {
-				let originalUri = document.uri.toString();
+				const originalUri = document.uri.toString();
         if ( originalUri.startsWith(EMBED_SCHEME)) {
           // console.log("Sending modified cell magic text to LSP server")
           return await next(document, position, context, token);
@@ -166,7 +166,7 @@ export function activate(context: ExtensionContext) {
     }
   }
 
-  let client = new LanguageClient('sqlLanguageServer', 'SQL Language Server', serverOptions, clientOptions)
+  const client = new LanguageClient('sqlLanguageServer', 'SQL Language Server', serverOptions, clientOptions)
   client.registerProposedFeatures()
   const disposable = client.start()
 

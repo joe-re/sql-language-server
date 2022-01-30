@@ -36,11 +36,12 @@ type PersonalConfig = {
 function fileExists(path: string) {
   try {
     return fs.statSync(path).isFile()
-  } catch (error: any) {
-    if (error && error.code === "ENOENT") {
+  } catch (e) {
+    const err = e as NodeJS.ErrnoException
+    if (err && err.code === "ENOENT") {
         return false;
     }
-    throw error;
+    throw err
   }
 }
 
@@ -123,7 +124,7 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     return this.getSetting()
   }
 
-  async setSettingFromWorkspaceConfig(connections: Connection[], projectPath: string = '') {
+  async setSettingFromWorkspaceConfig(connections: Connection[], projectPath = '') {
     this.personalConfig = { connections }
     let extractedPersonalConfig = this.extractPersonalConfigMatchedProjectPath(projectPath)
     // Default to first connection if none are matched
@@ -138,6 +139,8 @@ export default class SettingStore extends EventEmitter.EventEmitter {
 
   setSetting(setting: Partial<Connection>) {
     logger.debug(`Set config: ${JSON.stringify(setting)}`)
+    // TODO: remove any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const replaceEnv = (v: { [key: string]: any }) => {
       for (const k in v) {
         if (v[k] && typeof v[k] === 'object') {

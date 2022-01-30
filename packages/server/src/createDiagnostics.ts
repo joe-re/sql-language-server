@@ -1,4 +1,4 @@
-import { parse } from '@joe-re/sql-parser'
+import { parse, ParseError } from '@joe-re/sql-parser'
 import log4js from 'log4js';
 import { PublishDiagnosticsParams, Diagnostic } from 'vscode-languageserver'
 import { DiagnosticSeverity }from 'vscode-languageserver-types'
@@ -39,19 +39,21 @@ export default function createDiagnostics(uri: string, sql: string, config?: Raw
     const ast = parse(sql)
     logger.debug(`ast: ${JSON.stringify(ast)}`)
     diagnostics = doLint(uri, sql, config)
-  } catch (e: any) {
+  } catch (e) {
+    const err = e as NodeJS.ErrnoException
     logger.debug('parse error')
     logger.debug(e)
     cache.setLintCache(uri, [])
-    if (e.name !== 'SyntaxError') {
+    if (err.name !== 'SyntaxError') {
       throw e
     }
+    const pe = e as ParseError
     diagnostics.push({
       range: {
-        start: { line: e.location.start.line - 1, character: e.location.start.column },
-        end: { line: e.location.end.line - 1, character: e.location.end.column }
+        start: { line: pe.location.start.line - 1, character: pe.location.start.column },
+        end: { line: pe.location.end.line - 1, character: pe.location.end.column }
       },
-      message: e.message,
+      message: pe.message,
       severity: DiagnosticSeverity.Error,
       // code: number | string,
       source: 'sql',
