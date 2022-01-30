@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:17
 
 COPY ./example /opt/sql-language-server/example
 COPY ./package.json yarn.lock /opt/sql-language-server/
