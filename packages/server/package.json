@@ -51,13 +51,14 @@
     "vscode-languageserver": "^8.0.0-next.3",
     "vscode-languageserver-protocol": "^3.15.3",
     "vscode-languageserver-textdocument": "^1.0.1",
-    "yargs": "^12.0.1"
+    "yargs": "^17.3.1"
   },
   "devDependencies": {
     "@types/jest": "^25.2.2",
     "@types/mysql": "^2.15.5",
     "@types/node": "14.0.26",
     "@types/sqlite3": "^3.1.6",
+    "@types/yargs": "^17.0.0",
     "esbuild": "^0.13.8",
     "jest": "^26.0.1",
     "rollup": "^2.10.2",

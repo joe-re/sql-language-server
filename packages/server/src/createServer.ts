@@ -75,7 +75,7 @@ export function createServerWithConnection(connection: Connection) {
   }
 
   async function makeDiagnostics(document: TextDocument) {
-    const hasRules = Object.prototype.hasOwnProperty.call(lintConfig, 'rules')
+    const hasRules = !!lintConfig && Object.prototype.hasOwnProperty.call(lintConfig, 'rules')
     const diagnostics = createDiagnostics(
       document.uri,
       document.getText(),
