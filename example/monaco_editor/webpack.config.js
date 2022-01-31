@@ -13,13 +13,13 @@ const client = {
   },
   target: 'web',
   mode: 'development',
-  node: {
-    fs: 'empty',
-    child_process: 'empty',
-    net: 'empty',
-    crypto: 'empty'
-  },
   resolve: {
+    fallback: {
+      fs: false,
+      child_process: false,
+      net: false,
+      crypto: false
+    },
     alias: {
       'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
     },
@@ -61,7 +61,7 @@ const client = {
     }]
   },
   watchOptions: {
-    poll: 1000
+    poll: 1000,
   }
 }
 

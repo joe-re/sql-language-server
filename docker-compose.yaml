@@ -1,12 +1,20 @@
 version: '3'
 services:
   assets:
+    platform: linux/x86_64
     build:
       context: .
       dockerfile: dockerfile
     volumes:
       - .:/opt/sql-language-server:rw
-    command: bash -c "yarn && yarn bootstrap && yarn dev"
+      # exclude node_modules dir from sharing with host
+      - node_modules:/opt/sql-language-server/node_modules
+      - node_modules_example:/opt/sql-language-server/example/node_modules
+      - node_modules_server:/opt/sql-language-server/packages/server/node_modules
+      - node_modules_sqlint:/opt/sql-language-server/packages/sqlint/node_modules
+    environment:
+      NODE_OPTIONS: --openssl-legacy-provider
+    command: bash -c "yarn && yarn bootstrap && yarn dev" # tail -f /dev/null
     ports:
       - '3000:3000'
   postgres:
@@ -32,3 +40,7 @@ services:
 volumes:
   postgres:
   mysql:
+  node_modules:
+  node_modules_example:
+  node_modules_server:
+  node_modules_sqlint:
