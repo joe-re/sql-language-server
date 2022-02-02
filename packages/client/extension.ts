@@ -115,8 +115,8 @@ export function activate(context: ExtensionContext) {
 	});
 
   // Using the location of the javacript file built by `npm run prepublish`
-  const serverModule = context.asAbsolutePath(path.join('packages', 'server', 'dist', 'cli.js'))
-  const execArgs = ['up', '--method', 'node-ipc']
+  const serverModule = context.asAbsolutePath(path.join('packages', 'server', 'dist', 'vscodeExtensionServer.js'))
+  const execArgs = ['false'] // [1: debug]
   const debugOptions = { execArgv: ["--nolazy", "--inspect=6009"] };
   let connectionNames = []
   let connectedConnectionName = ''

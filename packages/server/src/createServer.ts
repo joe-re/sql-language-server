@@ -12,7 +12,6 @@ import cache from './cache'
 import { complete } from './complete'
 import createDiagnostics from './createDiagnostics'
 import createConnection from './createConnection'
-import yargs from 'yargs'
 import SettingStore from './SettingStore'
 import { Schema } from './database_libs/AbstractClient'
 import getDatabaseClient from './database_libs/getDatabaseClient'
@@ -26,14 +25,11 @@ import path from 'path'
 import process from 'process'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
-type Args = {
-  method?: ConnectionMethod
-}
 
 const TRIGGER_CHARATER = '.'
 
-export function createServerWithConnection(connection: Connection) {
-  initializeLogging()
+export function createServerWithConnection(connection: Connection, debug = false) {
+  initializeLogging(debug)
   const logger = log4js.getLogger()
   const documents = new TextDocuments(TextDocument)
   documents.listen(connection);
@@ -325,7 +321,7 @@ export function createServerWithConnection(connection: Connection) {
   return connection
 }
 
-export function createServer() {
-  const connection: Connection = createConnection((yargs.argv as Args).method || 'node-ipc')
-  return createServerWithConnection(connection)
+export function createServer(params: { method?: ConnectionMethod, debug?: boolean } = {}) {
+  const connection: Connection = createConnection(params.method ?? 'node-ipc')
+  return createServerWithConnection(connection, params.debug)
 }
