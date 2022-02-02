@@ -103,7 +103,6 @@
     "wait-on": "^5.0.1"
   },
   "dependencies": {
-    "electron-rebuild": "^1.11.0",
     "sqlite3": "^5.0.2"
   },
   "resolutions": {
