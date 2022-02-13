@@ -904,7 +904,9 @@ func_call
     }
 
 literal 
-  = (literal_string / literal_numeric / literal_bool /literal_null)!DOT
+  = l:(literal_string / literal_numeric / literal_bool /literal_null)!DOT {
+    return l
+  }
 
 literal_list
   = head:literal tail:(__ COMMA __ literal)* {

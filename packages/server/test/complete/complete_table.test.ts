@@ -1,5 +1,3 @@
-// SELECT U FROM (SELECT col1 FROM Users AS Use);
-
 import { complete } from '../../src/complete'
 
 const SIMPLE_SCHEMA = {
