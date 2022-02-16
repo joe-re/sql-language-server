@@ -1,5 +1,5 @@
 {
-  "name": "sql-language-server_ws",
+  "name": "sql-language-server",
   "displayName": "SQL Language Server",
   "description": "SQL Language Server Extension for VSC",
   "version": "1.2.0",
