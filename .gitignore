@@ -14,3 +14,4 @@ packages/server/dist/*
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+.node-version

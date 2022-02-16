@@ -4,7 +4,7 @@ import {
   CompletionItem,
   CompletionParams,
 } from 'vscode-languageserver/node'
-import { TextDocuments } from 'vscode-languageserver/lib/common/server'
+import { LSPObject, TextDocuments } from 'vscode-languageserver'
 import { CompletionTriggerKind } from 'vscode-languageserver-protocol/lib/common/protocol'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import { CodeAction, TextDocumentEdit, TextEdit, Position, CodeActionKind } from 'vscode-languageserver-types'
@@ -12,7 +12,7 @@ import cache from './cache'
 import { complete } from './complete'
 import createDiagnostics from './createDiagnostics'
 import createConnection from './createConnection'
-import SettingStore from './SettingStore'
+import SettingStore, { Connection as SettingConnection } from './SettingStore'
 import { Schema } from './database_libs/AbstractClient'
 import getDatabaseClient from './database_libs/getDatabaseClient'
 import initializeLogging from './initializeLogging'
@@ -186,13 +186,19 @@ export function createServerWithConnection(connection: Connection, debug = false
     if (!hasConfigurationCapability) {
       return
     }
-    const connections = change.settings?.sqlLanguageServer?.connections ?? []
+    if (!Object.prototype.hasOwnProperty.call(change.settings, 'sqlLanguageServer')) {
+      logger.debug('onDidChangeConfiguration', "it doesn't have sqlLanguageServer property")
+      return 
+    }
+    const sqlLanguageServerSetting = ((change.settings as LSPObject).sqlLanguageServer) as LSPObject
+
+    const connections = (sqlLanguageServerSetting.connections ?? []) as SettingConnection[]
     if (connections.length > 0) {
       SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
     }
 
     // On configuration changes we retrieve the lint config
-    const lint = change.settings?.sqlLanguageServer?.lint
+    const lint = ((sqlLanguageServerSetting).lint) as RawConfig
     lintConfig = lint
     if (lint?.rules) {
       documents.all().forEach(v => {
@@ -272,7 +278,7 @@ export function createServerWithConnection(connection: Connection, debug = false
     ) {
       try {
         SettingStore.getInstance().changeConnection(
-          request.arguments && request.arguments[0] || ''
+          request.arguments && request.arguments[0]?.toString() || ''
         )
       } catch (e) {
         const err = e as NodeJS.ErrnoException
@@ -291,7 +297,7 @@ export function createServerWithConnection(connection: Connection, debug = false
         })
         return
       }
-      const document = documents.get(uri)
+      const document = documents.get(uri.toString())
       const text = document?.getText()
       if (!text) {
         logger.debug('Failed to get text')
@@ -305,7 +311,7 @@ export function createServerWithConnection(connection: Connection, debug = false
       logger.debug('Fix all fixable problems', text, result[0].fixedText)
       connection.workspace.applyEdit({
         documentChanges: [
-          TextDocumentEdit.create({ uri, version: document!.version }, [
+          TextDocumentEdit.create({ uri: uri.toString(), version: document!.version }, [
             TextEdit.replace({
               start: Position.create(0, 0),
               end: Position.create(Number.MAX_VALUE, Number.MAX_VALUE)
