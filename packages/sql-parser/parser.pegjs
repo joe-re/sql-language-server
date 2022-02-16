@@ -796,6 +796,9 @@ ident =
   / '`' chars:[^`]+ '`' {
     return chars.join('');
   }
+  / DQUOTE chars:[^"]+ DQUOTE {
+    return chars.join('');
+  }
 
 column = 
   name:column_name !{ return reservedMap[name.toUpperCase()] === true; } {
@@ -803,6 +806,9 @@ column =
   }
   / backtik_column ([.] backtik_column)* {
     return text();
+  }
+  / DQUOTE name:column_name DQUOTE {
+    return name;
   }
 
 backtik_column = '`' chars:[^`]+ '`'
@@ -898,7 +904,9 @@ func_call
     }
 
 literal 
-  = literal_string / literal_numeric / literal_bool /literal_null
+  = l:(literal_string / literal_numeric / literal_bool /literal_null)!DOT {
+    return l
+  }
 
 literal_list
   = head:literal tail:(__ COMMA __ literal)* {
@@ -1101,6 +1109,7 @@ RPAREN    = ')'
 
 LBRAKE    = '['
 RBRAKE    = ']'
+DQUOTE    = '"'
 
 __ =
   (whitespace / Comment)*
