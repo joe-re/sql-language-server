@@ -29,6 +29,7 @@ import {
   createCandidatesForExpectedLiterals,
   getAliasFromFromTableNode,
   isTableMatch,
+  getColumnRefByPos,
 } from "./complete/utils";
 
 function isNotEmpty<T>(value: T | null | undefined): value is T {
@@ -149,19 +150,6 @@ class Completer {
     createCandidatesForExpectedLiterals(expected).forEach((v) => {
       this.addCandidateIfStartsWithLastToken(v)
     })
-  }
-
-  getColumnRefByPos(columns: ColumnRefNode[]) {
-    return columns.find(
-      (v) =>
-        // guard against ColumnRefNode that don't have a location,
-        // for example sql functions that are not known to the parser
-        v.location &&
-        v.location.start.line === this.pos.line + 1 &&
-        v.location.start.column <= this.pos.column &&
-        v.location.end.line === this.pos.line + 1 &&
-        v.location.end.column >= this.pos.column
-    );
   }
 
   addCandidate(item: CompletionItem) {
@@ -479,7 +467,7 @@ class Completer {
         }
       }
       // column at position
-      const columnRef = this.getColumnRefByPos(columnRefs);
+      const columnRef = getColumnRefByPos(columnRefs, this.pos);
       if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
       return columnRef;
     } else if (columns.type == "star") {
@@ -487,7 +475,7 @@ class Completer {
         // columns in where clause
         const columnRefs = ast.where.expression.type === 'column_ref' ? [ast.where.expression] : [];
         // column at position
-        const columnRef = this.getColumnRefByPos(columnRefs);
+        const columnRef = getColumnRefByPos(columnRefs, this.pos);
         if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
         return columnRef;
       }

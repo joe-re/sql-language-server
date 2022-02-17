@@ -1,4 +1,5 @@
 import {
+  ColumnRefNode,
   ExpectedLiteralNode,
   FromTableNode,
   NodeRange,
@@ -226,4 +227,17 @@ export function isTableMatch(fromNode: FromTableNode, table: Table): boolean {
     }
   }
   return true;
+}
+
+export function getColumnRefByPos(columns: ColumnRefNode[], pos: Pos) {
+  return columns.find(
+    (v) =>
+      // guard against ColumnRefNode that don't have a location,
+      // for example sql functions that are not known to the parser
+      v.location &&
+      v.location.start.line === pos.line + 1 &&
+      v.location.start.column <= pos.column &&
+      v.location.end.line === pos.line + 1 &&
+      v.location.end.column >= pos.column
+  );
 }
