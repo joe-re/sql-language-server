@@ -1,5 +1,5 @@
-import { complete, getLastToken, COLUMN_ICON } from '../src/complete'
-import { Identifier } from '../src/complete/index'
+import { complete } from '../src/complete'
+import { Identifier, utils  } from '../src/complete/index'
 
 describe('keyword completion', () => {
   test("complete 'SELECT' keyword", () => {
@@ -529,21 +529,21 @@ describe('Nested ColumnName completion', () => {
   })
 
   test("getLastToken", () => {
-    expect(getLastToken("SELECT  abc")).toEqual("abc")
-    expect(getLastToken("SELECT  abc.def")).toEqual("abc.def")
-    expect(getLastToken("SELECT  abc[0]")).toEqual("abc")
-    expect(getLastToken("SELECT  abc[0].")).toEqual("abc.")
-    expect(getLastToken("SELECT  abc[0].d")).toEqual("abc.d")
-    expect(getLastToken("SELECT  abc[0].def[0]")).toEqual("abc.def")
-    expect(getLastToken("SELECT  abc[0].def[0].")).toEqual("abc.def.")
-    expect(getLastToken("SELECT  abc[0].def[0].g")).toEqual("abc.def.g")
+    expect(utils.getLastToken("SELECT  abc")).toEqual("abc")
+    expect(utils.getLastToken("SELECT  abc.def")).toEqual("abc.def")
+    expect(utils.getLastToken("SELECT  abc[0]")).toEqual("abc")
+    expect(utils.getLastToken("SELECT  abc[0].")).toEqual("abc.")
+    expect(utils.getLastToken("SELECT  abc[0].d")).toEqual("abc.d")
+    expect(utils.getLastToken("SELECT  abc[0].def[0]")).toEqual("abc.def")
+    expect(utils.getLastToken("SELECT  abc[0].def[0].")).toEqual("abc.def.")
+    expect(utils.getLastToken("SELECT  abc[0].def[0].g")).toEqual("abc.def.g")
 
-    expect(getLastToken("SELECT  abc['key']")).toEqual("abc")
-    expect(getLastToken("SELECT  abc['key.name'].")).toEqual("abc.")
-    expect(getLastToken("SELECT  abc['key'].d")).toEqual("abc.d")
-    expect(getLastToken("SELECT  abc['key'].def['key']")).toEqual("abc.def")
-    expect(getLastToken("SELECT  abc['key'].def['key'].")).toEqual("abc.def.")
-    expect(getLastToken("SELECT  abc['key'].def[0].g")).toEqual("abc.def.g")
+    expect(utils.getLastToken("SELECT  abc['key']")).toEqual("abc")
+    expect(utils.getLastToken("SELECT  abc['key.name'].")).toEqual("abc.")
+    expect(utils.getLastToken("SELECT  abc['key'].d")).toEqual("abc.d")
+    expect(utils.getLastToken("SELECT  abc['key'].def['key']")).toEqual("abc.def")
+    expect(utils.getLastToken("SELECT  abc['key'].def['key'].")).toEqual("abc.def.")
+    expect(utils.getLastToken("SELECT  abc['key'].def[0].g")).toEqual("abc.def.g")
   })
 
   test("with array subscripted", () => {
@@ -857,7 +857,7 @@ describe('toCompletionItemForIdentifier', () => {
       'col',
       'column1',
       '',
-      COLUMN_ICON
+      utils.ICONS.COLUMN,
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1')
@@ -867,7 +867,7 @@ describe('toCompletionItemForIdentifier', () => {
       'ali.col',
       'ali.column1',
       '',
-      COLUMN_ICON
+      utils.ICONS.COLUMN,
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1')
@@ -877,7 +877,7 @@ describe('toCompletionItemForIdentifier', () => {
       'ali.column1.sub',
       'ali.column1.subcolumn2',
       '',
-      COLUMN_ICON
+      utils.ICONS.COLUMN,
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('subcolumn2')
@@ -887,7 +887,7 @@ describe('toCompletionItemForIdentifier', () => {
       'ali.colu',
       'ali.column1.subcolumn2',
       '',
-      COLUMN_ICON
+      utils.ICONS.COLUMN,
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1.subcolumn2')
