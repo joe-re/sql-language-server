@@ -29,9 +29,9 @@ import {
   createCandidatesForExpectedLiterals,
   getAliasFromFromTableNode,
   isTableMatch,
-  getColumnRefByPos,
   makeColumnName,
   createTablesFromFromNodes,
+  findColumnAtPosition,
 } from "./complete/utils";
 
 import { Identifier } from "./complete/Identifier";
@@ -366,7 +366,7 @@ class Completer {
         toCompletionItemForKeyword("DISTINCT")
       );
     }
-    const columnRef = this.findColumnAtPosition(ast);
+    const columnRef = findColumnAtPosition(ast, this.pos);
     if (!columnRef) {
       this.addJoinCondidates(ast);
     } else {
@@ -425,38 +425,6 @@ class Completer {
         }
       }
     }
-  }
-
-  findColumnAtPosition(ast: SelectStatement): ColumnRefNode | undefined {
-    const columns = ast.columns;
-    if (Array.isArray(columns)) {
-      // columns in select clause
-      const columnRefs = columns
-        .map((col) => col.expr)
-        .filter((expr): expr is ColumnRefNode =>
-          expr.type === 'column_ref'
-        );
-      if (ast.type === "select" && ast.where?.expression) {
-        if (ast.where.expression.type === 'column_ref') {
-          // columns in where clause
-          columnRefs.push(ast.where.expression);
-        }
-      }
-      // column at position
-      const columnRef = getColumnRefByPos(columnRefs, this.pos);
-      if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
-      return columnRef;
-    } else if (columns.type == "star") {
-      if (ast.type === "select" && ast.where?.expression) {
-        // columns in where clause
-        const columnRefs = ast.where.expression.type === 'column_ref' ? [ast.where.expression] : [];
-        // column at position
-        const columnRef = getColumnRefByPos(columnRefs, this.pos);
-        if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
-        return columnRef;
-      }
-    }
-    return undefined;
   }
 
   addCandidatesForFunctions() {

@@ -3,6 +3,7 @@ import {
   ExpectedLiteralNode,
   FromTableNode,
   NodeRange,
+  SelectStatement,
 } from "@joe-re/sql-parser";
 import {
   CompletionItem,
@@ -10,6 +11,9 @@ import {
 } from "vscode-languageserver-types";
 import { Table, DbFunction } from "../database_libs/AbstractClient";
 import { Identifier } from "./Identifier";
+import log4js from "log4js";
+
+const logger = log4js.getLogger();
 
 type Pos = { line: number; column: number };
 
@@ -277,4 +281,36 @@ export function createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
       tableName: c.as ?? "",
     });
   }, [] as Table[]);
+}
+
+export function findColumnAtPosition(ast: SelectStatement, pos: Pos): ColumnRefNode | null {
+  const columns = ast.columns;
+  if (Array.isArray(columns)) {
+    // columns in select clause
+    const columnRefs = columns
+      .map((col) => col.expr)
+      .filter((expr): expr is ColumnRefNode =>
+        expr.type === 'column_ref'
+      );
+    if (ast.type === "select" && ast.where?.expression) {
+      if (ast.where.expression.type === 'column_ref') {
+        // columns in where clause
+        columnRefs.push(ast.where.expression);
+      }
+    }
+    // column at position
+    const columnRef = getColumnRefByPos(columnRefs, pos);
+    if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
+    return columnRef ?? null;
+  } else if (columns.type == "star") {
+    if (ast.type === "select" && ast.where?.expression) {
+      // columns in where clause
+      const columnRefs = ast.where.expression.type === 'column_ref' ? [ast.where.expression] : [];
+      // column at position
+      const columnRef = getColumnRefByPos(columnRefs, pos);
+      if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
+      return columnRef ?? null;
+    }
+  }
+  return null;
 }
