@@ -3,7 +3,6 @@ import {
   parseFromClause,
   SelectStatement,
   FromTableNode,
-  ColumnRefNode,
   IncompleteSubqueryNode,
   FromClauseParserResult,
   DeleteStatement,
@@ -32,6 +31,7 @@ import {
   makeColumnName,
   createTablesFromFromNodes,
   findColumnAtPosition,
+  getAllNestedFromNodes,
 } from "./complete/utils";
 
 import { Identifier } from "./complete/Identifier";
@@ -108,7 +108,7 @@ class Completer {
       const e = _e as ParseError
       const parsedFromClause = getFromNodesFromClause(this.sql);
       if (parsedFromClause) {
-        const fromNodes = this.getAllNestedFromNodes(
+        const fromNodes = getAllNestedFromNodes(
           parsedFromClause?.from?.tables || []
         );
         const fromNodeOnCursor = this.getFromNodeByPos(fromNodes);
@@ -340,22 +340,6 @@ class Completer {
         toCompletionItemForKeyword("AS")
       );
     }
-  }
-
-  /**
-   * Recursively pull out the FROM nodes (including sub-queries)
-   * @param tableNodes
-   * @returns
-   */
-  getAllNestedFromNodes(tableNodes: FromTableNode[]): FromTableNode[] {
-    return tableNodes.flatMap((tableNode) => {
-      let result = [tableNode];
-      if (tableNode.type == "subquery") {
-        const subTableNodes = tableNode.subquery.from?.tables || [];
-        result = result.concat(this.getAllNestedFromNodes(subTableNodes));
-      }
-      return result;
-    });
   }
 
   addCandidatesForParsedSelectQuery(ast: SelectStatement) {

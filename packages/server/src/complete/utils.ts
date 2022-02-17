@@ -283,17 +283,18 @@ export function createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
   }, [] as Table[]);
 }
 
-export function findColumnAtPosition(ast: SelectStatement, pos: Pos): ColumnRefNode | null {
+export function findColumnAtPosition(
+  ast: SelectStatement,
+  pos: Pos
+): ColumnRefNode | null {
   const columns = ast.columns;
   if (Array.isArray(columns)) {
     // columns in select clause
     const columnRefs = columns
       .map((col) => col.expr)
-      .filter((expr): expr is ColumnRefNode =>
-        expr.type === 'column_ref'
-      );
+      .filter((expr): expr is ColumnRefNode => expr.type === "column_ref");
     if (ast.type === "select" && ast.where?.expression) {
-      if (ast.where.expression.type === 'column_ref') {
+      if (ast.where.expression.type === "column_ref") {
         // columns in where clause
         columnRefs.push(ast.where.expression);
       }
@@ -305,7 +306,10 @@ export function findColumnAtPosition(ast: SelectStatement, pos: Pos): ColumnRefN
   } else if (columns.type == "star") {
     if (ast.type === "select" && ast.where?.expression) {
       // columns in where clause
-      const columnRefs = ast.where.expression.type === 'column_ref' ? [ast.where.expression] : [];
+      const columnRefs =
+        ast.where.expression.type === "column_ref"
+          ? [ast.where.expression]
+          : [];
       // column at position
       const columnRef = getColumnRefByPos(columnRefs, pos);
       if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
@@ -313,4 +317,22 @@ export function findColumnAtPosition(ast: SelectStatement, pos: Pos): ColumnRefN
     }
   }
   return null;
+}
+
+/**
+ * Recursively pull out the FROM nodes (including sub-queries)
+ * @param tableNodes
+ * @returns
+ */
+export function getAllNestedFromNodes(
+  tableNodes: FromTableNode[]
+): FromTableNode[] {
+  return tableNodes.flatMap((tableNode) => {
+    let result = [tableNode];
+    if (tableNode.type == "subquery") {
+      const subTableNodes = tableNode.subquery.from?.tables || [];
+      result = result.concat(getAllNestedFromNodes(subTableNodes));
+    }
+    return result;
+  });
 }
