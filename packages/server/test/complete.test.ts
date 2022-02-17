@@ -1,4 +1,5 @@
-import { complete, getLastToken, Identifier, COLUMN_ICON } from '../src/complete'
+import { complete, getLastToken, COLUMN_ICON } from '../src/complete'
+import { Identifier } from '../src/complete/index'
 
 describe('keyword completion', () => {
   test("complete 'SELECT' keyword", () => {

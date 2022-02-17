@@ -14,6 +14,8 @@ import {
 import log4js from 'log4js'
 import { Schema, Table, DbFunction } from './database_libs/AbstractClient'
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types';
+import { makeTableAlias } from './complete/utils';
+import { Identifier } from './complete/Identifier';
 
 type Pos = { line: number, column: number }
 
@@ -54,60 +56,6 @@ const UNDESIRED_LITERAL = [
   "'",
 ]
 
-export class Identifier {
-  lastToken: string
-  identifier: string
-  detail: string
-  kind: CompletionItemKind
-  constructor(lastToken: string, identifier: string, detail: string, kind: CompletionItemKind) {
-    this.lastToken = lastToken
-    this.identifier = identifier
-    this.detail = detail || ''
-    this.kind = kind
-  }
-
-  matchesLastToken(): boolean {
-    if (this.identifier.startsWith(this.lastToken)) {
-      // prevent suggesting the lastToken itself, there is nothing to complete in that case
-      if (this.identifier !== this.lastToken) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  toCompletionItem(): CompletionItem {
-    const idx = this.lastToken.lastIndexOf('.')
-    const label = this.identifier.substr(idx + 1)
-    let kindName: string
-    let tableAlias = ''
-    if (this.kind === TABLE_ICON) {
-      let tableName = label
-      const i = tableName.lastIndexOf('.')
-      if (i > 0) {
-        tableName = label.substr(i + 1)
-      }
-      tableAlias = makeTableAlias(tableName)
-      kindName = 'table'
-    }
-    else {
-      kindName = 'column'
-    }
-
-    const item: CompletionItem = {
-      label: label,
-      detail: `${kindName} ${this.detail}`,
-      kind: this.kind,
-    }
-
-    if (this.kind == TABLE_ICON) {
-      item.insertText = `${label} AS ${tableAlias}`
-    }
-    return item
-  }
-
-}
-
 // Gets the last token from the given string considering that tokens can contain dots.
 export function getLastToken(sql: string): string {
   const match = sql.match(/^(?:.|\s)*[^A-z0-9\\.:'](.*?)$/)
@@ -130,13 +78,6 @@ function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
     // no-op
     return null
   }
-}
-
-function makeTableAlias(tableName: string): string {
-  if (tableName.length > 3) {
-    return tableName.substr(0, 3)
-  }
-  return tableName
 }
 
 function makeTableName(table: Table): string {
