@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO: remove all "any" types from this file
 import {
   parse,
   parseFromClause,
@@ -11,6 +9,7 @@ import {
   DeleteStatement,
   ParseError,
   ExpectedLiteralNode,
+  AST,
 } from "@joe-re/sql-parser";
 import log4js from "log4js";
 import { Schema, Table } from "./database_libs/AbstractClient";
@@ -28,7 +27,14 @@ import {
   createCandidatesForColumnsOfAnyTable,
   createCandidatesForTables,
   createCandidatesForExpectedLiterals,
+  getAliasFromFromTableNode,
+  isTableMatch,
 } from "./complete/utils";
+
+function isNotEmpty<T>(value: T | null | undefined): value is T {
+  return value === null || value === undefined ? false : true
+}
+
 import { Identifier } from "./complete/Identifier";
 
 type Pos = { line: number; column: number };
@@ -55,11 +61,17 @@ function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
   }
 }
 
+type CompletionError = {
+  label: string
+  detail: string
+  line: number
+  offset: number
+}
 class Completer {
   lastToken = "";
   candidates: CompletionItem[] = [];
   schema: Schema;
-  error: any = "";
+  error: CompletionError | null = null;
   sql: string;
   pos: Pos;
   isSpaceTriggerCharacter = false;
@@ -243,7 +255,7 @@ class Completer {
   }
 
   createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
-    return fromNodes.reduce((p: any, c) => {
+    return fromNodes.reduce((p, c) => {
       if (c.type !== "subquery") {
         return p;
       }
@@ -259,9 +271,9 @@ class Completer {
             v.as || (v.expr.type === "column_ref" && v.expr.column) || "",
           description: "alias",
         };
-      });
-      return p.concat({ database: null, columns, tableName: c.as });
-    }, []);
+      }).filter(isNotEmpty);
+      return p.concat({ database: null, catalog: null, columns: columns ?? [], tableName: c.as ?? '' });
+    }, [] as Table[]);
   }
 
   /**
@@ -305,10 +317,10 @@ class Completer {
 
     if (joinType && expected.map((v) => v.text).find((v) => v === "JOIN")) {
       if (fromNodes && fromNodes.length > 0) {
-        const fromNode: any = fromNodes[0];
-        const fromAlias = fromNode.as || fromNode.table;
+        const fromNode = fromNodes[0];
+        const fromAlias = getAliasFromFromTableNode(fromNode)
         const fromTable = this.schema.tables.find((table) =>
-          this.tableMatch(fromNode, table)
+          isTableMatch(fromNode, table)
         );
 
         this.schema.tables
@@ -382,7 +394,7 @@ class Completer {
     });
   }
 
-  addCandidatesForParsedSelectQuery(ast: any) {
+  addCandidatesForParsedSelectQuery(ast: SelectStatement) {
     this.addCandidatesForBasicKeyword();
     this.completeSelectStatement(ast);
     if (!ast.distinct) {
@@ -414,7 +426,7 @@ class Completer {
       logger.debug(`parse query returns: ${JSON.stringify(this.candidates)}`);
   }
 
-  addCandidatesForParsedStatement(ast: any) {
+  addCandidatesForParsedStatement(ast: AST) {
     if (logger.isDebugEnabled())
       logger.debug(
         `getting candidates for parse query ast: ${JSON.stringify(ast)}`
@@ -430,7 +442,7 @@ class Completer {
     }
   }
 
-  addJoinCondidates(ast: any) {
+  addJoinCondidates(ast: SelectStatement) {
     // from clause: complete 'ON' keyword on 'INNER JOIN'
     if (ast.type === "select" && Array.isArray(ast.from?.tables)) {
       const fromTable = this.getFromNodeByPos(ast.from?.tables || []);
@@ -451,16 +463,20 @@ class Completer {
     }
   }
 
-  findColumnAtPosition(ast: any): ColumnRefNode | undefined {
+  findColumnAtPosition(ast: SelectStatement): ColumnRefNode | undefined {
     const columns = ast.columns;
     if (Array.isArray(columns)) {
       // columns in select clause
-      const columnRefs = (columns as any)
-        .map((col: any) => col.expr)
-        .filter((expr: any) => !!expr);
+      const columnRefs = columns
+        .map((col) => col.expr)
+        .filter((expr): expr is ColumnRefNode =>
+          expr.type === 'column_ref'
+        );
       if (ast.type === "select" && ast.where?.expression) {
-        // columns in where clause
-        columnRefs.push(ast.where.expression);
+        if (ast.where.expression.type === 'column_ref') {
+          // columns in where clause
+          columnRefs.push(ast.where.expression);
+        }
       }
       // column at position
       const columnRef = this.getColumnRefByPos(columnRefs);
@@ -469,7 +485,7 @@ class Completer {
     } else if (columns.type == "star") {
       if (ast.type === "select" && ast.where?.expression) {
         // columns in where clause
-        const columnRefs = [ast.where.expression];
+        const columnRefs = ast.where.expression.type === 'column_ref' ? [ast.where.expression] : [];
         // column at position
         const columnRef = this.getColumnRefByPos(columnRefs);
         if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
@@ -513,8 +529,8 @@ class Completer {
     tables
       .flatMap((table) => {
         return fromNodes
-          .filter((fromNode: any) => this.tableMatch(fromNode, table))
-          .map((fromNode: any) => fromNode.as || fromNode.table)
+          .filter((fromNode) => isTableMatch(fromNode, table))
+          .map(getAliasFromFromTableNode)
           .filter(
             () =>
               this.lastToken.toUpperCase() === "SELECT" || // complete SELECT keyword
@@ -548,8 +564,8 @@ class Completer {
     tables
       .flatMap((table) => {
         return fromNodes
-          .filter((fromNode: any) => this.tableMatch(fromNode, table))
-          .map((fromNode: any) => fromNode.as || fromNode.table)
+          .filter((fromNode) => isTableMatch(fromNode, table))
+          .map(getAliasFromFromTableNode)
           .filter((alias) => this.lastToken.startsWith(alias + "."))
           .flatMap((alias) =>
             table.columns.map((col) => {
@@ -568,41 +584,11 @@ class Completer {
     console.timeEnd("addCandidatesForScopedColumns");
   }
 
-  /**
-   * Test if the given table matches the fromNode.
-   * @param fromNode
-   * @param table
-   * @returns
-   */
-  tableMatch(fromNode: any, table: Table) {
-    // Assume table matches from node and disprove
-    let matchingTable = true;
-    if (fromNode.type == "subquery") {
-      // If we have an alias it should match the subquery table name
-      if (fromNode.as && fromNode.as != table.tableName) {
-        matchingTable = false;
-      }
-    }
-    // Regular tables
-    // If we have a from node with a table name
-    // and it does not match the table, we know it's not a match
-    else {
-      if (fromNode.table && fromNode.table != table.tableName) {
-        matchingTable = false;
-      } else if (fromNode.db && fromNode.db != table.database) {
-        matchingTable = false;
-      } else if (fromNode.catalog && fromNode.catalog != table.catalog) {
-        matchingTable = false;
-      }
-    }
-    return matchingTable;
-  }
-
   addCandidatesForAliases(fromNodes: FromTableNode[]) {
     fromNodes
-      .map((fromNode: any) => fromNode.as)
+      .map((fromNode) => fromNode.as)
       .filter((aliasName) => aliasName && aliasName.startsWith(this.lastToken))
-      .map((aliasName) => toCompletionItemForAlias(aliasName))
+      .map((aliasName) => toCompletionItemForAlias(aliasName || ''))
       .forEach((item) => this.addCandidate(item));
   }
 }

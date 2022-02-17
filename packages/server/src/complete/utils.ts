@@ -1,4 +1,8 @@
-import { ExpectedLiteralNode, NodeRange } from "@joe-re/sql-parser";
+import {
+  ExpectedLiteralNode,
+  FromTableNode,
+  NodeRange,
+} from "@joe-re/sql-parser";
 import {
   CompletionItem,
   CompletionItemKind,
@@ -155,26 +159,71 @@ export function allTableNameCombinations(table: Table): string[] {
 // Check if parser expects us to terminate a single quote value or double quoted column name
 // SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = "hoge.
 // We don't offer the ', the ", the ` as suggestions
-export function createCandidatesForExpectedLiterals(nodes: ExpectedLiteralNode[]): CompletionItem[] {
-    const literals = nodes.map((v) => v.text);
-    const uniqueLiterals = [...new Set(literals)];
-    return uniqueLiterals
-      .filter((v) => !UNDESIRED_LITERAL.includes(v))
-      .map((v) => {
-        switch (v) {
-          case "ORDER":
-            return "ORDER BY";
-          case "GROUP":
-            return "GROUP BY";
-          case "LEFT":
-            return "LEFT JOIN";
-          case "RIGHT":
-            return "RIGHT JOIN";
-          case "INNER":
-            return "INNER JOIN";
-          default:
-            return v;
-        }
-      })
-      .map((v) => toCompletionItemForKeyword(v))
+export function createCandidatesForExpectedLiterals(
+  nodes: ExpectedLiteralNode[]
+): CompletionItem[] {
+  const literals = nodes.map((v) => v.text);
+  const uniqueLiterals = [...new Set(literals)];
+  return uniqueLiterals
+    .filter((v) => !UNDESIRED_LITERAL.includes(v))
+    .map((v) => {
+      switch (v) {
+        case "ORDER":
+          return "ORDER BY";
+        case "GROUP":
+          return "GROUP BY";
+        case "LEFT":
+          return "LEFT JOIN";
+        case "RIGHT":
+          return "RIGHT JOIN";
+        case "INNER":
+          return "INNER JOIN";
+        default:
+          return v;
+      }
+    })
+    .map((v) => toCompletionItemForKeyword(v));
+}
+
+export function getAliasFromFromTableNode(node: FromTableNode): string {
+  if (node.as) {
+    return node.as;
+  }
+  if (node.type === "table") {
+    return node.table;
+  }
+  return "";
+}
+
+/**
+ * Test if the given table matches the fromNode.
+ * @param fromNode
+ * @param table
+ * @returns
+ */
+export function isTableMatch(fromNode: FromTableNode, table: Table): boolean {
+  switch (fromNode.type) {
+    case "subquery": {
+      if (fromNode.as && fromNode.as !== table.tableName) {
+        return false;
+      }
+      break;
+    }
+    case "table": {
+      if (fromNode.table && fromNode.table !== table.tableName) {
+        return false;
+      }
+      if (fromNode.db && fromNode.db !== table.database) {
+        return false;
+      }
+      if (fromNode.catalog && fromNode.catalog !== table.catalog) {
+        return false;
+      }
+      break;
+    }
+    default: {
+      return false;
+    }
+  }
+  return true;
 }
