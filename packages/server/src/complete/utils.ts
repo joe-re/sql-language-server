@@ -1,8 +1,13 @@
-import { NodeRange } from "@joe-re/sql-parser";
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types'
+import { ExpectedLiteralNode, NodeRange } from "@joe-re/sql-parser";
+import {
+  CompletionItem,
+  CompletionItemKind,
+} from "vscode-languageserver-types";
 import { Table, DbFunction } from "../database_libs/AbstractClient";
+import { Identifier } from "./Identifier";
 
 type Pos = { line: number; column: number };
+
 export const ICONS = {
   KEYWORD: CompletionItemKind.Text,
   COLUMN: CompletionItemKind.Interface,
@@ -10,7 +15,23 @@ export const ICONS = {
   FUNCTION: CompletionItemKind.Property,
   ALIAS: CompletionItemKind.Variable,
   UTILITY: CompletionItemKind.Event,
-}
+};
+
+const UNDESIRED_LITERAL = [
+  "+",
+  "-",
+  "*",
+  "$",
+  ":",
+  "COUNT",
+  "AVG",
+  "SUM",
+  "MIN",
+  "MAX",
+  "`",
+  '"',
+  "'",
+];
 
 export function makeTableAlias(tableName: string): string {
   if (tableName.length > 3) {
@@ -86,4 +107,74 @@ export function toCompletionItemForKeyword(name: string): CompletionItem {
     detail: "keyword",
   };
   return item;
+}
+
+export function createCandidatesForColumnsOfAnyTable(
+  tables: Table[],
+  lastToken: string
+): CompletionItem[] {
+  return tables
+    .flatMap((table) => table.columns)
+    .map((column) => {
+      return new Identifier(
+        lastToken,
+        column.columnName,
+        column.description,
+        ICONS.TABLE
+      );
+    })
+    .filter((item) => item.matchesLastToken())
+    .map((item) => item.toCompletionItem());
+}
+
+export function createCandidatesForTables(tables: Table[], lastToken: string) {
+  return tables
+    .flatMap((table) => allTableNameCombinations(table))
+    .map((aTableNameVariant) => {
+      return new Identifier(lastToken, aTableNameVariant, "", ICONS.TABLE);
+    })
+    .filter((item) => item.matchesLastToken())
+    .map((item) => item.toCompletionItem());
+}
+
+/**
+ * Given a table returns all possible ways to refer to it.
+ * That is by table name only, using the database scope,
+ * using the catalog and database scopes.
+ * @param table
+ * @returns
+ */
+export function allTableNameCombinations(table: Table): string[] {
+  const names = [table.tableName];
+  if (table.database) names.push(table.database + "." + table.tableName);
+  if (table.catalog)
+    names.push(table.catalog + "." + table.database + "." + table.tableName);
+  return names;
+}
+
+// Check if parser expects us to terminate a single quote value or double quoted column name
+// SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = "hoge.
+// We don't offer the ', the ", the ` as suggestions
+export function createCandidatesForExpectedLiterals(nodes: ExpectedLiteralNode[]): CompletionItem[] {
+    const literals = nodes.map((v) => v.text);
+    const uniqueLiterals = [...new Set(literals)];
+    return uniqueLiterals
+      .filter((v) => !UNDESIRED_LITERAL.includes(v))
+      .map((v) => {
+        switch (v) {
+          case "ORDER":
+            return "ORDER BY";
+          case "GROUP":
+            return "GROUP BY";
+          case "LEFT":
+            return "LEFT JOIN";
+          case "RIGHT":
+            return "RIGHT JOIN";
+          case "INNER":
+            return "INNER JOIN";
+          default:
+            return v;
+        }
+      })
+      .map((v) => toCompletionItemForKeyword(v))
 }

@@ -9,6 +9,8 @@ import {
   IncompleteSubqueryNode,
   FromClauseParserResult,
   DeleteStatement,
+  ParseError,
+  ExpectedLiteralNode,
 } from "@joe-re/sql-parser";
 import log4js from "log4js";
 import { Schema, Table } from "./database_libs/AbstractClient";
@@ -23,6 +25,9 @@ import {
   toCompletionItemForAlias,
   toCompletionItemForFunction,
   ICONS,
+  createCandidatesForColumnsOfAnyTable,
+  createCandidatesForTables,
+  createCandidatesForExpectedLiterals,
 } from "./complete/utils";
 import { Identifier } from "./complete/Identifier";
 
@@ -39,22 +44,6 @@ const CLAUSES: string[] = [
   "--",
   "/*",
   "(",
-];
-
-const UNDESIRED_LITERAL = [
-  "+",
-  "-",
-  "*",
-  "$",
-  ":",
-  "COUNT",
-  "AVG",
-  "SUM",
-  "MIN",
-  "MAX",
-  "`",
-  '"',
-  "'",
 ];
 
 function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
@@ -96,12 +85,16 @@ class Completer {
     try {
       const ast = parse(target);
       this.addCandidatesForParsedStatement(ast);
-    } catch (e: any) {
+    } catch (_e: unknown) {
       logger.debug("error");
-      logger.debug(e);
-      if (e.name !== "SyntaxError") {
-        throw e;
+      logger.debug(_e);
+      if (!(_e instanceof Error)) {
+        throw _e
       }
+      if (_e.name !== "SyntaxError") {
+        throw _e;
+      }
+      const e = _e as ParseError
       const parsedFromClause = getFromNodesFromClause(this.sql);
       if (parsedFromClause) {
         const fromNodes = this.getAllNestedFromNodes(
@@ -116,7 +109,8 @@ class Completer {
           this.addCandidatesForIncompleteSubquery(fromNodeOnCursor);
         } else {
           this.addCandidatesForSelectQuery(e, fromNodes);
-          this.addCandidatesForJoins(e.expected || [], fromNodes);
+          const expectedLiteralNodes = e.expected?.filter((v): v is ExpectedLiteralNode => v.type === 'literal') || []
+          this.addCandidatesForJoins(expectedLiteralNodes, fromNodes);
         }
       } else if (e.message === "EXPECTED COLUMN NAME") {
         this.addCandidatesForInsert();
@@ -126,8 +120,8 @@ class Completer {
       this.error = {
         label: e.name,
         detail: e.message,
-        line: e.line,
-        offset: e.offset,
+        line: (e as any).line, // TODO: fix type
+        offset: (e as any).offset,
       };
     }
     return this.candidates;
@@ -139,34 +133,10 @@ class Completer {
     );
   }
 
-  // Check if parser expects us to terminate a single quote value or double quoted column name
-  // SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = "hoge.
-  // We don't offer the ', the ", the ` as suggestions
-  addCandidatesForExpectedLiterals(expected: { type: string; text: string }[]) {
-    const literals = expected
-      .filter((v) => v.type === "literal")
-      .map((v) => v.text);
-    const uniqueLiterals = [...new Set(literals)];
-    uniqueLiterals
-      .filter((v) => !UNDESIRED_LITERAL.includes(v))
-      .map((v) => {
-        switch (v) {
-          case "ORDER":
-            return "ORDER BY";
-          case "GROUP":
-            return "GROUP BY";
-          case "LEFT":
-            return "LEFT JOIN";
-          case "RIGHT":
-            return "RIGHT JOIN";
-          case "INNER":
-            return "INNER JOIN";
-          default:
-            return v;
-        }
-      })
-      .map((v) => toCompletionItemForKeyword(v))
-      .forEach((v) => this.addCandidateIfStartsWithLastToken(v));
+  addCandidatesForExpectedLiterals(expected: ExpectedLiteralNode[]) {
+    createCandidatesForExpectedLiterals(expected).forEach((v) => {
+      this.addCandidateIfStartsWithLastToken(v)
+    })
   }
 
   getColumnRefByPos(columns: ColumnRefNode[]) {
@@ -180,6 +150,26 @@ class Completer {
         v.location.end.line === this.pos.line + 1 &&
         v.location.end.column >= this.pos.column
     );
+  }
+
+  addCandidate(item: CompletionItem) {
+    // JupyterLab requires the dot or space character preceeding the <tab> key pressed
+    // If the dot or space character are not added to the label then searching
+    // in the list of suggestion does not work.
+    // Here we fix this issue by adding the dot or space character
+    // to the filterText and insertText.
+    // TODO: report this issue to JupyterLab-LSP project.
+    if (this.jupyterLabMode) {
+      const text = item.insertText || item.label;
+      if (this.isSpaceTriggerCharacter) {
+        item.insertText = " " + text;
+        item.filterText = " " + text;
+      } else if (this.isDotTriggerCharacter) {
+        item.insertText = "." + text;
+        item.filterText = "." + text;
+      }
+    }
+    this.candidates.push(item);
   }
 
   /**
@@ -203,71 +193,16 @@ class Completer {
       .shift();
   }
 
-  /**
-   * Given a table returns all possible ways to refer to it.
-   * That is by table name only, using the database scope,
-   * using the catalog and database scopes.
-   * @param table
-   * @returns
-   */
-  allTableNameCombinations(table: Table): string[] {
-    const names = [table.tableName];
-    if (table.database) names.push(table.database + "." + table.tableName);
-    if (table.catalog)
-      names.push(table.catalog + "." + table.database + "." + table.tableName);
-    return names;
-  }
-
   addCandidatesForTables(tables: Table[]) {
-    tables
-      .flatMap((table) => this.allTableNameCombinations(table))
-      .map((aTableNameVariant) => {
-        return new Identifier(
-          this.lastToken,
-          aTableNameVariant,
-          "",
-          ICONS.TABLE,
-        );
-      })
-      .filter((item) => item.matchesLastToken())
-      .map((item) => item.toCompletionItem())
-      .forEach((item) => this.addCandidate(item));
+    createCandidatesForTables(tables, this.lastToken).forEach((item) => {
+      this.addCandidate(item)
+    })
   }
 
   addCandidatesForColumnsOfAnyTable(tables: Table[]) {
-    tables
-      .flatMap((table) => table.columns)
-      .map((column) => {
-        return new Identifier(
-          this.lastToken,
-          column.columnName,
-          column.description,
-          ICONS.TABLE,
-        );
-      })
-      .filter((item) => item.matchesLastToken())
-      .map((item) => item.toCompletionItem())
-      .forEach((item) => this.addCandidate(item));
-  }
-
-  addCandidate(item: CompletionItem) {
-    // JupyterLab requires the dot or space character preceeding the <tab> key pressed
-    // If the dot or space character are not added to the label then searching
-    // in the list of suggestion does not work.
-    // Here we fix this issue by adding the dot or space character
-    // to the filterText and insertText.
-    // TODO: report this issue to JupyterLab-LSP project.
-    if (this.jupyterLabMode) {
-      const text = item.insertText || item.label;
-      if (this.isSpaceTriggerCharacter) {
-        item.insertText = " " + text;
-        item.filterText = " " + text;
-      } else if (this.isDotTriggerCharacter) {
-        item.insertText = "." + text;
-        item.filterText = "." + text;
-      }
-    }
-    this.candidates.push(item);
+    createCandidatesForColumnsOfAnyTable(tables, this.lastToken).forEach((item) => {
+      this.addCandidate(item)
+    })
   }
 
   addCandidateIfStartsWithLastToken(item: CompletionItem) {
@@ -282,7 +217,10 @@ class Completer {
     const parsedFromClause = getFromNodesFromClause(incompleteSubquery.text);
     try {
       parse(incompleteSubquery.text);
-    } catch (e: any) {
+    } catch (e: unknown) {
+      if (!(e instanceof Error)) {
+        throw e
+      }
       if (e.name !== "SyntaxError") {
         throw e;
       }
@@ -333,17 +271,19 @@ class Completer {
     this.addCandidatesForColumnsOfAnyTable(this.schema.tables);
   }
 
-  addCandidatesForError(e: any) {
-    this.addCandidatesForExpectedLiterals(e.expected || []);
+  addCandidatesForError(e: ParseError) {
+    const expectedLiteralNodes = e.expected?.filter((v): v is ExpectedLiteralNode => v.type === 'literal') || []
+    this.addCandidatesForExpectedLiterals(expectedLiteralNodes);
     this.addCandidatesForFunctions();
     this.addCandidatesForTables(this.schema.tables);
   }
 
-  addCandidatesForSelectQuery(e: any, fromNodes: FromTableNode[]) {
+  addCandidatesForSelectQuery(e: ParseError, fromNodes: FromTableNode[]) {
     const subqueryTables = this.createTablesFromFromNodes(fromNodes);
     const schemaAndSubqueries = this.schema.tables.concat(subqueryTables);
     this.addCandidatesForSelectStar(fromNodes, schemaAndSubqueries);
-    this.addCandidatesForExpectedLiterals(e.expected || []);
+    const expectedLiteralNodes = e.expected?.filter((v): v is ExpectedLiteralNode => v.type === 'literal') || []
+    this.addCandidatesForExpectedLiterals(expectedLiteralNodes);
     this.addCandidatesForFunctions();
     this.addCandidatesForScopedColumns(fromNodes, schemaAndSubqueries);
     this.addCandidatesForAliases(fromNodes);
@@ -355,7 +295,7 @@ class Completer {
   }
 
   addCandidatesForJoins(
-    expected: { type: string; text: string }[],
+    expected: ExpectedLiteralNode[],
     fromNodes: FromTableNode[]
   ) {
     let joinType = "";

@@ -8,9 +8,69 @@ export type NodeRange = {
   start: NodePosition
   end: NodePosition
 }
-interface ParseError extends Error {
-  location: NodeRange
+
+// Syntax errors from PEG.js
+export interface ExpectedLiteralNode {
+  type: 'literal'
+  text: string
+  ignoreCase: boolean
 }
+
+export interface ExpectedClassNode {
+  type: 'class'
+  parts: any
+  inverted: boolean
+  ignoreCase: boolean
+}
+
+export interface ExpectedAnyNode {
+  type: 'any'
+}
+
+export interface ExpectedEndNode {
+  type: 'end'
+}
+
+export interface ExpectedOtherNode {
+  type: 'other'
+  description: string
+}
+
+// peg$SyntaxError {
+//   message: 'EXPECTED COLUMN NAME',
+//   expected: null,
+//   found: null,
+//   location: {
+//     start: { offset: 18, line: 1, column: 19 },
+//     end: { offset: 18, line: 1, column: 19 }
+//   },
+//   name: 'SyntaxError'
+// }
+
+export type ExpectedNode =
+  ExpectedLiteralNode |
+  ExpectedClassNode |
+  ExpectedAnyNode |
+  ExpectedEndNode |
+  ExpectedOtherNode
+
+interface BaseParseError extends Error {
+  name: 'SyntaxError'
+  message: string
+  expected: ExpectedNode[] | null
+  location: NodeRange
+  found: any
+}
+
+interface ExpectedColumnNameParseError extends BaseParseError {
+  message: 'EXPECTED COLUMN NAME'
+  expected: null
+  found: null
+}
+
+export type ParseError = BaseParseError | ExpectedColumnNameParseError
+
+// Nodes defined on parser rules
 interface BaseNode {
   type: string
   location: NodeRange
