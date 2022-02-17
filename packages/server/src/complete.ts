@@ -341,16 +341,6 @@ class Completer {
     }
   }
 
-  getRidOfAfterCursorString() {
-    return this.sql
-      .split("\n")
-      .filter((_v, idx) => this.pos.line >= idx)
-      .map((v, idx) =>
-        idx === this.pos.line ? v.slice(0, this.pos.column) : v
-      )
-      .join("\n");
-  }
-
   addCandidatesForParsedDeleteStatement(ast: DeleteStatement) {
     if (isPosInLocation(ast.table.location, this.pos)) {
       this.addCandidatesForTables(this.schema.tables);
