@@ -30,6 +30,7 @@ import {
   getAliasFromFromTableNode,
   isTableMatch,
   getColumnRefByPos,
+  makeColumnName,
 } from "./complete/utils";
 
 function isNotEmpty<T>(value: T | null | undefined): value is T {
@@ -508,10 +509,6 @@ class Completer {
     console.timeEnd("addCandidatesForFunctions");
   }
 
-  makeColumnName(alias: string, columnName: string) {
-    return alias ? alias + "." + columnName : columnName;
-  }
-
   addCandidatesForSelectStar(fromNodes: FromTableNode[], tables: Table[]) {
     console.time("addCandidatesForSelectStar");
     tables
@@ -526,7 +523,7 @@ class Completer {
           ) // complete at space after SELECT
           .map((alias) => {
             const columnNames = table.columns
-              .map((col) => this.makeColumnName(alias, col.columnName))
+              .map((col) => makeColumnName(alias, col.columnName))
               .join(",\n");
             const label = `Select all columns from ${alias}`;
             let prefix = "";
@@ -559,7 +556,7 @@ class Completer {
             table.columns.map((col) => {
               return new Identifier(
                 this.lastToken,
-                this.makeColumnName(alias, col.columnName),
+                makeColumnName(alias, col.columnName),
                 col.description,
                 ICONS.COLUMN,
               );

@@ -241,3 +241,7 @@ export function getColumnRefByPos(columns: ColumnRefNode[], pos: Pos) {
       v.location.end.column >= pos.column
   );
 }
+
+export function  makeColumnName(alias: string, columnName: string) {
+  return alias ? alias + "." + columnName : columnName;
+}
