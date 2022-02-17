@@ -120,8 +120,8 @@ class Completer {
       this.error = {
         label: e.name,
         detail: e.message,
-        line: (e as any).line, // TODO: fix type
-        offset: (e as any).offset,
+        line: e.location.start.line,
+        offset: e.location.start.offset,
       };
     }
     return this.candidates;
