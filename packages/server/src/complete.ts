@@ -31,11 +31,8 @@ import {
   isTableMatch,
   getColumnRefByPos,
   makeColumnName,
+  createTablesFromFromNodes,
 } from "./complete/utils";
-
-function isNotEmpty<T>(value: T | null | undefined): value is T {
-  return value === null || value === undefined ? false : true
-}
 
 import { Identifier } from "./complete/Identifier";
 
@@ -243,28 +240,6 @@ class Completer {
     }
   }
 
-  createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
-    return fromNodes.reduce((p, c) => {
-      if (c.type !== "subquery") {
-        return p;
-      }
-      if (!Array.isArray(c.subquery.columns)) {
-        return p;
-      }
-      const columns = c.subquery.columns.map((v) => {
-        if (typeof v === "string") {
-          return null;
-        }
-        return {
-          columnName:
-            v.as || (v.expr.type === "column_ref" && v.expr.column) || "",
-          description: "alias",
-        };
-      }).filter(isNotEmpty);
-      return p.concat({ database: null, catalog: null, columns: columns ?? [], tableName: c.as ?? '' });
-    }, [] as Table[]);
-  }
-
   /**
    * INSERT INTO TABLE1 (C
    */
@@ -280,7 +255,7 @@ class Completer {
   }
 
   addCandidatesForSelectQuery(e: ParseError, fromNodes: FromTableNode[]) {
-    const subqueryTables = this.createTablesFromFromNodes(fromNodes);
+    const subqueryTables = createTablesFromFromNodes(fromNodes);
     const schemaAndSubqueries = this.schema.tables.concat(subqueryTables);
     this.addCandidatesForSelectStar(fromNodes, schemaAndSubqueries);
     const expectedLiteralNodes = e.expected?.filter((v): v is ExpectedLiteralNode => v.type === 'literal') || []
@@ -397,7 +372,7 @@ class Completer {
     } else {
       const parsedFromClause = getFromNodesFromClause(this.sql);
       const fromNodes = parsedFromClause?.from?.tables || [];
-      const subqueryTables = this.createTablesFromFromNodes(fromNodes);
+      const subqueryTables = createTablesFromFromNodes(fromNodes);
       const schemaAndSubqueries = this.schema.tables.concat(subqueryTables);
       if (columnRef.table) {
         // We know what table/alias this column belongs to

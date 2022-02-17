@@ -38,6 +38,10 @@ const UNDESIRED_LITERAL = [
   "'",
 ];
 
+function isNotEmpty<T>(value: T | null | undefined): value is T {
+  return value === null || value === undefined ? false : true;
+}
+
 export function makeTableAlias(tableName: string): string {
   if (tableName.length > 3) {
     return tableName.substring(0, 3);
@@ -242,6 +246,35 @@ export function getColumnRefByPos(columns: ColumnRefNode[], pos: Pos) {
   );
 }
 
-export function  makeColumnName(alias: string, columnName: string) {
+export function makeColumnName(alias: string, columnName: string) {
   return alias ? alias + "." + columnName : columnName;
+}
+
+export function createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
+  return fromNodes.reduce((p, c) => {
+    if (c.type !== "subquery") {
+      return p;
+    }
+    if (!Array.isArray(c.subquery.columns)) {
+      return p;
+    }
+    const columns = c.subquery.columns
+      .map((v) => {
+        if (typeof v === "string") {
+          return null;
+        }
+        return {
+          columnName:
+            v.as || (v.expr.type === "column_ref" && v.expr.column) || "",
+          description: "alias",
+        };
+      })
+      .filter(isNotEmpty);
+    return p.concat({
+      database: null,
+      catalog: null,
+      columns: columns ?? [],
+      tableName: c.as ?? "",
+    });
+  }, [] as Table[]);
 }
