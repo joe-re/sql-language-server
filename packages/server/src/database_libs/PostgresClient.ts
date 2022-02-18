@@ -1,6 +1,6 @@
+import PG from 'pg'
 import { Connection } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
-import PG from 'pg'
 
 export default class PosgresClient extends AbstractClient {
   connection: PG.Client | null = null
@@ -9,9 +9,15 @@ export default class PosgresClient extends AbstractClient {
     super(settings)
   }
 
-  get DefaultPort() { return 5432 }
-  get DefaultHost() { return '127.0.0.1' }
-  get DefaultUser() { return 'postgres' }
+  get DefaultPort() {
+    return 5432
+  }
+  get DefaultHost() {
+    return '127.0.0.1'
+  }
+  get DefaultUser() {
+    return 'postgres'
+  }
 
   connect() {
     const client: PG.Client = new PG.Client({
@@ -49,7 +55,9 @@ export default class PosgresClient extends AbstractClient {
           reject(new Error(err.message))
           return
         }
-        const tables = results.rows.map((v: { [key: string]: string }) => v[`table_name`])
+        const tables = results.rows.map(
+          (v: { [key: string]: string }) => v[`table_name`]
+        )
         resolve(tables)
       })
     })

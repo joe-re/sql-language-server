@@ -1,7 +1,6 @@
 import type { Connection as MySqlConnection } from 'mysql2'
 import { Connection } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
 
@@ -12,9 +11,15 @@ export default class MysqlClient extends AbstractClient {
     super(settings)
   }
 
-  get DefaultPort() { return 3306 }
-  get DefaultHost() { return '127.0.0.1' }
-  get DefaultUser() { return 'root' }
+  get DefaultPort() {
+    return 3306
+  }
+  get DefaultHost() {
+    return '127.0.0.1'
+  }
+  get DefaultUser() {
+    return 'root'
+  }
 
   async connect() {
     this.connection = mysql.createConnection({
@@ -22,7 +27,7 @@ export default class MysqlClient extends AbstractClient {
       password: this.settings.password || '',
       user: this.settings.user || this.DefaultUser,
       port: this.settings.port || this.DefaultPort,
-      database: this.settings.database || ''
+      database: this.settings.database || '',
     })
     return true
   }
@@ -45,14 +50,17 @@ export default class MysqlClient extends AbstractClient {
         reject(new Error("Don't have database connection."))
         return
       }
-      this.connection.query(sql, (err, results: { [key: string]: string }[]) => {
-        if (err) {
-          reject(new Error(err.message))
-          return
+      this.connection.query(
+        sql,
+        (err, results: { [key: string]: string }[]) => {
+          if (err) {
+            reject(new Error(err.message))
+            return
+          }
+          const tables = results.map((v) => v['table_name'] || v['TABLE_NAME'])
+          resolve(tables)
         }
-        const tables = results.map((v) => v['table_name'] || v['TABLE_NAME'])
-        resolve(tables)
-      })
+      )
     })
   }
 
@@ -74,7 +82,7 @@ export default class MysqlClient extends AbstractClient {
           type: v.Type,
           null: v.Null,
           default: v.Default,
-          comment: v.Comment
+          comment: v.Comment,
         }))
         resolve(columns)
       })

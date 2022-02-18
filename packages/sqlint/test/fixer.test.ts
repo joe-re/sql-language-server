@@ -2,13 +2,16 @@ import { applyFixes, createFixer } from '../src/fixer'
 
 describe('applyFixes', () => {
   it('should replace with new text', () => {
-    const result = applyFixes('SELECT * FROM table WHERE a=1', [{
-      range: { startOffset: 27, endOffset: 27 },
-      text: ' '
-    }, {
-      range: { startOffset: 28, endOffset: 28 },
-      text: ' '
-    }])
+    const result = applyFixes('SELECT * FROM table WHERE a=1', [
+      {
+        range: { startOffset: 27, endOffset: 27 },
+        text: ' ',
+      },
+      {
+        range: { startOffset: 28, endOffset: 28 },
+        text: ' ',
+      },
+    ])
     expect(result).toEqual('SELECT * FROM table WHERE a = 1')
   })
 })

@@ -1,16 +1,15 @@
-import * as rpc from "@codingame/monaco-jsonrpc";
-import { createConnection } from 'vscode-languageserver/node';
+import * as rpc from '@codingame/monaco-jsonrpc'
+import { createConnection } from 'vscode-languageserver/node'
 import { createServerWithConnection } from 'sql-language-server/src/createServer'
 
 export function launchServer(socket: rpc.IWebSocket) {
-  const reader = new rpc.WebSocketMessageReader(socket);
-  const writer = new rpc.WebSocketMessageWriter(socket);
+  const reader = new rpc.WebSocketMessageReader(socket)
+  const writer = new rpc.WebSocketMessageWriter(socket)
   const asExternalProccess =
-    process.argv.findIndex((value) => value === "--external") !== -1;
+    process.argv.findIndex((value) => value === '--external') !== -1
   if (asExternalProccess) {
     // start the language server as an external process
     // TODO: implement it
-
     // const extJsonServerPath = path.resolve(__dirname, "ext-json-server.js");
     // const socketConnection = server.createConnection(reader, writer, () =>
     //   socket.dispose()

@@ -1,17 +1,17 @@
 import { exec } from 'child_process'
 
-const run = function(cmd): Promise<void> {
+const run = function (cmd): Promise<void> {
   const child = exec(cmd, function (error, stdout, stderr) {
     if (stderr !== null) {
-      console.log('' + stderr);
+      console.log('' + stderr)
     }
     if (stdout !== null) {
-      console.log('' + stdout);
+      console.log('' + stdout)
     }
     if (error !== null) {
-      console.log('' + error);
+      console.log('' + error)
     }
-  });
+  })
   return new Promise((resolve, reject) => {
     child.on('exit', (code, signal) => {
       if (code === 0) {

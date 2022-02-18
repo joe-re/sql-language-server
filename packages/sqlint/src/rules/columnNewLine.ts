@@ -6,7 +6,7 @@ const META = {
   name: 'column-new-line',
   type: 'select',
   options: { allowMultipleColumnsPerLine: Boolean },
-};
+}
 
 export const columnNewLine: Rule<SelectStatement, RuleConfig<Options>> = {
   meta: META,
@@ -17,13 +17,20 @@ export const columnNewLine: Rule<SelectStatement, RuleConfig<Options>> = {
       let previousLine = first.location.start.line
       let previousOffset = first.location.end.offset
       let previousColumn = first.location.start.column
-      const invalidColumns = rest.map(v => {
-        const result = { column: v, previousLine, previousOffset, previousColumn }
-        previousLine = v.location.start.line
-        previousOffset = v.location.end.offset
-        previousColumn = v.location.start.column
-        return result
-      }).filter(v => v.column.location.start.line === v.previousLine)
+      const invalidColumns = rest
+        .map((v) => {
+          const result = {
+            column: v,
+            previousLine,
+            previousOffset,
+            previousColumn,
+          }
+          previousLine = v.location.start.line
+          previousOffset = v.location.end.offset
+          previousColumn = v.location.start.column
+          return result
+        })
+        .filter((v) => v.column.location.start.line === v.previousLine)
       if (invalidColumns.length === 0) {
         return
       }
@@ -39,9 +46,9 @@ export const columnNewLine: Rule<SelectStatement, RuleConfig<Options>> = {
               first.location.start.column -
               (v.column.location.start.offset - v.previousOffset)
             return fixer.insertText(pos, '\n' + ''.padStart(spacesNumber, ' '))
-          }
+          },
         }
       })
     }
-  }
+  },
 }

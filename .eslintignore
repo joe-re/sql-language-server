@@ -10,4 +10,6 @@ migrations/
 webpack.config.js
 */monaco_editor/models/
 */monaco_editor/config/config.js
+*/monaco_editor/src/client/client.ts
+*/monaco_editor/src/server/server.ts
 .eslintrc.js

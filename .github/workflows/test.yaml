@@ -14,6 +14,7 @@ jobs:
         env:
           PYTHON_VERSION: 3.8.12
       - run: yarn install
+      - run: yarn npm:prepublish
       - run: yarn lint
       - run: yarn vsc-compile:client
       - run: yarn vsc-compile:server

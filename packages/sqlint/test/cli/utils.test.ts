@@ -1,5 +1,5 @@
 import { getFileList } from '../../src/cli/utils'
-describe('getFileList',() => {
+describe('getFileList', () => {
   describe('file case', () => {
     test('it should get only one file that specified', () => {
       const result = getFileList(`${__dirname}/fixtures/getFileList/a.sql`)

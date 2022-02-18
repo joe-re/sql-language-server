@@ -1,23 +1,29 @@
-import { Connection } from '../SettingStore'
-import AbstractClient, { RawField } from './AbstractClient'
 import { sqlite3 as SQLite3, Database } from 'sqlite3'
 import log4js from 'log4js'
+import { Connection } from '../SettingStore'
+import AbstractClient, { RawField } from './AbstractClient'
 
 const logger = log4js.getLogger()
 
 export class RequireSqlite3Error extends Error {
   constructor(message: string) {
     super(message)
-    this.name = "RequireSQLite3Error"
+    this.name = 'RequireSQLite3Error'
   }
 }
 
 export default class Sqlite3Client extends AbstractClient {
   connection: Database | null = null
 
-  get DefaultPort() { return 0 }
-  get DefaultHost() { return '' }
-  get DefaultUser() { return '' }
+  get DefaultPort() {
+    return 0
+  }
+  get DefaultHost() {
+    return ''
+  }
+  get DefaultUser() {
+    return ''
+  }
 
   constructor(settings: Connection) {
     super(settings)
@@ -59,13 +65,13 @@ export default class Sqlite3Client extends AbstractClient {
         reject(new Error("Don't have database connection."))
         return
       }
-      this.connection.all(sql, (err, rows: { name: string}[]) => {
+      this.connection.all(sql, (err, rows: { name: string }[]) => {
         if (err) {
           reject(new Error(err.message))
           return
         }
         logger.debug('Sqlite3Clinet: done to get table names', rows)
-        const tables = rows.map(v => v.name)
+        const tables = rows.map((v) => v.name)
         resolve(tables)
       })
     })
@@ -78,28 +84,34 @@ export default class Sqlite3Client extends AbstractClient {
         reject(new Error("Don't have database connection."))
         return
       }
-      this.connection.all(sql, (err, rows: {
-        cld: number
-        name: string
-        type: string
-        notnull: number
-        dflt_value: string
-        pk: number
-      }[]) => {
-        if (err) {
-          reject(new Error(err.message))
-          return
+      this.connection.all(
+        sql,
+        (
+          err,
+          rows: {
+            cld: number
+            name: string
+            type: string
+            notnull: number
+            dflt_value: string
+            pk: number
+          }[]
+        ) => {
+          if (err) {
+            reject(new Error(err.message))
+            return
+          }
+          logger.debug('Sqlite3Clinet: done to get column names', rows)
+          const columns: RawField[] = rows.map((v) => ({
+            field: v.name,
+            type: v.type,
+            null: v.notnull ? 'Yes' : 'No',
+            default: v.dflt_value,
+            comment: v.pk ? 'PRIMARY KEY' : '',
+          }))
+          resolve(columns)
         }
-        logger.debug('Sqlite3Clinet: done to get column names', rows)
-        const columns: RawField[] = rows.map(v => ({
-          field: v.name,
-          type: v.type,
-          null: v.notnull ? 'Yes' : 'No',
-          default: v.dflt_value,
-          comment: v.pk ? 'PRIMARY KEY' : ''
-        }))
-        resolve(columns)
-      })
+      )
     })
   }
 }

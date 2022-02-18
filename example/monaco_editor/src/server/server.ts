@@ -14,19 +14,19 @@ process.on("uncaughtException", function (err: any) {
   }
 });
 
-let server: http.Server
- 
+let server: http.Server;
+
 function startServer() {
   const app = express();
   app.use(express.static(`${process.cwd()}/dist`));
   server = app.listen(3000);
-  console.log('startServer')
+  console.log("startServer");
 
   const wss = new ws.Server({
     noServer: true,
     perMessageDeflate: false,
   });
-  
+
   server.on(
     "upgrade",
     (request: http.IncomingMessage, socket: net.Socket, head: Buffer) => {
@@ -60,4 +60,4 @@ function startServer() {
   );
 }
 
-startServer()
+startServer();

@@ -8,9 +8,9 @@ const META = {
   type: 'keyword',
   messages: {
     upper: 'reserved word must be uppercase',
-    lower: 'reserved word must be lowercase'
-  }
-};
+    lower: 'reserved word must be lowercase',
+  },
+}
 
 export const reservedWordCase: Rule<KeywordNode, RuleConfig<Option>> = {
   meta: META,
@@ -20,13 +20,13 @@ export const reservedWordCase: Rule<KeywordNode, RuleConfig<Option>> = {
       return {
         message: META.messages.upper,
         location: context.node.location,
-        fix: (fixer) =>  {
+        fix: (fixer) => {
           return fixer.replaceText(
             context.node.location.start.offset,
             context.node.location.end.offset,
             context.node.value.toUpperCase()
           )
-        }
+        },
       }
     }
     if (option === 'lower' && /[A-Z]/.test(context.node.value)) {
@@ -39,8 +39,8 @@ export const reservedWordCase: Rule<KeywordNode, RuleConfig<Option>> = {
             context.node.location.end.offset,
             context.node.value.toLowerCase()
           )
-        }
+        },
       }
     }
-  }
+  },
 }

@@ -1,39 +1,39 @@
-import SettingStore from "../src/SettingStore"
 import { readFileSync } from 'fs'
+import SettingStore from '../src/SettingStore'
 
 describe('setSetting', () => {
   beforeAll(() => {
-    process.env.setSetting_DB_PASSWORD="replacedPassWord"
-    process.env.setSetting_SSH_PASSPHRASE="replacedPassphrase"
+    process.env.setSetting_DB_PASSWORD = 'replacedPassWord'
+    process.env.setSetting_SSH_PASSPHRASE = 'replacedPassphrase'
   })
   afterAll(() => {
-    process.env.setSetting_DB_PASSWORD=""
-    process.env.setSetting_SSH_PASSPHRASE=""
+    process.env.setSetting_DB_PASSWORD = ''
+    process.env.setSetting_SSH_PASSPHRASE = ''
   })
   it('should replace ${env:VARIABLE_NAME} syntax with environment variable', () => {
     const setting = {
-      "adapter": 'mysql' as const,
-      "host": "localhost",
-      "port": 3307,
-      "user": "username",
-      "password": "${env:setSetting_DB_PASSWORD}",
-      "database": "mysql-development",
-      "ssh": {
-        "user": "ubuntu",
-        "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
-        "dbHost": "127.0.0.1",
-        "port": 3306,
-        "identityFile": "~/.ssh/id_rsa",
-        "passphrase": "${env:setSetting_SSH_PASSPHRASE}"
-      }
+      adapter: 'mysql' as const,
+      host: 'localhost',
+      port: 3307,
+      user: 'username',
+      password: '${env:setSetting_DB_PASSWORD}',
+      database: 'mysql-development',
+      ssh: {
+        user: 'ubuntu',
+        remoteHost: 'ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com',
+        dbHost: '127.0.0.1',
+        port: 3306,
+        identityFile: '~/.ssh/id_rsa',
+        passphrase: '${env:setSetting_SSH_PASSPHRASE}',
+      },
     }
     const store = SettingStore.getInstance()
     store.setSetting(setting)
     expect(store.getSetting()).toMatchObject({
-      "password": "replacedPassWord",
-      "ssh": {
-        "passphrase": "replacedPassphrase"
-      }
+      password: 'replacedPassWord',
+      ssh: {
+        passphrase: 'replacedPassphrase',
+      },
     })
   })
 })
@@ -71,12 +71,12 @@ describe('setSettingFromFile', () => {
       expect(setting?.database).toEqual('projectConfigDatabase')
       expect(setting?.password).toEqual('pg_pass')
       expect(setting?.ssh).toMatchObject({
-        "user": "ubuntu",
-        "remoteHost": "ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com",
-        "dbHost": "127.0.0.1",
-        "port": 5432,
-        "identityFile": "~/.ssh/id_rsa",
-        "passphrase": "123456"
+        user: 'ubuntu',
+        remoteHost: 'ec2-xxx-xxx-xxx-xxx.ap-southeast-1.compute.amazonaws.com',
+        dbHost: '127.0.0.1',
+        port: 5432,
+        identityFile: '~/.ssh/id_rsa',
+        passphrase: '123456',
       })
     })
   })
@@ -84,11 +84,15 @@ describe('setSettingFromFile', () => {
 
 describe('setSettingFromWorkspaceConfig', () => {
   it('should apply configuration from the configuration object given', async () => {
-    const personalConfig = readFileSync(`${__dirname}/fixtures/personalConfigFile.json`, 'utf8')
-    const setting = await SettingStore.getInstance().setSettingFromWorkspaceConfig(
-      JSON.parse(personalConfig).connections,
-      '/Users/sql-language-server/project2'
+    const personalConfig = readFileSync(
+      `${__dirname}/fixtures/personalConfigFile.json`,
+      'utf8'
     )
+    const setting =
+      await SettingStore.getInstance().setSettingFromWorkspaceConfig(
+        JSON.parse(personalConfig).connections,
+        '/Users/sql-language-server/project2'
+      )
     expect(setting?.name).toEqual('project2')
     expect(setting?.database).toEqual('projectConfigDatabase')
   })

@@ -9,9 +9,15 @@ export default class BigqueryClient extends AbstractClient {
     super(settings)
   }
 
-  get DefaultPort() { return 0 }
-  get DefaultHost() { return '' }
-  get DefaultUser() { return '' }
+  get DefaultPort() {
+    return 0
+  }
+  get DefaultHost() {
+    return ''
+  }
+  get DefaultUser() {
+    return ''
+  }
 
   connect() {
     this.connection = new BigQuery({
@@ -32,12 +38,11 @@ export default class BigqueryClient extends AbstractClient {
   }
 
   async getColumns(tableName: string): Promise<RawField[]> {
-    const [meta] = await this.connection!
-      .dataset(this.settings.database!)
+    const [meta] = await this.connection!.dataset(this.settings.database!)
       .table(tableName)
       .getMetadata()!
     return meta.schema.fields.map(
-      (f: { name: string, type: string, mode: string }) => ({
+      (f: { name: string; type: string; mode: string }) => ({
         field: f.name,
         type: f.type,
         null: f.mode === 'NULLABLE' ? 'Yes' : 'No',

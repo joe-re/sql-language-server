@@ -1,4 +1,5 @@
-import { complete, getLastToken, Identifier, COLUMN_ICON } from '../src/complete'
+import { complete } from '../src/complete'
+import { Identifier, utils } from '../src/complete/index'
 
 describe('keyword completion', () => {
   test("complete 'SELECT' keyword", () => {
@@ -8,30 +9,30 @@ describe('keyword completion', () => {
   })
 
   describe('FROM keyword', () => {
-    test("complete FROM word with the star column", () => {
+    test('complete FROM word with the star column', () => {
       const result = complete('SELECT * F', { line: 0, column: 10 })
       expect(result.candidates.length).toEqual(1)
       expect(result.candidates[0].label).toEqual('FROM')
     })
 
-    test("complete FROM word with norm columns", () => {
+    test('complete FROM word with norm columns', () => {
       const result = complete('SELECT d, f F', { line: 0, column: 13 })
       expect(result.candidates.length).toEqual(1)
       expect(result.candidates[0].label).toEqual('FROM')
     })
 
-    test("complete FROM word with norm columns", () => {
+    test('complete FROM word with norm columns', () => {
       const result = complete('SELECT d, f AS F', { line: 0, column: 16 })
       // TODO: this is not correct but difficult to fix...
       expect(result.candidates.length).toEqual(1)
       expect(result.candidates[0].label).toEqual('FROM')
     })
-    test("complete FROM word with norm columns", () => {
+    test('complete FROM word with norm columns', () => {
       const result = complete('SELECT d, f AS aa F', { line: 0, column: 19 })
       expect(result.candidates.length).toEqual(1)
       expect(result.candidates[0].label).toEqual('FROM')
     })
-    test("complete AS word with norm columns", () => {
+    test('complete AS word with norm columns', () => {
       const result = complete('SELECT d, f A', { line: 0, column: 13 })
       expect(result.candidates.length).toEqual(1)
       expect(result.candidates[0].label).toEqual('AS')
@@ -45,23 +46,32 @@ describe('keyword completion', () => {
   })
 
   test("complete 'WHERE' keyword one space", () => {
-    const result = complete('SELECT * FROM FOO AS foo W', { line: 0, column: 26 })
+    const result = complete('SELECT * FROM FOO AS foo W', {
+      line: 0,
+      column: 26,
+    })
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('WHERE')
   })
 
   test("complete 'WHERE' keyword two spaces", () => {
-    const result = complete('SELECT * FROM FOO AS foo  W', { line: 0, column: 27 })
+    const result = complete('SELECT * FROM FOO AS foo  W', {
+      line: 0,
+      column: 27,
+    })
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('WHERE')
   })
 
   test("complete 'WHERE' keyword multi-line", () => {
-    const result = complete(`
+    const result = complete(
+      `
     SELECT * 
     FROM FOO AS foo
     W
-    `, { line: 3, column: 5 })
+    `,
+      { line: 3, column: 5 }
+    )
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('WHERE')
   })
@@ -92,7 +102,10 @@ describe('keyword completion', () => {
 
   test("complete 'VALUES' keyword", () => {
     const sql = 'INSERT INTO FOO ( BAR ) V'
-    const result = complete('INSERT INTO FOO (BAR) V', { line: 0, column: sql.length })
+    const result = complete('INSERT INTO FOO (BAR) V', {
+      line: 0,
+      column: sql.length,
+    })
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('VALUES')
   })
@@ -127,24 +140,24 @@ const SIMPLE_SCHEMA = {
       tableName: 'TABLE1',
       columns: [
         { columnName: 'COLUMN1', description: '' },
-        { columnName: 'COLUMN2', description: '' }
-      ]
-    }
+        { columnName: 'COLUMN2', description: '' },
+      ],
+    },
   ],
   functions: [
     {
       name: 'array_concat()',
-      description: 'desc1'
+      description: 'desc1',
     },
     {
       name: 'array_contains()',
-      description: 'desc2'
-    }
-  ]
+      description: 'desc2',
+    },
+  ],
 }
 
 describe('on blank space', () => {
-  test("complete ", () => {
+  test('complete ', () => {
     const result = complete('', { line: 0, column: 0 }, SIMPLE_SCHEMA)
     expect(result.candidates.length).toEqual(8)
     const expected = [
@@ -160,7 +173,7 @@ describe('on blank space', () => {
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 
-  test("complete inside SELECT", () => {
+  test('complete inside SELECT', () => {
     const result = complete('SELECT ', { line: 0, column: 7 }, SIMPLE_SCHEMA)
     expect(result.candidates.length).toEqual(12) // TODO whare are they?
     const expected = [
@@ -170,8 +183,12 @@ describe('on blank space', () => {
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 
-  test("complete function inside WHERE select star", () => {
-    const result = complete('SELECT * FROM tab1 WHERE arr', { line: 0, column: 28 }, SIMPLE_SCHEMA)
+  test('complete function inside WHERE select star', () => {
+    const result = complete(
+      'SELECT * FROM tab1 WHERE arr',
+      { line: 0, column: 28 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2) // TODO whare are they?
     const expected = [
       expect.objectContaining({ label: 'array_concat()' }),
@@ -180,8 +197,12 @@ describe('on blank space', () => {
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 
-  test("complete function inside WHERE", () => {
-    const result = complete('SELECT col1 FROM tab1 WHERE arr', { line: 0, column: 31 }, SIMPLE_SCHEMA)
+  test('complete function inside WHERE', () => {
+    const result = complete(
+      'SELECT col1 FROM tab1 WHERE arr',
+      { line: 0, column: 31 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2) // TODO whare are they?
     const expected = [
       expect.objectContaining({ label: 'array_concat()' }),
@@ -192,95 +213,142 @@ describe('on blank space', () => {
 })
 
 describe('From clause', () => {
-  test("from clause: complete TableName:single line", () => {
-    const result = complete('SELECT TABLE1.COLUMN1 FROM T', { line: 0, column: 28 }, SIMPLE_SCHEMA)
+  test('from clause: complete TableName:single line', () => {
+    const result = complete(
+      'SELECT TABLE1.COLUMN1 FROM T',
+      { line: 0, column: 28 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('TABLE1')
   })
 
-  test("from clause: complete TableName:multi lines", () => {
-    const result = complete('SELECT TABLE1.COLUMN1\nFROM T', { line: 1, column: 6 }, SIMPLE_SCHEMA)
+  test('from clause: complete TableName:multi lines', () => {
+    const result = complete(
+      'SELECT TABLE1.COLUMN1\nFROM T',
+      { line: 1, column: 6 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('TABLE1')
   })
 
-  test("from clause: INNER JOIN", () => {
-    const result = complete('SELECT TABLE1.COLUMN1 FROM TABLE1 I', { line: 0, column: 35 }, SIMPLE_SCHEMA)
-    expect(result.candidates.map(v => v.label)).toContain('INNER JOIN')
+  test('from clause: INNER JOIN', () => {
+    const result = complete(
+      'SELECT TABLE1.COLUMN1 FROM TABLE1 I',
+      { line: 0, column: 35 },
+      SIMPLE_SCHEMA
+    )
+    expect(result.candidates.map((v) => v.label)).toContain('INNER JOIN')
   })
 
-  test("from clause: LEFT JOIN", () => {
-    const result = complete('SELECT TABLE1.COLUMN1 FROM TABLE1 L', { line: 0, column: 35 }, SIMPLE_SCHEMA)
-    expect(result.candidates.map(v => v.label).includes('LEFT JOIN'))
-  });
+  test('from clause: LEFT JOIN', () => {
+    const result = complete(
+      'SELECT TABLE1.COLUMN1 FROM TABLE1 L',
+      { line: 0, column: 35 },
+      SIMPLE_SCHEMA
+    )
+    expect(result.candidates.map((v) => v.label).includes('LEFT JOIN'))
+  })
 
   test("from clause: complete 'ON' keyword on 'INNER JOIN'", () => {
-    const result =
-      complete(
-        'SELECT TABLE1.COLUMN1 FROM TABLE1 INNER JOIN TABLE2 O',
-        { line: 0, column: 53 },
-        SIMPLE_SCHEMA
-      )
-    expect(result.candidates.map(v => v.label)).toContain('ON')
+    const result = complete(
+      'SELECT TABLE1.COLUMN1 FROM TABLE1 INNER JOIN TABLE2 O',
+      { line: 0, column: 53 },
+      SIMPLE_SCHEMA
+    )
+    expect(result.candidates.map((v) => v.label)).toContain('ON')
   })
 })
 
 describe('Where clause', () => {
-  test("where clause: complete TableName", () => {
-    const result = complete('SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE T', { line: 0, column: 41 }, SIMPLE_SCHEMA)
+  test('where clause: complete TableName', () => {
+    const result = complete(
+      'SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE T',
+      { line: 0, column: 41 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('TABLE1')
   })
-  test("where clause: complete table alias", () => {
-    const result = complete('SELECT tab.COLUMN1 FROM TABLE1 as tab WHERE ta', { line: 0, column: 46 }, SIMPLE_SCHEMA)
+  test('where clause: complete table alias', () => {
+    const result = complete(
+      'SELECT tab.COLUMN1 FROM TABLE1 as tab WHERE ta',
+      { line: 0, column: 46 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('tab')
   })
 })
 
 describe('cursor on dot', () => {
-  test("not complete when a cursor is on dot in case sensitive colum name", () => {
-    const result =
-      complete('SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = "COL1.', { line: 0, column: 63 }, SIMPLE_SCHEMA)
+  test('not complete when a cursor is on dot in case sensitive colum name', () => {
+    const result = complete(
+      'SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = "COL1.',
+      { line: 0, column: 63 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(0)
   })
 
-  test("not complete when a cursor is on dot in case sensitive colum name", () => {
-    const result =
-      complete('SELECT "COL1. FROM TABLE1', { line: 0, column: 13 }, SIMPLE_SCHEMA)
+  test('not complete when a cursor is on dot in case sensitive colum name', () => {
+    const result = complete(
+      'SELECT "COL1. FROM TABLE1',
+      { line: 0, column: 13 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(0)
   })
 
-  test("not complete when a cursor is on dot in string literal", () => {
-    const result =
-      complete("SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = 'hoge.", { line: 0, column: 63 }, SIMPLE_SCHEMA)
+  test('not complete when a cursor is on dot in string literal', () => {
+    const result = complete(
+      "SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = 'hoge.",
+      { line: 0, column: 63 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(0)
   })
 
-  test("not complete when a cursor is on dot in string literal", () => {
-    const result =
-      complete("SELECT 'hoge. FROM TABLE1", { line: 0, column: 13 }, SIMPLE_SCHEMA)
+  test('not complete when a cursor is on dot in string literal', () => {
+    const result = complete(
+      "SELECT 'hoge. FROM TABLE1",
+      { line: 0, column: 13 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(0)
   })
 
   // TODO: this should pass however it's hard to implement at the moment
   // we are in the use case of a none-parsable query, then use the getFromNodesFromClause
   // and we can't easily tell if we are in the SELEC, FROM or WHERE part.
-  test.skip("not complete column name when a cursor is on dot in from clause", () => {
-    const result = complete('SELECT TABLE1.COLUMN1 FROM TABLE1.', { line: 0, column: 34 }, SIMPLE_SCHEMA)
+  test.skip('not complete column name when a cursor is on dot in from clause', () => {
+    const result = complete(
+      'SELECT TABLE1.COLUMN1 FROM TABLE1.',
+      { line: 0, column: 34 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(0)
   })
 
   // TODO: should consider back ticked names
-  test.skip("complete when a cursor is on dot in back tick column name", () => {
-    const result = complete('SELECT `TABLE1`. FROM TABLE1', { line: 0, column: 16 }, SIMPLE_SCHEMA)
+  test.skip('complete when a cursor is on dot in back tick column name', () => {
+    const result = complete(
+      'SELECT `TABLE1`. FROM TABLE1',
+      { line: 0, column: 16 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('COLUMN1')
     expect(result.candidates[0].label).toEqual('COLUMN2')
   })
 
-  test("not complete when ", () => {
-    const result = complete('SELECT    FROM TABLE1', { line: 0, column: 8 }, SIMPLE_SCHEMA)
+  test('not complete when ', () => {
+    const result = complete(
+      'SELECT    FROM TABLE1',
+      { line: 0, column: 8 },
+      SIMPLE_SCHEMA
+    )
     expect(result.candidates.length).toEqual(13) // TODO what are they?
   })
 })
@@ -299,77 +367,95 @@ const SIMPLE_NESTED_SCHEMA = {
         { columnName: 'x.y', description: '' },
         { columnName: 'x.y.z', description: '' },
         { columnName: '`with spaces`', description: '' },
-        { columnName: '`with spaces`.`sub space`', description: '' }
-      ]
+        { columnName: '`with spaces`.`sub space`', description: '' },
+      ],
     },
     {
       catalog: null,
       database: 'schema2',
       tableName: 'table2',
-      columns: [
-        { columnName: 'abc', description: '' }
-      ]
+      columns: [{ columnName: 'abc', description: '' }],
     },
     {
       catalog: 'catalog3',
       database: 'schema3',
       tableName: 'table3',
-      columns: [
-        { columnName: 'abc', description: '' }
-      ]
+      columns: [{ columnName: 'abc', description: '' }],
     },
   ],
-  functions: []
+  functions: [],
 }
 
 describe('JOIN', () => {
-  test("from clause: INNER JOIN", () => {
-    const result = complete(`
+  test('from clause: INNER JOIN', () => {
+    const result = complete(
+      `
     SELECT 
       *
     FROM TABLE1 AS a
-    INN`, { line: 4, column: 7 }, SIMPLE_NESTED_SCHEMA)
-    expect(result.candidates.map(v => v.label)).toContain('INNER JOIN')
-    expect(result.candidates.map(v => v.label)).toContain('INNER JOIN schema2.table2 AS tab ON tab.abc = a.abc')
-    expect(result.candidates.map(v => v.label)).toContain('INNER JOIN catalog3.schema3.table3 AS tab ON tab.abc = a.abc')
+    INN`,
+      { line: 4, column: 7 },
+      SIMPLE_NESTED_SCHEMA
+    )
+    expect(result.candidates.map((v) => v.label)).toContain('INNER JOIN')
+    expect(result.candidates.map((v) => v.label)).toContain(
+      'INNER JOIN schema2.table2 AS tab ON tab.abc = a.abc'
+    )
+    expect(result.candidates.map((v) => v.label)).toContain(
+      'INNER JOIN catalog3.schema3.table3 AS tab ON tab.abc = a.abc'
+    )
   })
 })
 
 describe('Fully qualified table names', () => {
-  test("complete catalog name", () => {
-    const result = complete('SELECT * FROM cata', { line: 0, column: 18 }, SIMPLE_NESTED_SCHEMA)
+  test('complete catalog name', () => {
+    const result = complete(
+      'SELECT * FROM cata',
+      { line: 0, column: 18 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
     const expected = [
       expect.objectContaining({ label: 'catalog3.schema3.table3' }),
     ]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete schema name", () => {
-    const result = complete('SELECT * FROM catalog3.sch', { line: 0, column: 26 }, SIMPLE_NESTED_SCHEMA)
+  test('complete schema name', () => {
+    const result = complete(
+      'SELECT * FROM catalog3.sch',
+      { line: 0, column: 26 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'schema3.table3' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'schema3.table3' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete table name", () => {
-    const result = complete('SELECT * FROM catalog3.schema3.tab', { line: 0, column: 34 }, SIMPLE_NESTED_SCHEMA)
+  test('complete table name', () => {
+    const result = complete(
+      'SELECT * FROM catalog3.schema3.tab',
+      { line: 0, column: 34 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'table3' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'table3' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete table name on dot", () => {
-    const result = complete('SELECT * FROM catalog3.schema3.', { line: 0, column: 31 }, SIMPLE_NESTED_SCHEMA)
+  test('complete table name on dot', () => {
+    const result = complete(
+      'SELECT * FROM catalog3.schema3.',
+      { line: 0, column: 31 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'table3' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'table3' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete table name by using fully qualified table name", () => {
-    const result = complete('SELECT * FROM tabl', { line: 0, column: 18 }, SIMPLE_NESTED_SCHEMA)
+  test('complete table name by using fully qualified table name', () => {
+    const result = complete(
+      'SELECT * FROM tabl',
+      { line: 0, column: 18 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     const expected = [
       expect.objectContaining({ label: 'table2' }),
@@ -377,41 +463,53 @@ describe('Fully qualified table names', () => {
     ]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete alias when table", () => {
-    const result = complete('SELECT a FROM table3 AS ali', { line: 0, column: 8 }, SIMPLE_NESTED_SCHEMA)
+  test('complete alias when table', () => {
+    const result = complete(
+      'SELECT a FROM table3 AS ali',
+      { line: 0, column: 8 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'ali' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'ali' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete alias when schema.table", () => {
-    const result = complete('SELECT a FROM schema3.table3 AS ali', { line: 0, column: 8 }, SIMPLE_NESTED_SCHEMA)
+  test('complete alias when schema.table', () => {
+    const result = complete(
+      'SELECT a FROM schema3.table3 AS ali',
+      { line: 0, column: 8 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'ali' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'ali' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete alias when catalog.schema.table", () => {
-    const result = complete('SELECT a FROM catalog3.schema3.table3 AS ali', { line: 0, column: 8 }, SIMPLE_NESTED_SCHEMA)
+  test('complete alias when catalog.schema.table', () => {
+    const result = complete(
+      'SELECT a FROM catalog3.schema3.table3 AS ali',
+      { line: 0, column: 8 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'ali' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'ali' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete aliased column name", () => {
-    const result = complete('SELECT ali. FROM catalog3.schema3.table3 AS ali', { line: 0, column: 11 }, SIMPLE_NESTED_SCHEMA)
+  test('complete aliased column name', () => {
+    const result = complete(
+      'SELECT ali. FROM catalog3.schema3.table3 AS ali',
+      { line: 0, column: 11 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'abc' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'abc' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 
-  test("complete schema name sch", () => {
-    const result = complete('SELECT * FROM sch', { line: 0, column: 17 }, SIMPLE_NESTED_SCHEMA)
+  test('complete schema name sch', () => {
+    const result = complete(
+      'SELECT * FROM sch',
+      { line: 0, column: 17 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     const expected = [
       expect.objectContaining({ label: 'schema2.table2' }),
@@ -419,51 +517,65 @@ describe('Fully qualified table names', () => {
     ]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete table name", () => {
-    const result = complete('SELECT * FROM schema2.tab', { line: 0, column: 25 }, SIMPLE_NESTED_SCHEMA)
+  test('complete table name', () => {
+    const result = complete(
+      'SELECT * FROM schema2.tab',
+      { line: 0, column: 25 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'table2' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'table2' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete alias when table", () => {
-    const result = complete('SELECT a FROM table2 AS ali', { line: 0, column: 8 }, SIMPLE_NESTED_SCHEMA)
+  test('complete alias when table', () => {
+    const result = complete(
+      'SELECT a FROM table2 AS ali',
+      { line: 0, column: 8 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'ali' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'ali' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete alias when schema.table", () => {
-    const result = complete('SELECT a FROM schema2.table2 AS ali', { line: 0, column: 8 }, SIMPLE_NESTED_SCHEMA)
+  test('complete alias when schema.table', () => {
+    const result = complete(
+      'SELECT a FROM schema2.table2 AS ali',
+      { line: 0, column: 8 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'ali' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'ali' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete alias when catalog.schema.table", () => {
-    const result = complete('SELECT a FROM schema2.table2 AS ali', { line: 0, column: 8 }, SIMPLE_NESTED_SCHEMA)
+  test('complete alias when catalog.schema.table', () => {
+    const result = complete(
+      'SELECT a FROM schema2.table2 AS ali',
+      { line: 0, column: 8 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'ali' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'ali' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
-  test("complete aliased column name", () => {
-    const result = complete('SELECT ali. FROM schema2.table2 AS ali', { line: 0, column: 11 }, SIMPLE_NESTED_SCHEMA)
+  test('complete aliased column name', () => {
+    const result = complete(
+      'SELECT ali. FROM schema2.table2 AS ali',
+      { line: 0, column: 11 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(1)
-    const expected = [
-      expect.objectContaining({ label: 'abc' }),
-    ]
+    const expected = [expect.objectContaining({ label: 'abc' })]
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 })
 
 describe('Nested ColumnName completion', () => {
-  test("complete ColumnName", () => {
-    const result = complete('SELECT TABLE1.a FROM TABLE1', { line: 0, column: 15 }, SIMPLE_NESTED_SCHEMA)
+  test('complete ColumnName', () => {
+    const result = complete(
+      'SELECT TABLE1.a FROM TABLE1',
+      { line: 0, column: 15 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(3)
     const expected = [
       expect.objectContaining({ label: 'abc' }),
@@ -473,8 +585,12 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 
-  test("complete ColumnName of nested field, dot", () => {
-    const result = complete('SELECT TABLE1.abc. FROM TABLE1', { line: 0, column: 18 }, SIMPLE_NESTED_SCHEMA)
+  test('complete ColumnName of nested field, dot', () => {
+    const result = complete(
+      'SELECT TABLE1.abc. FROM TABLE1',
+      { line: 0, column: 18 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     const expected = [
       expect.objectContaining({ label: 'def' }),
@@ -483,8 +599,12 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 
-  test("complete ColumnName of nested field, chars", () => {
-    const result = complete('SELECT TABLE1.abc.d FROM TABLE1', { line: 0, column: 19 }, SIMPLE_NESTED_SCHEMA)
+  test('complete ColumnName of nested field, chars', () => {
+    const result = complete(
+      'SELECT TABLE1.abc.d FROM TABLE1',
+      { line: 0, column: 19 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     const expected = [
       expect.objectContaining({ label: 'def' }),
@@ -493,8 +613,12 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates).toEqual(expect.arrayContaining(expected))
   })
 
-  test("complete ColumnName:cursor on first char:using alias", () => {
-    const result = complete('SELECT t.x.y.z, t. FROM TABLE1 as t', { line: 0, column: 18 }, SIMPLE_NESTED_SCHEMA)
+  test('complete ColumnName:cursor on first char:using alias', () => {
+    const result = complete(
+      'SELECT t.x.y.z, t. FROM TABLE1 as t',
+      { line: 0, column: 18 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(8)
     expect(result.candidates[0].label).toEqual('abc')
     expect(result.candidates[1].label).toEqual('abc.def')
@@ -506,74 +630,107 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates[7].label).toEqual('`with spaces`.`sub space`')
   })
 
-  test("complete ColumnName:cursor on first char:using alias", () => {
-    const result = complete('SELECT t.abc. FROM TABLE1 as t', { line: 0, column: 13 }, SIMPLE_NESTED_SCHEMA)
+  test('complete ColumnName:cursor on first char:using alias', () => {
+    const result = complete(
+      'SELECT t.abc. FROM TABLE1 as t',
+      { line: 0, column: 13 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('def')
     expect(result.candidates[1].label).toEqual('def.ghi')
   })
 
-  test("complete ColumnName:cursor on first char:using alias", () => {
-    const result = complete('SELECT t.abc.de FROM TABLE1 as t', { line: 0, column: 15 }, SIMPLE_NESTED_SCHEMA)
+  test('complete ColumnName:cursor on first char:using alias', () => {
+    const result = complete(
+      'SELECT t.abc.de FROM TABLE1 as t',
+      { line: 0, column: 15 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('def')
     expect(result.candidates[1].label).toEqual('def.ghi')
   })
 
-  test("complete ColumnName with space:cursor on first char", () => {
-    const result = complete('SELECT t.`with FROM TABLE1 as t', { line: 0, column: 14 }, SIMPLE_NESTED_SCHEMA)
+  test('complete ColumnName with space:cursor on first char', () => {
+    const result = complete(
+      'SELECT t.`with FROM TABLE1 as t',
+      { line: 0, column: 14 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('`with spaces`')
     expect(result.candidates[1].label).toEqual('`with spaces`.`sub space`')
   })
 
-  test("getLastToken", () => {
-    expect(getLastToken("SELECT  abc")).toEqual("abc")
-    expect(getLastToken("SELECT  abc.def")).toEqual("abc.def")
-    expect(getLastToken("SELECT  abc[0]")).toEqual("abc")
-    expect(getLastToken("SELECT  abc[0].")).toEqual("abc.")
-    expect(getLastToken("SELECT  abc[0].d")).toEqual("abc.d")
-    expect(getLastToken("SELECT  abc[0].def[0]")).toEqual("abc.def")
-    expect(getLastToken("SELECT  abc[0].def[0].")).toEqual("abc.def.")
-    expect(getLastToken("SELECT  abc[0].def[0].g")).toEqual("abc.def.g")
+  test('getLastToken', () => {
+    expect(utils.getLastToken('SELECT  abc')).toEqual('abc')
+    expect(utils.getLastToken('SELECT  abc.def')).toEqual('abc.def')
+    expect(utils.getLastToken('SELECT  abc[0]')).toEqual('abc')
+    expect(utils.getLastToken('SELECT  abc[0].')).toEqual('abc.')
+    expect(utils.getLastToken('SELECT  abc[0].d')).toEqual('abc.d')
+    expect(utils.getLastToken('SELECT  abc[0].def[0]')).toEqual('abc.def')
+    expect(utils.getLastToken('SELECT  abc[0].def[0].')).toEqual('abc.def.')
+    expect(utils.getLastToken('SELECT  abc[0].def[0].g')).toEqual('abc.def.g')
 
-    expect(getLastToken("SELECT  abc['key']")).toEqual("abc")
-    expect(getLastToken("SELECT  abc['key.name'].")).toEqual("abc.")
-    expect(getLastToken("SELECT  abc['key'].d")).toEqual("abc.d")
-    expect(getLastToken("SELECT  abc['key'].def['key']")).toEqual("abc.def")
-    expect(getLastToken("SELECT  abc['key'].def['key'].")).toEqual("abc.def.")
-    expect(getLastToken("SELECT  abc['key'].def[0].g")).toEqual("abc.def.g")
+    expect(utils.getLastToken("SELECT  abc['key']")).toEqual('abc')
+    expect(utils.getLastToken("SELECT  abc['key.name'].")).toEqual('abc.')
+    expect(utils.getLastToken("SELECT  abc['key'].d")).toEqual('abc.d')
+    expect(utils.getLastToken("SELECT  abc['key'].def['key']")).toEqual(
+      'abc.def'
+    )
+    expect(utils.getLastToken("SELECT  abc['key'].def['key'].")).toEqual(
+      'abc.def.'
+    )
+    expect(utils.getLastToken("SELECT  abc['key'].def[0].g")).toEqual(
+      'abc.def.g'
+    )
   })
 
-  test("with array subscripted", () => {
-    const result = complete('SELECT t.abc[0]. FROM TABLE1 as t', { line: 0, column: 16 }, SIMPLE_NESTED_SCHEMA)
+  test('with array subscripted', () => {
+    const result = complete(
+      'SELECT t.abc[0]. FROM TABLE1 as t',
+      { line: 0, column: 16 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('def')
     expect(result.candidates[1].label).toEqual('def.ghi')
   })
 
-  test("with array subscripted, first char", () => {
-    const result = complete('SELECT t.abc[0].d FROM TABLE1 as t', { line: 0, column: 17 }, SIMPLE_NESTED_SCHEMA)
+  test('with array subscripted, first char', () => {
+    const result = complete(
+      'SELECT t.abc[0].d FROM TABLE1 as t',
+      { line: 0, column: 17 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('def')
     expect(result.candidates[1].label).toEqual('def.ghi')
   })
 
-  test("with map subscripted", () => {
-    const result = complete("SELECT t.abc['key']. FROM TABLE1 as t", { line: 0, column: 20 }, SIMPLE_NESTED_SCHEMA)
+  test('with map subscripted', () => {
+    const result = complete(
+      "SELECT t.abc['key']. FROM TABLE1 as t",
+      { line: 0, column: 20 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
-    expect(result.candidates[0].label).toEqual("def")
-    expect(result.candidates[1].label).toEqual("def.ghi")
+    expect(result.candidates[0].label).toEqual('def')
+    expect(result.candidates[1].label).toEqual('def.ghi')
   })
 
-  test("with map subscripted, first char", () => {
-    const result = complete("SELECT t.abc['key'].d FROM TABLE1 as t", { line: 0, column: 21 }, SIMPLE_NESTED_SCHEMA)
+  test('with map subscripted, first char', () => {
+    const result = complete(
+      "SELECT t.abc['key'].d FROM TABLE1 as t",
+      { line: 0, column: 21 },
+      SIMPLE_NESTED_SCHEMA
+    )
     expect(result.candidates.length).toEqual(2)
-    expect(result.candidates[0].label).toEqual("def")
-    expect(result.candidates[1].label).toEqual("def.ghi")
+    expect(result.candidates[0].label).toEqual('def')
+    expect(result.candidates[1].label).toEqual('def.ghi')
   })
 })
-
 
 const COMPLEX_SCHEMA = {
   tables: [
@@ -593,7 +750,7 @@ const COMPLEX_SCHEMA = {
         { columnName: 'hire_date', description: '' },
         { columnName: 'salary', description: '' },
         { columnName: 'commision_pct', description: '' },
-      ]
+      ],
     },
     {
       catalog: null,
@@ -606,7 +763,7 @@ const COMPLEX_SCHEMA = {
         { columnName: 'max_salary', description: '' },
         { columnName: 'created_at', description: '' },
         { columnName: 'updated_at', description: '' },
-      ]
+      ],
     },
     {
       catalog: null,
@@ -618,7 +775,7 @@ const COMPLEX_SCHEMA = {
         { columnName: 'end_date', description: '' },
         { columnName: 'job_id', description: '' },
         { columnName: 'department_id', description: '' },
-      ]
+      ],
     },
     {
       catalog: null,
@@ -629,7 +786,7 @@ const COMPLEX_SCHEMA = {
         { columnName: 'department_name', description: '' },
         { columnName: 'manager_id', description: '' },
         { columnName: 'location_id', description: '' },
-      ]
+      ],
     },
     {
       catalog: null,
@@ -642,7 +799,7 @@ const COMPLEX_SCHEMA = {
         { columnName: 'city', description: '' },
         { columnName: 'state_province', description: '' },
         { columnName: 'country_id', description: '' },
-      ]
+      ],
     },
     {
       catalog: null,
@@ -652,7 +809,7 @@ const COMPLEX_SCHEMA = {
         { columnName: 'country_id', description: '' },
         { columnName: 'country_name', description: '' },
         { columnName: 'region_id', description: '' },
-      ]
+      ],
     },
     {
       catalog: null,
@@ -661,14 +818,13 @@ const COMPLEX_SCHEMA = {
       columns: [
         { columnName: 'region_id', description: '' },
         { columnName: 'region_name', description: '' },
-      ]
+      ],
     },
   ],
-  functions: []
+  functions: [],
 }
 
-
-test("complete columns from alias that start chars same as other table", () => {
+test('complete columns from alias that start chars same as other table', () => {
   const sql = `
     SELECT jo.
       FROM employees jo
@@ -679,7 +835,7 @@ test("complete columns from alias that start chars same as other table", () => {
   expect(result.candidates.length).toEqual(11)
 })
 
-test("complete columns from alias that start chars same as other table", () => {
+test('complete columns from alias that start chars same as other table', () => {
   const sql = `
     SELECT job.
       FROM employees jo
@@ -690,7 +846,7 @@ test("complete columns from alias that start chars same as other table", () => {
   expect(result.candidates.length).toEqual(6)
 })
 
-test("complete column, alias name matches a table from schema, but should not use it", () => {
+test('complete column, alias name matches a table from schema, but should not use it', () => {
   const sql = `
     SELECT countr.first_na
       FROM employees countr
@@ -699,7 +855,7 @@ test("complete column, alias name matches a table from schema, but should not us
   expect(result.candidates.length).toEqual(1)
 })
 
-test("complete columns from duplicated alias", () => {
+test('complete columns from duplicated alias', () => {
   const sql = `
     SELECT dm.
       FROM employees e
@@ -716,7 +872,7 @@ test("complete columns from duplicated alias", () => {
   expect(result.candidates.length).toEqual(11)
 })
 
-test("complete columns inside function many joins", () => {
+test('complete columns inside function many joins', () => {
   const sql = `
     SELECT
       e.employee_id AS "Employee #"
@@ -751,21 +907,21 @@ test("complete columns inside function many joins", () => {
   expect(result.candidates.length).toEqual(11)
 })
 
-test("complete aliased column inside function", () => {
+test('complete aliased column inside function', () => {
   const sql = `SELECT TO_CHAR(x.departm, 'MM/DD/YYYY') FROM employees x`
   const result = complete(sql, { line: 0, column: 24 }, COMPLEX_SCHEMA)
   expect(result.candidates.length).toEqual(1)
   expect(result.candidates[0].label).toEqual('department_id')
 })
 
-test("complete column inside function", () => {
+test('complete column inside function', () => {
   const sql = `SELECT TO_CHAR(empl, 'MM/DD/YYYY') FROM employees x`
   const result = complete(sql, { line: 0, column: 19 }, COMPLEX_SCHEMA)
   expect(result.candidates.length).toEqual(1)
   expect(result.candidates[0].label).toEqual('employees')
 })
 
-test("complete an alias inside function", () => {
+test('complete an alias inside function', () => {
   const sql = `SELECT TO_CHAR(an_ali, 'MM/DD/YYYY') FROM employees an_alias`
   const result = complete(sql, { line: 0, column: 21 }, COMPLEX_SCHEMA)
   expect(result.candidates.length).toEqual(1)
@@ -773,26 +929,28 @@ test("complete an alias inside function", () => {
 })
 
 describe('From clause subquery', () => {
-  test("complete column name inside from clause subquery", () => {
+  test('complete column name inside from clause subquery', () => {
     const sql = 'SELECT sub FROM (SELECT e. FROM employees e) sub'
     const result = complete(sql, { line: 0, column: 26 }, COMPLEX_SCHEMA)
     expect(result.candidates.length).toEqual(11)
   })
 
-  test("complete column name inside from clause subquery:nested", () => {
-    const sql = 'SELECT * FROM (SELECT e.employee_id FROM (SELECT e2. FROM employees e2) e) sub'
+  test('complete column name inside from clause subquery:nested', () => {
+    const sql =
+      'SELECT * FROM (SELECT e.employee_id FROM (SELECT e2. FROM employees e2) e) sub'
     const result = complete(sql, { line: 0, column: 52 }, COMPLEX_SCHEMA)
     expect(result.candidates.length).toEqual(11)
   })
 
-  test("complete column name inside from clause subquery:multiline", () => {
+  test('complete column name inside from clause subquery:multiline', () => {
     const sql = 'SELECT sub\n FROM (SELECT e. FROM employees e) sub'
     const result = complete(sql, { line: 1, column: 16 }, COMPLEX_SCHEMA)
     expect(result.candidates.length).toEqual(11)
   })
 
-  test("complete column name from subquery", () => {
-    const sql = 'SELECT sub. FROM (SELECT e.employee_id sub_id FROM employees e) sub'
+  test('complete column name from subquery', () => {
+    const sql =
+      'SELECT sub. FROM (SELECT e.employee_id sub_id FROM employees e) sub'
     const result = complete(sql, { line: 0, column: 11 }, COMPLEX_SCHEMA)
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('sub_id')
@@ -852,12 +1010,7 @@ describe('DELETE statement', () => {
 
 describe('toCompletionItemForIdentifier', () => {
   test('complete comlumn name', () => {
-    const item = new Identifier(
-      'col',
-      'column1',
-      '',
-      COLUMN_ICON
-    )
+    const item = new Identifier('col', 'column1', '', utils.ICONS.COLUMN)
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1')
   })
@@ -866,7 +1019,7 @@ describe('toCompletionItemForIdentifier', () => {
       'ali.col',
       'ali.column1',
       '',
-      COLUMN_ICON
+      utils.ICONS.COLUMN
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1')
@@ -876,7 +1029,7 @@ describe('toCompletionItemForIdentifier', () => {
       'ali.column1.sub',
       'ali.column1.subcolumn2',
       '',
-      COLUMN_ICON
+      utils.ICONS.COLUMN
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('subcolumn2')
@@ -886,7 +1039,7 @@ describe('toCompletionItemForIdentifier', () => {
       'ali.colu',
       'ali.column1.subcolumn2',
       '',
-      COLUMN_ICON
+      utils.ICONS.COLUMN
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1.subcolumn2')

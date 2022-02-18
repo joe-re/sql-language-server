@@ -15,3 +15,4 @@ packages/server/dist/*
 !.yarn/versions
 .pnp.*
 .node-version
+yarn-error.log
