@@ -1,42 +1,42 @@
-import PG from "pg";
-import { Connection } from "../SettingStore";
-import AbstractClient, { RawField } from "./AbstractClient";
+import PG from 'pg'
+import { Connection } from '../SettingStore'
+import AbstractClient, { RawField } from './AbstractClient'
 
 export default class PosgresClient extends AbstractClient {
-  connection: PG.Client | null = null;
+  connection: PG.Client | null = null
 
   constructor(settings: Connection) {
-    super(settings);
+    super(settings)
   }
 
   get DefaultPort() {
-    return 5432;
+    return 5432
   }
   get DefaultHost() {
-    return "127.0.0.1";
+    return '127.0.0.1'
   }
   get DefaultUser() {
-    return "postgres";
+    return 'postgres'
   }
 
   connect() {
     const client: PG.Client = new PG.Client({
-      user: this.settings.user || "",
-      host: this.settings.host || "",
-      database: this.settings.database || "",
-      password: this.settings.password || "",
+      user: this.settings.user || '',
+      host: this.settings.host || '',
+      database: this.settings.database || '',
+      password: this.settings.password || '',
       port: this.settings.port || 5432,
-    });
-    client.connect();
-    this.connection = client;
-    return true;
+    })
+    client.connect()
+    this.connection = client
+    return true
   }
 
   disconnect() {
     if (this.connection) {
-      this.connection.end();
+      this.connection.end()
     }
-    this.connection = null;
+    this.connection = null
   }
 
   getTables(): Promise<string[]> {
@@ -44,23 +44,23 @@ export default class PosgresClient extends AbstractClient {
       SELECT c.relname as table_name FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
        WHERE n.nspname = 'public'
          AND c.relkind IN ('r','v','m','f')
-    `;
+    `
     return new Promise((resolve, reject) => {
       if (!this.connection) {
-        reject(new Error("Don't have database connection."));
-        return;
+        reject(new Error("Don't have database connection."))
+        return
       }
       this.connection.query(sql, (err, results) => {
         if (err) {
-          reject(new Error(err.message));
-          return;
+          reject(new Error(err.message))
+          return
         }
         const tables = results.rows.map(
           (v: { [key: string]: string }) => v[`table_name`]
-        );
-        resolve(tables);
-      });
-    });
+        )
+        resolve(tables)
+      })
+    })
   }
 
   getColumns(tableName: string): Promise<RawField[]> {
@@ -78,19 +78,19 @@ export default class PosgresClient extends AbstractClient {
     WHERE a.attrelid = '"${tableName}"'::regclass
       AND a.attnum > 0 AND NOT a.attisdropped
     ORDER BY a.attnum
-    `;
+    `
     return new Promise((resolve, reject) => {
       if (!this.connection) {
-        reject(new Error("Don't have database connection."));
-        return;
+        reject(new Error("Don't have database connection."))
+        return
       }
       this.connection.query(sql, (err, results) => {
         if (err) {
-          reject(new Error(err.message));
-          return;
+          reject(new Error(err.message))
+          return
         }
-        resolve(results.rows);
-      });
-    });
+        resolve(results.rows)
+      })
+    })
   }
 }

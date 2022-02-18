@@ -1,11 +1,11 @@
 const config = {
-  type: "object",
+  type: 'object',
   properties: {
     rules: {
-      type: "object",
+      type: 'object',
     },
   },
   additionalProperties: false,
-};
+}
 
-export default config;
+export default config

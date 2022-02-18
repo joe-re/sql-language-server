@@ -1,8 +1,5 @@
-import {
-  CompletionItem,
-  CompletionItemKind,
-} from "vscode-languageserver-types";
-import { makeTableAlias } from "./utils";
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types'
+import { makeTableAlias } from './utils'
 
 export const ICONS = {
   KEYWORD: CompletionItemKind.Text,
@@ -11,13 +8,13 @@ export const ICONS = {
   FUNCTION: CompletionItemKind.Property,
   ALIAS: CompletionItemKind.Variable,
   UTILITY: CompletionItemKind.Event,
-};
+}
 
 export class Identifier {
-  lastToken: string;
-  identifier: string;
-  detail: string;
-  kind: CompletionItemKind;
+  lastToken: string
+  identifier: string
+  detail: string
+  kind: CompletionItemKind
 
   constructor(
     lastToken: string,
@@ -25,48 +22,48 @@ export class Identifier {
     detail: string,
     kind: CompletionItemKind
   ) {
-    this.lastToken = lastToken;
-    this.identifier = identifier;
-    this.detail = detail || "";
-    this.kind = kind;
+    this.lastToken = lastToken
+    this.identifier = identifier
+    this.detail = detail || ''
+    this.kind = kind
   }
 
   matchesLastToken(): boolean {
     if (this.identifier.startsWith(this.lastToken)) {
       // prevent suggesting the lastToken itself, there is nothing to complete in that case
       if (this.identifier !== this.lastToken) {
-        return true;
+        return true
       }
     }
-    return false;
+    return false
   }
 
   toCompletionItem(): CompletionItem {
-    const idx = this.lastToken.lastIndexOf(".");
-    const label = this.identifier.substr(idx + 1);
-    let kindName: string;
-    let tableAlias = "";
+    const idx = this.lastToken.lastIndexOf('.')
+    const label = this.identifier.substr(idx + 1)
+    let kindName: string
+    let tableAlias = ''
     if (this.kind === ICONS.TABLE) {
-      let tableName = label;
-      const i = tableName.lastIndexOf(".");
+      let tableName = label
+      const i = tableName.lastIndexOf('.')
       if (i > 0) {
-        tableName = label.substr(i + 1);
+        tableName = label.substr(i + 1)
       }
-      tableAlias = makeTableAlias(tableName);
-      kindName = "table";
+      tableAlias = makeTableAlias(tableName)
+      kindName = 'table'
     } else {
-      kindName = "column";
+      kindName = 'column'
     }
 
     const item: CompletionItem = {
       label: label,
       detail: `${kindName} ${this.detail}`,
       kind: this.kind,
-    };
+    }
 
     if (this.kind == ICONS.TABLE) {
-      item.insertText = `${label} AS ${tableAlias}`;
+      item.insertText = `${label} AS ${tableAlias}`
     }
-    return item;
+    return item
   }
 }

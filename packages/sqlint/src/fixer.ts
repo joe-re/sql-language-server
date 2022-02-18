@@ -1,16 +1,16 @@
 export type FixDescription = {
-  range: { startOffset: number; endOffset: number };
-  text: string;
-};
+  range: { startOffset: number; endOffset: number }
+  text: string
+}
 
 export type Fixer = {
-  insertText(offset: number, text: string): FixDescription;
+  insertText(offset: number, text: string): FixDescription
   replaceText(
     startOffset: number,
     endOffset: number,
     text: string
-  ): FixDescription;
-};
+  ): FixDescription
+}
 
 export function createFixer(): Fixer {
   return {
@@ -18,24 +18,24 @@ export function createFixer(): Fixer {
       return {
         range: { startOffset: offset, endOffset: offset },
         text: text,
-      };
+      }
     },
     replaceText(startOffset, endOffset, text) {
       return {
         range: { startOffset, endOffset },
         text,
-      };
+      }
     },
-  };
+  }
 }
 
 export function applyFixes(
   sql: string,
   fixes: FixDescription | FixDescription[]
 ) {
-  const _fixes = Array.isArray(fixes) ? fixes : [fixes];
+  const _fixes = Array.isArray(fixes) ? fixes : [fixes]
   if (_fixes.length === 0) {
-    return sql;
+    return sql
   }
   const sortedFixes = _fixes
     .concat([])
@@ -43,10 +43,10 @@ export function applyFixes(
       (a, b) =>
         b.range.startOffset - a.range.startOffset ||
         b.range.endOffset - a.range.endOffset
-    );
+    )
   return sortedFixes.reduce((p, c) => {
-    const before = p.slice(0, c.range.startOffset);
-    const after = p.slice(c.range.endOffset);
-    return before + c.text + after;
-  }, sql);
+    const before = p.slice(0, c.range.startOffset)
+    const after = p.slice(c.range.endOffset)
+    return before + c.text + after
+  }, sql)
 }

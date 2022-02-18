@@ -1,60 +1,60 @@
-import * as fs from "fs";
+import * as fs from 'fs'
 
 export function fileExists(path: string) {
   try {
-    return fs.statSync(path).isFile();
+    return fs.statSync(path).isFile()
   } catch (error) {
-    if (error && (error as NodeJS.ErrnoException).code === "ENOENT") {
-      return false;
+    if (error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return false
     }
-    throw error;
+    throw error
   }
 }
 
 export function directoryExists(path: string) {
   try {
-    return fs.statSync(path).isDirectory();
+    return fs.statSync(path).isDirectory()
   } catch (error) {
-    if (error && (error as NodeJS.ErrnoException).code === "ENOENT") {
-      return false;
+    if (error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return false
     }
-    throw error;
+    throw error
   }
 }
 
 function readdirSafeSync(path: string) {
   try {
-    return fs.readdirSync(path, { withFileTypes: true });
+    return fs.readdirSync(path, { withFileTypes: true })
   } catch (error) {
-    if (error && (error as NodeJS.ErrnoException).code !== "ENOENT") {
-      throw error;
+    if (error && (error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      throw error
     }
-    return [];
+    return []
   }
 }
 
 export function getFileList(path: string): string[] {
   if (!directoryExists(path)) {
-    return fileExists(path) ? [path] : [];
+    return fileExists(path) ? [path] : []
   }
   return readdirSafeSync(path)
     .map((v) => {
       if (v.isDirectory()) {
-        const files = getFileList(`${path}/${v.name}`);
-        return files;
+        const files = getFileList(`${path}/${v.name}`)
+        return files
       }
-      return [`${path}/${v.name}`];
+      return [`${path}/${v.name}`]
     })
     .flat()
     .filter((v: string) => {
-      return v.match(/.sql$/);
-    });
+      return v.match(/.sql$/)
+    })
 }
 
 export function readFile(filePath: string) {
-  return fs.readFileSync(filePath, "utf8").replace(/^\ufeff/u, "");
+  return fs.readFileSync(filePath, 'utf8').replace(/^\ufeff/u, '')
 }
 
 export function writeFile(filePath: string, content: string) {
-  return fs.writeFileSync(filePath, content, "utf8");
+  return fs.writeFileSync(filePath, content, 'utf8')
 }

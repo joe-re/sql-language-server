@@ -1,4 +1,4 @@
-import { Identifier } from "./Identifier";
-import * as utils from "./utils";
+import { Identifier } from './Identifier'
+import * as utils from './utils'
 
-export { Identifier, utils };
+export { Identifier, utils }

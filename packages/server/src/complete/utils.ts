@@ -4,18 +4,15 @@ import {
   FromTableNode,
   NodeRange,
   SelectStatement,
-} from "@joe-re/sql-parser";
-import {
-  CompletionItem,
-  CompletionItemKind,
-} from "vscode-languageserver-types";
-import log4js from "log4js";
-import { Table, DbFunction } from "../database_libs/AbstractClient";
-import { Identifier } from "./Identifier";
+} from '@joe-re/sql-parser'
+import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types'
+import log4js from 'log4js'
+import { Table, DbFunction } from '../database_libs/AbstractClient'
+import { Identifier } from './Identifier'
 
-const logger = log4js.getLogger();
+const logger = log4js.getLogger()
 
-type Pos = { line: number; column: number };
+type Pos = { line: number; column: number }
 
 export const ICONS = {
   KEYWORD: CompletionItemKind.Text,
@@ -24,65 +21,65 @@ export const ICONS = {
   FUNCTION: CompletionItemKind.Property,
   ALIAS: CompletionItemKind.Variable,
   UTILITY: CompletionItemKind.Event,
-};
+}
 
 const UNDESIRED_LITERAL = [
-  "+",
-  "-",
-  "*",
-  "$",
-  ":",
-  "COUNT",
-  "AVG",
-  "SUM",
-  "MIN",
-  "MAX",
-  "`",
+  '+',
+  '-',
+  '*',
+  '$',
+  ':',
+  'COUNT',
+  'AVG',
+  'SUM',
+  'MIN',
+  'MAX',
+  '`',
   '"',
   "'",
-];
+]
 
 function isNotEmpty<T>(value: T | null | undefined): value is T {
-  return value === null || value === undefined ? false : true;
+  return value === null || value === undefined ? false : true
 }
 
 export function makeTableAlias(tableName: string): string {
   if (tableName.length > 3) {
-    return tableName.substring(0, 3);
+    return tableName.substring(0, 3)
   }
-  return tableName;
+  return tableName
 }
 
 export function getRidOfAfterPosString(sql: string, pos: Pos) {
   return sql
-    .split("\n")
+    .split('\n')
     .filter((_v, idx) => pos.line >= idx)
     .map((v, idx) => (idx === pos.line ? v.slice(0, pos.column) : v))
-    .join("\n");
+    .join('\n')
 }
 
 // Gets the last token from the given string considering that tokens can contain dots.
 export function getLastToken(sql: string): string {
-  const match = sql.match(/^(?:.|\s)*[^A-z0-9\\.:'](.*?)$/);
+  const match = sql.match(/^(?:.|\s)*[^A-z0-9\\.:'](.*?)$/)
   if (match) {
-    let prevToken = "";
-    let currentToken = match[1];
+    let prevToken = ''
+    let currentToken = match[1]
     while (currentToken != prevToken) {
-      prevToken = currentToken;
-      currentToken = prevToken.replace(/\[.*?\]/, "");
+      prevToken = currentToken
+      currentToken = prevToken.replace(/\[.*?\]/, '')
     }
-    return currentToken;
+    return currentToken
   }
-  return sql;
+  return sql
 }
 
 export function makeTableName(table: Table): string {
   if (table.catalog) {
-    return table.catalog + "." + table.database + "." + table.tableName;
+    return table.catalog + '.' + table.database + '.' + table.tableName
   } else if (table.database) {
-    return table.database + "." + table.tableName;
+    return table.database + '.' + table.tableName
   }
-  return table.tableName;
+  return table.tableName
 }
 
 export function isPosInLocation(location: NodeRange, pos: Pos) {
@@ -91,35 +88,35 @@ export function isPosInLocation(location: NodeRange, pos: Pos) {
     location.start.column <= pos.column &&
     location.end.line === pos.line + 1 &&
     location.end.column >= pos.column
-  );
+  )
 }
 
 export function toCompletionItemForFunction(f: DbFunction): CompletionItem {
   const item: CompletionItem = {
     label: f.name,
-    detail: "function",
+    detail: 'function',
     kind: ICONS.FUNCTION,
     documentation: f.description,
-  };
-  return item;
+  }
+  return item
 }
 
 export function toCompletionItemForAlias(alias: string): CompletionItem {
   const item: CompletionItem = {
     label: alias,
-    detail: "alias",
+    detail: 'alias',
     kind: ICONS.ALIAS,
-  };
-  return item;
+  }
+  return item
 }
 
 export function toCompletionItemForKeyword(name: string): CompletionItem {
   const item: CompletionItem = {
     label: name,
     kind: ICONS.KEYWORD,
-    detail: "keyword",
-  };
-  return item;
+    detail: 'keyword',
+  }
+  return item
 }
 
 export function createCandidatesForColumnsOfAnyTable(
@@ -134,20 +131,20 @@ export function createCandidatesForColumnsOfAnyTable(
         column.columnName,
         column.description,
         ICONS.TABLE
-      );
+      )
     })
     .filter((item) => item.matchesLastToken())
-    .map((item) => item.toCompletionItem());
+    .map((item) => item.toCompletionItem())
 }
 
 export function createCandidatesForTables(tables: Table[], lastToken: string) {
   return tables
     .flatMap((table) => allTableNameCombinations(table))
     .map((aTableNameVariant) => {
-      return new Identifier(lastToken, aTableNameVariant, "", ICONS.TABLE);
+      return new Identifier(lastToken, aTableNameVariant, '', ICONS.TABLE)
     })
     .filter((item) => item.matchesLastToken())
-    .map((item) => item.toCompletionItem());
+    .map((item) => item.toCompletionItem())
 }
 
 /**
@@ -158,11 +155,11 @@ export function createCandidatesForTables(tables: Table[], lastToken: string) {
  * @returns
  */
 export function allTableNameCombinations(table: Table): string[] {
-  const names = [table.tableName];
-  if (table.database) names.push(table.database + "." + table.tableName);
+  const names = [table.tableName]
+  if (table.database) names.push(table.database + '.' + table.tableName)
   if (table.catalog)
-    names.push(table.catalog + "." + table.database + "." + table.tableName);
-  return names;
+    names.push(table.catalog + '.' + table.database + '.' + table.tableName)
+  return names
 }
 
 // Check if parser expects us to terminate a single quote value or double quoted column name
@@ -171,37 +168,37 @@ export function allTableNameCombinations(table: Table): string[] {
 export function createCandidatesForExpectedLiterals(
   nodes: ExpectedLiteralNode[]
 ): CompletionItem[] {
-  const literals = nodes.map((v) => v.text);
-  const uniqueLiterals = [...new Set(literals)];
+  const literals = nodes.map((v) => v.text)
+  const uniqueLiterals = [...new Set(literals)]
   return uniqueLiterals
     .filter((v) => !UNDESIRED_LITERAL.includes(v))
     .map((v) => {
       switch (v) {
-        case "ORDER":
-          return "ORDER BY";
-        case "GROUP":
-          return "GROUP BY";
-        case "LEFT":
-          return "LEFT JOIN";
-        case "RIGHT":
-          return "RIGHT JOIN";
-        case "INNER":
-          return "INNER JOIN";
+        case 'ORDER':
+          return 'ORDER BY'
+        case 'GROUP':
+          return 'GROUP BY'
+        case 'LEFT':
+          return 'LEFT JOIN'
+        case 'RIGHT':
+          return 'RIGHT JOIN'
+        case 'INNER':
+          return 'INNER JOIN'
         default:
-          return v;
+          return v
       }
     })
-    .map((v) => toCompletionItemForKeyword(v));
+    .map((v) => toCompletionItemForKeyword(v))
 }
 
 export function getAliasFromFromTableNode(node: FromTableNode): string {
   if (node.as) {
-    return node.as;
+    return node.as
   }
-  if (node.type === "table") {
-    return node.table;
+  if (node.type === 'table') {
+    return node.table
   }
-  return "";
+  return ''
 }
 
 /**
@@ -212,29 +209,29 @@ export function getAliasFromFromTableNode(node: FromTableNode): string {
  */
 export function isTableMatch(fromNode: FromTableNode, table: Table): boolean {
   switch (fromNode.type) {
-    case "subquery": {
+    case 'subquery': {
       if (fromNode.as && fromNode.as !== table.tableName) {
-        return false;
+        return false
       }
-      break;
+      break
     }
-    case "table": {
+    case 'table': {
       if (fromNode.table && fromNode.table !== table.tableName) {
-        return false;
+        return false
       }
       if (fromNode.db && fromNode.db !== table.database) {
-        return false;
+        return false
       }
       if (fromNode.catalog && fromNode.catalog !== table.catalog) {
-        return false;
+        return false
       }
-      break;
+      break
     }
     default: {
-      return false;
+      return false
     }
   }
-  return true;
+  return true
 }
 
 export function getColumnRefByPos(columns: ColumnRefNode[], pos: Pos) {
@@ -247,76 +244,74 @@ export function getColumnRefByPos(columns: ColumnRefNode[], pos: Pos) {
       v.location.start.column <= pos.column &&
       v.location.end.line === pos.line + 1 &&
       v.location.end.column >= pos.column
-  );
+  )
 }
 
 export function makeColumnName(alias: string, columnName: string) {
-  return alias ? alias + "." + columnName : columnName;
+  return alias ? alias + '.' + columnName : columnName
 }
 
 export function createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
   return fromNodes.reduce((p, c) => {
-    if (c.type !== "subquery") {
-      return p;
+    if (c.type !== 'subquery') {
+      return p
     }
     if (!Array.isArray(c.subquery.columns)) {
-      return p;
+      return p
     }
     const columns = c.subquery.columns
       .map((v) => {
-        if (typeof v === "string") {
-          return null;
+        if (typeof v === 'string') {
+          return null
         }
         return {
           columnName:
-            v.as || (v.expr.type === "column_ref" && v.expr.column) || "",
-          description: "alias",
-        };
+            v.as || (v.expr.type === 'column_ref' && v.expr.column) || '',
+          description: 'alias',
+        }
       })
-      .filter(isNotEmpty);
+      .filter(isNotEmpty)
     return p.concat({
       database: null,
       catalog: null,
       columns: columns ?? [],
-      tableName: c.as ?? "",
-    });
-  }, [] as Table[]);
+      tableName: c.as ?? '',
+    })
+  }, [] as Table[])
 }
 
 export function findColumnAtPosition(
   ast: SelectStatement,
   pos: Pos
 ): ColumnRefNode | null {
-  const columns = ast.columns;
+  const columns = ast.columns
   if (Array.isArray(columns)) {
     // columns in select clause
     const columnRefs = columns
       .map((col) => col.expr)
-      .filter((expr): expr is ColumnRefNode => expr.type === "column_ref");
-    if (ast.type === "select" && ast.where?.expression) {
-      if (ast.where.expression.type === "column_ref") {
+      .filter((expr): expr is ColumnRefNode => expr.type === 'column_ref')
+    if (ast.type === 'select' && ast.where?.expression) {
+      if (ast.where.expression.type === 'column_ref') {
         // columns in where clause
-        columnRefs.push(ast.where.expression);
+        columnRefs.push(ast.where.expression)
       }
     }
     // column at position
-    const columnRef = getColumnRefByPos(columnRefs, pos);
-    if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
-    return columnRef ?? null;
-  } else if (columns.type == "star") {
-    if (ast.type === "select" && ast.where?.expression) {
+    const columnRef = getColumnRefByPos(columnRefs, pos)
+    if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef))
+    return columnRef ?? null
+  } else if (columns.type == 'star') {
+    if (ast.type === 'select' && ast.where?.expression) {
       // columns in where clause
       const columnRefs =
-        ast.where.expression.type === "column_ref"
-          ? [ast.where.expression]
-          : [];
+        ast.where.expression.type === 'column_ref' ? [ast.where.expression] : []
       // column at position
-      const columnRef = getColumnRefByPos(columnRefs, pos);
-      if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef));
-      return columnRef ?? null;
+      const columnRef = getColumnRefByPos(columnRefs, pos)
+      if (logger.isDebugEnabled()) logger.debug(JSON.stringify(columnRef))
+      return columnRef ?? null
     }
   }
-  return null;
+  return null
 }
 
 /**
@@ -328,11 +323,11 @@ export function getAllNestedFromNodes(
   tableNodes: FromTableNode[]
 ): FromTableNode[] {
   return tableNodes.flatMap((tableNode) => {
-    let result = [tableNode];
-    if (tableNode.type == "subquery") {
-      const subTableNodes = tableNode.subquery.from?.tables || [];
-      result = result.concat(getAllNestedFromNodes(subTableNodes));
+    let result = [tableNode]
+    if (tableNode.type == 'subquery') {
+      const subTableNodes = tableNode.subquery.from?.tables || []
+      result = result.concat(getAllNestedFromNodes(subTableNodes))
     }
-    return result;
-  });
+    return result
+  })
 }
