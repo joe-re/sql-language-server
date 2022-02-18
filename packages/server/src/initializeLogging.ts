@@ -1,6 +1,6 @@
-import log4js from "log4js";
 import * as path from "path";
 import * as os from "os";
+import log4js from "log4js";
 
 const MAX_LOG_SIZE = 1024 * 1024;
 const MAX_LOG_BACKUPS = 10;

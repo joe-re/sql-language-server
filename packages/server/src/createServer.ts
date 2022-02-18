@@ -1,3 +1,6 @@
+import * as fs from "fs";
+import path from "path";
+import process from "process";
 import {
   Connection,
   InitializeResult,
@@ -14,6 +17,9 @@ import {
   Position,
   CodeActionKind,
 } from "vscode-languageserver-types";
+import { lint, LintResult } from "sqlint";
+import log4js from "log4js";
+import { RawConfig } from "sqlint";
 import cache from "./cache";
 import { complete } from "./complete";
 import createDiagnostics from "./createDiagnostics";
@@ -22,13 +28,7 @@ import SettingStore, { Connection as SettingConnection } from "./SettingStore";
 import { Schema } from "./database_libs/AbstractClient";
 import getDatabaseClient from "./database_libs/getDatabaseClient";
 import initializeLogging from "./initializeLogging";
-import { lint, LintResult } from "sqlint";
-import log4js from "log4js";
 import { RequireSqlite3Error } from "./database_libs/Sqlite3Client";
-import * as fs from "fs";
-import { RawConfig } from "sqlint";
-import path from "path";
-import process from "process";
 
 export type ConnectionMethod = "node-ipc" | "stdio";
 

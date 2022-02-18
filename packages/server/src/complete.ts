@@ -11,8 +11,8 @@ import {
   AST,
 } from "@joe-re/sql-parser";
 import log4js from "log4js";
-import { Schema, Table } from "./database_libs/AbstractClient";
 import { CompletionItem } from "vscode-languageserver-types";
+import { Schema, Table } from "./database_libs/AbstractClient";
 import {
   makeTableAlias,
   getRidOfAfterPosString,
@@ -33,7 +33,6 @@ import {
   findColumnAtPosition,
   getAllNestedFromNodes,
 } from "./complete/utils";
-
 import { Identifier } from "./complete/Identifier";
 
 type Pos = { line: number; column: number };

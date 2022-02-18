@@ -1,7 +1,7 @@
-import { Connection } from "../SettingStore";
+import { readFileSync } from "fs";
 import log4js from "log4js";
 import { SSHConnection } from "node-ssh-forward";
-import { readFileSync } from "fs";
+import { Connection } from "../SettingStore";
 
 const logger = log4js.getLogger();
 

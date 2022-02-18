@@ -1,5 +1,5 @@
-import { lint } from "../../src/cli/lint";
 import chalk from "chalk";
+import { lint } from "../../src/cli/lint";
 
 describe("lint", () => {
   describe("format stylish", () => {

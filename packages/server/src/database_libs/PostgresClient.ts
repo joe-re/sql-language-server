@@ -1,6 +1,6 @@
+import PG from "pg";
 import { Connection } from "../SettingStore";
 import AbstractClient, { RawField } from "./AbstractClient";
-import PG from "pg";
 
 export default class PosgresClient extends AbstractClient {
   connection: PG.Client | null = null;

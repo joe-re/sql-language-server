@@ -24,6 +24,32 @@ module.exports = {
     'node/no-extraneous-import': 'off',
     "node/no-missing-import": ["error", {
       "allowModules": ["vscode"]
-    }]
+    }],
+    'import/first': 0,
+    'import/named': 2,
+    'import/namespace': 2,
+    'import/default': 2,
+    'import/export': 2,
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+          'index',
+        ],
+        pathGroups: [
+          {
+            pattern: '@classdo/**',
+            group: 'internal',
+          },
+        ],
+        pathGroupsExcludedImportTypes: [],
+        'newlines-between': 'never',
+      },
+    ],
   }
 };

@@ -1,3 +1,5 @@
+import { parse, NodeRange, AST, Node, BaseNode } from "@joe-re/sql-parser";
+import { Fixer, FixDescription, createFixer } from "../fixer";
 import { reservedWordCase } from "./reservedWordCase";
 import { spaceSurroundingOperators } from "./spaceSurroundingOperators";
 import { linebreakAfterClauseKeyword } from "./linebreakAfterClauseKeyword";
@@ -6,8 +8,6 @@ import { alignColumnToTheFirst } from "./alignColumnToTheFirst";
 import { whereClauseNewLine } from "./whereClauseNewLine";
 import { alignWhereClauseToTheFirst } from "./alignWhereClauseToTheFirst";
 import { requireAsToRenameColumn } from "./requireAsToRenameColumn";
-import { parse, NodeRange, AST, Node, BaseNode } from "@joe-re/sql-parser";
-import { Fixer, FixDescription, createFixer } from "../fixer";
 
 export type Diagnostic = {
   message: string;

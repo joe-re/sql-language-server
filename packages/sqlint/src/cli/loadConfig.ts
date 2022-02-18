@@ -1,9 +1,9 @@
-import { Config, ErrorLevel } from "../rules";
-import { fileExists, readFile, directoryExists } from "./utils";
+import { extname } from "path";
 import * as yaml from "js-yaml";
 import Ajv from "ajv";
+import { Config, ErrorLevel } from "../rules";
 import schemaConf from "../../schema.conf";
-import { extname } from "path";
+import { fileExists, readFile, directoryExists } from "./utils";
 
 const configFiles = [
   { name: ".sqlintrc.json" },

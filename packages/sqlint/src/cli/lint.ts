@@ -1,8 +1,8 @@
 import chalk from "chalk";
-import { getFileList, readFile, writeFile } from "./utils";
 import { execute, Diagnostic, ErrorLevel } from "../rules";
-import { loadConfig, RawConfig, convertToConfig } from "./loadConfig";
 import { applyFixes, FixDescription } from "../fixer";
+import { getFileList, readFile, writeFile } from "./utils";
+import { loadConfig, RawConfig, convertToConfig } from "./loadConfig";
 
 export type LintResult = {
   filepath: string;

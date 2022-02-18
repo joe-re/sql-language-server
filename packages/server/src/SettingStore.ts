@@ -1,6 +1,6 @@
 import * as fs from "fs";
-import log4js from "log4js";
 import EventEmitter from "events";
+import log4js from "log4js";
 
 const logger = log4js.getLogger();
 

@@ -1,7 +1,7 @@
-import { Connection } from "../SettingStore";
-import AbstractClient, { RawField } from "./AbstractClient";
 import { sqlite3 as SQLite3, Database } from "sqlite3";
 import log4js from "log4js";
+import { Connection } from "../SettingStore";
+import AbstractClient, { RawField } from "./AbstractClient";
 
 const logger = log4js.getLogger();
 

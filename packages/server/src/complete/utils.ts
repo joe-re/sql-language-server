@@ -9,9 +9,9 @@ import {
   CompletionItem,
   CompletionItemKind,
 } from "vscode-languageserver-types";
+import log4js from "log4js";
 import { Table, DbFunction } from "../database_libs/AbstractClient";
 import { Identifier } from "./Identifier";
-import log4js from "log4js";
 
 const logger = log4js.getLogger();
 

@@ -1,5 +1,5 @@
-import SettingStore from "../src/SettingStore";
 import { readFileSync } from "fs";
+import SettingStore from "../src/SettingStore";
 
 describe("setSetting", () => {
   beforeAll(() => {

@@ -1,7 +1,7 @@
+import { Connection } from "../SettingStore";
 import AbstractClient from "./AbstractClient";
 import MysqlClient from "./MysqlClient";
 import PostgresClient from "./PostgresClient";
-import { Connection } from "../SettingStore";
 import Sqlite3Client from "./Sqlite3Client";
 import BigqueryClient from "./BigqueryClient";
 
