@@ -1,2 +1,1 @@
-
-require('./client');
+require("./client");

@@ -1,5 +1,5 @@
-import * as monaco from 'monaco-editor-core';
-import { listen } from '@codingame/monaco-jsonrpc';
+import * as monaco from "monaco-editor-core";
+import { listen } from "@codingame/monaco-jsonrpc";
 import {
   MonacoLanguageClient,
   MonacoServices,
@@ -8,11 +8,11 @@ import {
   MessageConnection,
 } from "monaco-languageclient";
 import ReconnectingWebSocket from "reconnecting-websocket";
-import { URI } from 'vscode-uri'
+import { URI } from "vscode-uri";
 
 let languageClient: MonacoLanguageClient;
-let connectionNames: string[] = []
-let connectedConnectionName = ''
+let connectionNames: string[] = [];
+let connectedConnectionName = "";
 
 export function initClient() {
   monaco.languages.register({
@@ -44,14 +44,16 @@ export function initClient() {
       const disposable = languageClient.start();
       connection.onClose(() => disposable.dispose());
       languageClient.onReady().then(() => {
-        languageClient.onNotification('sqlLanguageServer.finishSetup', (params) => {
-          connectionNames =
-            params.personalConfig?.connections?.
-              map((v: { name: string}) => v.name).
-              filter((v: string) => !!v)
-          connectedConnectionName = params.config?.name || ''
-        })
-      })
+        languageClient.onNotification(
+          "sqlLanguageServer.finishSetup",
+          (params) => {
+            connectionNames = params.personalConfig?.connections
+              ?.map((v: { name: string }) => v.name)
+              .filter((v: string) => !!v);
+            connectedConnectionName = params.config?.name || "";
+          }
+        );
+      });
     },
   });
 
@@ -63,10 +65,10 @@ export function initClient() {
       clientOptions: {
         documentSelector: ["sql"],
         workspaceFolder: {
-          uri: URI.file('/opt/sql-language-server/example/monaco_editor'),
-          name: 'workspace',
-          index: 0
-        }
+          uri: URI.file("/opt/sql-language-server/example/monaco_editor"),
+          name: "workspace",
+          index: 0,
+        },
       },
       connectionProvider: {
         get: (errorHandler, closeHandler) => {
@@ -97,18 +99,18 @@ export function getLanguageClient() {
 
 export function executeFixAllFixableProblemsCommand() {
   const params: ExecuteCommandParams = {
-    command: 'fixAllFixableProblems',
-    arguments: ['inmemory://model.sql']
-}
-  languageClient.sendRequest('workspace/executeCommand', params)
+    command: "fixAllFixableProblems",
+    arguments: ["inmemory://model.sql"],
+  };
+  languageClient.sendRequest("workspace/executeCommand", params);
 }
 
 export function executeSwitchDatabaseCommand(db: string) {
   const params: ExecuteCommandParams = {
-    command: 'switchDatabaseConnection',
-    arguments: [db]
-  }
-  languageClient.sendRequest('workspace/executeCommand', params)
+    command: "switchDatabaseConnection",
+    arguments: [db],
+  };
+  languageClient.sendRequest("workspace/executeCommand", params);
 }
 
 export function executeWorkspaceConfig(_db: string) {
@@ -120,9 +122,9 @@ export function executeWorkspaceConfig(_db: string) {
 }
 
 export function getConnectionList() {
-  return connectionNames
+  return connectionNames;
 }
 
 export function getCurrecntConnection() {
-  return connectedConnectionName
+  return connectedConnectionName;
 }

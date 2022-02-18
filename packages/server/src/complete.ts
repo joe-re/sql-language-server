@@ -61,11 +61,11 @@ function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
 }
 
 type CompletionError = {
-  label: string
-  detail: string
-  line: number
-  offset: number
-}
+  label: string;
+  detail: string;
+  line: number;
+  offset: number;
+};
 class Completer {
   lastToken = "";
   candidates: CompletionItem[] = [];
@@ -100,12 +100,12 @@ class Completer {
       logger.debug("error");
       logger.debug(_e);
       if (!(_e instanceof Error)) {
-        throw _e
+        throw _e;
       }
       if (_e.name !== "SyntaxError") {
         throw _e;
       }
-      const e = _e as ParseError
+      const e = _e as ParseError;
       const parsedFromClause = getFromNodesFromClause(this.sql);
       if (parsedFromClause) {
         const fromNodes = getAllNestedFromNodes(
@@ -120,7 +120,10 @@ class Completer {
           this.addCandidatesForIncompleteSubquery(fromNodeOnCursor);
         } else {
           this.addCandidatesForSelectQuery(e, fromNodes);
-          const expectedLiteralNodes = e.expected?.filter((v): v is ExpectedLiteralNode => v.type === 'literal') || []
+          const expectedLiteralNodes =
+            e.expected?.filter(
+              (v): v is ExpectedLiteralNode => v.type === "literal"
+            ) || [];
           this.addCandidatesForJoins(expectedLiteralNodes, fromNodes);
         }
       } else if (e.message === "EXPECTED COLUMN NAME") {
@@ -146,8 +149,8 @@ class Completer {
 
   addCandidatesForExpectedLiterals(expected: ExpectedLiteralNode[]) {
     createCandidatesForExpectedLiterals(expected).forEach((v) => {
-      this.addCandidateIfStartsWithLastToken(v)
-    })
+      this.addCandidateIfStartsWithLastToken(v);
+    });
   }
 
   addCandidate(item: CompletionItem) {
@@ -193,14 +196,16 @@ class Completer {
 
   addCandidatesForTables(tables: Table[]) {
     createCandidatesForTables(tables, this.lastToken).forEach((item) => {
-      this.addCandidate(item)
-    })
+      this.addCandidate(item);
+    });
   }
 
   addCandidatesForColumnsOfAnyTable(tables: Table[]) {
-    createCandidatesForColumnsOfAnyTable(tables, this.lastToken).forEach((item) => {
-      this.addCandidate(item)
-    })
+    createCandidatesForColumnsOfAnyTable(tables, this.lastToken).forEach(
+      (item) => {
+        this.addCandidate(item);
+      }
+    );
   }
 
   addCandidateIfStartsWithLastToken(item: CompletionItem) {
@@ -217,7 +222,7 @@ class Completer {
       parse(incompleteSubquery.text);
     } catch (e: unknown) {
       if (!(e instanceof Error)) {
-        throw e
+        throw e;
       }
       if (e.name !== "SyntaxError") {
         throw e;
@@ -248,7 +253,10 @@ class Completer {
   }
 
   addCandidatesForError(e: ParseError) {
-    const expectedLiteralNodes = e.expected?.filter((v): v is ExpectedLiteralNode => v.type === 'literal') || []
+    const expectedLiteralNodes =
+      e.expected?.filter(
+        (v): v is ExpectedLiteralNode => v.type === "literal"
+      ) || [];
     this.addCandidatesForExpectedLiterals(expectedLiteralNodes);
     this.addCandidatesForFunctions();
     this.addCandidatesForTables(this.schema.tables);
@@ -258,7 +266,10 @@ class Completer {
     const subqueryTables = createTablesFromFromNodes(fromNodes);
     const schemaAndSubqueries = this.schema.tables.concat(subqueryTables);
     this.addCandidatesForSelectStar(fromNodes, schemaAndSubqueries);
-    const expectedLiteralNodes = e.expected?.filter((v): v is ExpectedLiteralNode => v.type === 'literal') || []
+    const expectedLiteralNodes =
+      e.expected?.filter(
+        (v): v is ExpectedLiteralNode => v.type === "literal"
+      ) || [];
     this.addCandidatesForExpectedLiterals(expectedLiteralNodes);
     this.addCandidatesForFunctions();
     this.addCandidatesForScopedColumns(fromNodes, schemaAndSubqueries);
@@ -282,7 +293,7 @@ class Completer {
     if (joinType && expected.map((v) => v.text).find((v) => v === "JOIN")) {
       if (fromNodes && fromNodes.length > 0) {
         const fromNode = fromNodes[0];
-        const fromAlias = getAliasFromFromTableNode(fromNode)
+        const fromAlias = getAliasFromFromTableNode(fromNode);
         const fromTable = this.schema.tables.find((table) =>
           isTableMatch(fromNode, table)
         );
@@ -336,9 +347,7 @@ class Completer {
       this.addCandidateIfStartsWithLastToken(
         toCompletionItemForKeyword("FROM")
       );
-      this.addCandidateIfStartsWithLastToken(
-        toCompletionItemForKeyword("AS")
-      );
+      this.addCandidateIfStartsWithLastToken(toCompletionItemForKeyword("AS"));
     }
   }
 
@@ -485,7 +494,7 @@ class Completer {
                 this.lastToken,
                 makeColumnName(alias, col.columnName),
                 col.description,
-                ICONS.COLUMN,
+                ICONS.COLUMN
               );
             })
           );
@@ -500,7 +509,7 @@ class Completer {
     fromNodes
       .map((fromNode) => fromNode.as)
       .filter((aliasName) => aliasName && aliasName.startsWith(this.lastToken))
-      .map((aliasName) => toCompletionItemForAlias(aliasName || ''))
+      .map((aliasName) => toCompletionItemForAlias(aliasName || ""))
       .forEach((item) => this.addCandidate(item));
   }
 }

@@ -1,6 +1,6 @@
 import * as rpc from "@codingame/monaco-jsonrpc";
-import { createConnection } from 'vscode-languageserver/node';
-import { createServerWithConnection } from 'sql-language-server/src/createServer'
+import { createConnection } from "vscode-languageserver/node";
+import { createServerWithConnection } from "sql-language-server/src/createServer";
 
 export function launchServer(socket: rpc.IWebSocket) {
   const reader = new rpc.WebSocketMessageReader(socket);
@@ -10,7 +10,6 @@ export function launchServer(socket: rpc.IWebSocket) {
   if (asExternalProccess) {
     // start the language server as an external process
     // TODO: implement it
-
     // const extJsonServerPath = path.resolve(__dirname, "ext-json-server.js");
     // const socketConnection = server.createConnection(reader, writer, () =>
     //   socket.dispose()
@@ -29,7 +28,7 @@ export function launchServer(socket: rpc.IWebSocket) {
     // });
   } else {
     // start the language server inside the current process
-    const connection = createConnection(reader, writer)
-    createServerWithConnection(connection)
+    const connection = createConnection(reader, writer);
+    createServerWithConnection(connection);
   }
 }
