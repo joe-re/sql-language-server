@@ -32,6 +32,7 @@ import {
   createTablesFromFromNodes,
   findColumnAtPosition,
   getAllNestedFromNodes,
+  getFromNodeByPos,
 } from './complete/utils'
 import { Identifier } from './complete/Identifier'
 
@@ -110,7 +111,7 @@ class Completer {
         const fromNodes = getAllNestedFromNodes(
           parsedFromClause?.from?.tables || []
         )
-        const fromNodeOnCursor = this.getFromNodeByPos(fromNodes)
+        const fromNodeOnCursor = getFromNodeByPos(fromNodes, this.pos)
         if (
           fromNodeOnCursor &&
           fromNodeOnCursor.type === 'incomplete_subquery'
@@ -170,27 +171,6 @@ class Completer {
       }
     }
     this.candidates.push(item)
-  }
-
-  /**
-   * Finds the most deeply nested FROM node that have a range encompasing the position.
-   * In cases such as SELECT * FROM T1 JOIN (SELECT * FROM (SELECT * FROM T2 <pos>))
-   * We will get a list of nodes like this
-   * SELECT * FROM T1
-   * (SELECT * FROM
-   *    (SELECT * FROM T2))
-   * The idea is to reverse the list so that the most nested queries come first. Then
-   * apply a filter to keep only the FROM nodes which encompass the position and take
-   * the first one from that resulting list.
-   * @param fromNodes
-   * @param pos
-   * @returns
-   */
-  getFromNodeByPos(fromNodes: FromTableNode[]) {
-    return fromNodes
-      .reverse()
-      .filter((tableNode) => isPosInLocation(tableNode.location, this.pos))
-      .shift()
   }
 
   addCandidatesForTables(tables: Table[]) {
@@ -399,7 +379,7 @@ class Completer {
   addJoinCondidates(ast: SelectStatement) {
     // from clause: complete 'ON' keyword on 'INNER JOIN'
     if (ast.type === 'select' && Array.isArray(ast.from?.tables)) {
-      const fromTable = this.getFromNodeByPos(ast.from?.tables || [])
+      const fromTable = getFromNodeByPos(ast.from?.tables || [], this.pos)
       if (fromTable && fromTable.type === 'table') {
         this.addCandidatesForTables(this.schema.tables)
         this.addCandidateIfStartsWithLastToken(

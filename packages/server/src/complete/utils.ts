@@ -331,3 +331,24 @@ export function getAllNestedFromNodes(
     return result
   })
 }
+
+/**
+ * Finds the most deeply nested FROM node that have a range encompasing the position.
+ * In cases such as SELECT * FROM T1 JOIN (SELECT * FROM (SELECT * FROM T2 <pos>))
+ * We will get a list of nodes like this
+ * SELECT * FROM T1
+ * (SELECT * FROM
+ *    (SELECT * FROM T2))
+ * The idea is to reverse the list so that the most nested queries come first. Then
+ * apply a filter to keep only the FROM nodes which encompass the position and take
+ * the first one from that resulting list.
+ * @param fromNodes
+ * @param pos
+ * @returns
+ */
+export function getFromNodeByPos(fromNodes: FromTableNode[], pos: Pos) {
+  return fromNodes
+    .reverse()
+    .filter((tableNode) => isPosInLocation(tableNode.location, pos))
+    .shift()
+}
