@@ -3,9 +3,8 @@ import { SelectStatement } from '@joe-re/sql-parser'
 import { getNearestFromTableFromPos } from '../AstUtils'
 import { Table } from '../../database_libs/AbstractClient'
 import { toCompletionItemForKeyword } from '../CompletionItemUtils'
+import { Pos } from '../complete'
 import { createTableCandidates } from './createTableCandidates'
-
-type Pos = { line: number; column: number }
 
 export function createJoinCondidates(
   ast: SelectStatement,

@@ -1,7 +1,6 @@
 import { FromTableNode } from '@joe-re/sql-parser'
 import { Table } from '../database_libs/AbstractClient'
-
-type Pos = { line: number; column: number }
+import { Pos } from './complete'
 
 export function makeTableAlias(tableName: string): string {
   if (tableName.length > 3) {

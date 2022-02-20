@@ -35,7 +35,7 @@ import { createKeywordCandidatesFromExpectedLiterals } from './candidates/create
 import { createJoinTablesCandidates } from './candidates/createJoinTableCndidates'
 import { ICONS, toCompletionItemForKeyword } from './CompletionItemUtils'
 
-type Pos = { line: number; column: number }
+export type Pos = { line: number; column: number }
 
 const logger = log4js.getLogger()
 
