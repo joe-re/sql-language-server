@@ -1,7 +1,4 @@
 import { complete } from '../src/complete'
-import { Identifier } from '../src/complete/index'
-import * as StringUtils from '../src/complete/StringUtils'
-import { ICONS } from '../src/complete/CompletionItemUtils'
 
 describe('keyword completion', () => {
   test("complete 'SELECT' keyword", () => {
@@ -665,34 +662,6 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates[1].label).toEqual('`with spaces`.`sub space`')
   })
 
-  test('getLastToken', () => {
-    expect(StringUtils.getLastToken('SELECT  abc')).toEqual('abc')
-    expect(StringUtils.getLastToken('SELECT  abc.def')).toEqual('abc.def')
-    expect(StringUtils.getLastToken('SELECT  abc[0]')).toEqual('abc')
-    expect(StringUtils.getLastToken('SELECT  abc[0].')).toEqual('abc.')
-    expect(StringUtils.getLastToken('SELECT  abc[0].d')).toEqual('abc.d')
-    expect(StringUtils.getLastToken('SELECT  abc[0].def[0]')).toEqual('abc.def')
-    expect(StringUtils.getLastToken('SELECT  abc[0].def[0].')).toEqual(
-      'abc.def.'
-    )
-    expect(StringUtils.getLastToken('SELECT  abc[0].def[0].g')).toEqual(
-      'abc.def.g'
-    )
-
-    expect(StringUtils.getLastToken("SELECT  abc['key']")).toEqual('abc')
-    expect(StringUtils.getLastToken("SELECT  abc['key.name'].")).toEqual('abc.')
-    expect(StringUtils.getLastToken("SELECT  abc['key'].d")).toEqual('abc.d')
-    expect(StringUtils.getLastToken("SELECT  abc['key'].def['key']")).toEqual(
-      'abc.def'
-    )
-    expect(StringUtils.getLastToken("SELECT  abc['key'].def['key'].")).toEqual(
-      'abc.def.'
-    )
-    expect(StringUtils.getLastToken("SELECT  abc['key'].def[0].g")).toEqual(
-      'abc.def.g'
-    )
-  })
-
   test('with array subscripted', () => {
     const result = complete(
       'SELECT t.abc[0]. FROM TABLE1 as t',
@@ -1011,38 +980,5 @@ describe('DELETE statement', () => {
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('COLUMN1')
     expect(result.candidates[1].label).toEqual('COLUMN2')
-  })
-})
-
-describe('toCompletionItemForIdentifier', () => {
-  test('complete comlumn name', () => {
-    const item = new Identifier('col', 'column1', '', ICONS.COLUMN)
-    const completion = item.toCompletionItem()
-    expect(completion.label).toEqual('column1')
-  })
-  test('complete aliased comlumn name', () => {
-    const item = new Identifier('ali.col', 'ali.column1', '', ICONS.COLUMN)
-    const completion = item.toCompletionItem()
-    expect(completion.label).toEqual('column1')
-  })
-  test('complete aliased nested comlumn last part name', () => {
-    const item = new Identifier(
-      'ali.column1.sub',
-      'ali.column1.subcolumn2',
-      '',
-      ICONS.COLUMN
-    )
-    const completion = item.toCompletionItem()
-    expect(completion.label).toEqual('subcolumn2')
-  })
-  test('complete aliased nested comlumn first part name', () => {
-    const item = new Identifier(
-      'ali.colu',
-      'ali.column1.subcolumn2',
-      '',
-      ICONS.COLUMN
-    )
-    const completion = item.toCompletionItem()
-    expect(completion.label).toEqual('column1.subcolumn2')
   })
 })
