@@ -133,19 +133,23 @@ class Completer {
 
   addCandidatesForBasicKeyword() {
     createBasicKeywordCandidates().forEach((v) => {
-      this.addCandidate(v, this.lastToken)
+      this.addCandidate(v)
     })
   }
 
   addCandidatesForExpectedLiterals(expected: ExpectedLiteralNode[]) {
     createKeywordCandidatesFromExpectedLiterals(expected).forEach((v) => {
-      this.addCandidate(v, this.lastToken)
+      this.addCandidate(v)
     })
   }
 
-  addCandidate(item: CompletionItem, token?: string) {
-    // when token is passed and it doesn't matche to completion candidates, it doesn't add the item to candidates
-    if (token && !item.label.startsWith(token)) {
+  addCandidate(item: CompletionItem) {
+    // A keyword completion can be occured anyplace and need to suppress them.
+    if (
+      item.kind &&
+      item.kind === ICONS.KEYWORD &&
+      !item.label.startsWith(this.lastToken)
+    ) {
       return
     }
     // JupyterLab requires the dot or space character preceeding the <tab> key pressed
@@ -279,11 +283,11 @@ class Completer {
   addCandidatesForParsedSelectQuery(ast: SelectStatement) {
     this.addCandidatesForBasicKeyword()
     if (Array.isArray(ast.columns)) {
-      this.addCandidate(toCompletionItemForKeyword('FROM'), this.lastToken)
-      this.addCandidate(toCompletionItemForKeyword('AS'), this.lastToken)
+      this.addCandidate(toCompletionItemForKeyword('FROM'))
+      this.addCandidate(toCompletionItemForKeyword('AS'))
     }
     if (!ast.distinct) {
-      this.addCandidate(toCompletionItemForKeyword('DISTINCT'), this.lastToken)
+      this.addCandidate(toCompletionItemForKeyword('DISTINCT'))
     }
     const columnRef = findColumnAtPosition(ast, this.pos)
     if (!columnRef) {
@@ -332,8 +336,7 @@ class Completer {
       this.pos,
       this.lastToken
     ).forEach((v) => {
-      // TODO: need to organize
-      this.addCandidate(v, v.kind === ICONS.TABLE ? '' : this.lastToken)
+      this.addCandidate(v)
     })
   }
 
