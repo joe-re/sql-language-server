@@ -12,7 +12,7 @@ import {
 } from '@joe-re/sql-parser'
 import log4js from 'log4js'
 import { CompletionItem } from 'vscode-languageserver-types'
-import { Schema, Table } from './database_libs/AbstractClient'
+import { Schema, Table } from '../database_libs/AbstractClient'
 import {
   getRidOfAfterPosString,
   getLastToken,
@@ -21,23 +21,20 @@ import {
   findColumnAtPosition,
   getAllNestedFromNodes,
   getNearestFromTableFromPos,
-} from './complete/utils'
-import { createBasicKeywordCandidates } from './complete/candidates/createBasicKeywordCandidates'
-import { createTableCandidates } from './complete/candidates/createTableCandidates'
-import { createJoinCondidates } from './complete/candidates/createJoinCandidates'
+} from './utils'
+import { createBasicKeywordCandidates } from './candidates/createBasicKeywordCandidates'
+import { createTableCandidates } from './candidates/createTableCandidates'
+import { createJoinCondidates } from './candidates/createJoinCandidates'
 import {
   createCandidatesForColumnsOfAnyTable,
   createCandidatesForScopedColumns,
-} from './complete/candidates/createColumnCandidates'
-import { createAliasCandidates } from './complete/candidates/createAliasCandidates'
-import { createSelectAllColumnsCandidates } from './complete/candidates/createSelectAllColumnsCandidates'
-import { createFunctionCandidates } from './complete/candidates/createFunctionCandidates'
-import { createKeywordCandidatesFromExpectedLiterals } from './complete/candidates/createKeywordCandidatesFromExpectedLiterals'
-import { createJoinTablesCandidates } from './complete/candidates/createJoinTableCndidates'
-import {
-  ICONS,
-  toCompletionItemForKeyword,
-} from './complete/CompletionItemUtils'
+} from './candidates/createColumnCandidates'
+import { createAliasCandidates } from './candidates/createAliasCandidates'
+import { createSelectAllColumnsCandidates } from './candidates/createSelectAllColumnsCandidates'
+import { createFunctionCandidates } from './candidates/createFunctionCandidates'
+import { createKeywordCandidatesFromExpectedLiterals } from './candidates/createKeywordCandidatesFromExpectedLiterals'
+import { createJoinTablesCandidates } from './candidates/createJoinTableCndidates'
+import { ICONS, toCompletionItemForKeyword } from './CompletionItemUtils'
 
 type Pos = { line: number; column: number }
 
