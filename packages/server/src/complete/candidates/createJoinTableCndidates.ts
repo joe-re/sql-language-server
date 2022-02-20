@@ -2,10 +2,10 @@ import { FromTableNode, ExpectedLiteralNode } from '@joe-re/sql-parser'
 import { CompletionItem } from 'vscode-languageserver-types'
 import {
   getAliasFromFromTableNode,
-  isTableMatch,
   makeTableAlias,
   makeTableName,
-} from '../utils'
+} from '../StringUtils'
+import { isTableMatch } from '../AstUtils'
 import { Table } from '../../database_libs/AbstractClient'
 import { ICONS } from '../CompletionItemUtils'
 

@@ -1,8 +1,8 @@
 import {
   ColumnRefNode,
   FromTableNode,
-  NodeRange,
   SelectStatement,
+  NodeRange,
 } from '@joe-re/sql-parser'
 import log4js from 'log4js'
 import { Table } from '../database_libs/AbstractClient'
@@ -13,97 +13,6 @@ type Pos = { line: number; column: number }
 
 function isNotEmpty<T>(value: T | null | undefined): value is T {
   return value === null || value === undefined ? false : true
-}
-
-export function makeTableAlias(tableName: string): string {
-  if (tableName.length > 3) {
-    return tableName.substring(0, 3)
-  }
-  return tableName
-}
-
-export function getRidOfAfterPosString(sql: string, pos: Pos) {
-  return sql
-    .split('\n')
-    .filter((_v, idx) => pos.line >= idx)
-    .map((v, idx) => (idx === pos.line ? v.slice(0, pos.column) : v))
-    .join('\n')
-}
-
-// Gets the last token from the given string considering that tokens can contain dots.
-export function getLastToken(sql: string): string {
-  const match = sql.match(/^(?:.|\s)*[^A-z0-9\\.:'](.*?)$/)
-  if (match) {
-    let prevToken = ''
-    let currentToken = match[1]
-    while (currentToken != prevToken) {
-      prevToken = currentToken
-      currentToken = prevToken.replace(/\[.*?\]/, '')
-    }
-    return currentToken
-  }
-  return sql
-}
-
-export function makeTableName(table: Table): string {
-  if (table.catalog) {
-    return table.catalog + '.' + table.database + '.' + table.tableName
-  } else if (table.database) {
-    return table.database + '.' + table.tableName
-  }
-  return table.tableName
-}
-
-export function isPosInLocation(location: NodeRange, pos: Pos) {
-  return (
-    location.start.line === pos.line + 1 &&
-    location.start.column <= pos.column &&
-    location.end.line === pos.line + 1 &&
-    location.end.column >= pos.column
-  )
-}
-
-export function getAliasFromFromTableNode(node: FromTableNode): string {
-  if (node.as) {
-    return node.as
-  }
-  if (node.type === 'table') {
-    return node.table
-  }
-  return ''
-}
-
-/**
- * Test if the given table matches the fromNode.
- * @param fromNode
- * @param table
- * @returns
- */
-export function isTableMatch(fromNode: FromTableNode, table: Table): boolean {
-  switch (fromNode.type) {
-    case 'subquery': {
-      if (fromNode.as && fromNode.as !== table.tableName) {
-        return false
-      }
-      break
-    }
-    case 'table': {
-      if (fromNode.table && fromNode.table !== table.tableName) {
-        return false
-      }
-      if (fromNode.db && fromNode.db !== table.database) {
-        return false
-      }
-      if (fromNode.catalog && fromNode.catalog !== table.catalog) {
-        return false
-      }
-      break
-    }
-    default: {
-      return false
-    }
-  }
-  return true
 }
 
 export function getColumnRefByPos(
@@ -124,8 +33,13 @@ export function getColumnRefByPos(
   )
 }
 
-export function makeColumnName(alias: string, columnName: string) {
-  return alias ? alias + '.' + columnName : columnName
+export function isPosInLocation(location: NodeRange, pos: Pos) {
+  return (
+    location.start.line === pos.line + 1 &&
+    location.start.column <= pos.column &&
+    location.end.line === pos.line + 1 &&
+    location.end.column >= pos.column
+  )
 }
 
 export function createTablesFromFromNodes(fromNodes: FromTableNode[]): Table[] {
@@ -233,4 +147,37 @@ export function getNearestFromTableFromPos(
       .filter((tableNode) => isPosInLocation(tableNode.location, pos))
       .shift() ?? null
   )
+}
+
+/**
+ * Test if the given table matches the fromNode.
+ * @param fromNode
+ * @param table
+ * @returns
+ */
+export function isTableMatch(fromNode: FromTableNode, table: Table): boolean {
+  switch (fromNode.type) {
+    case 'subquery': {
+      if (fromNode.as && fromNode.as !== table.tableName) {
+        return false
+      }
+      break
+    }
+    case 'table': {
+      if (fromNode.table && fromNode.table !== table.tableName) {
+        return false
+      }
+      if (fromNode.db && fromNode.db !== table.database) {
+        return false
+      }
+      if (fromNode.catalog && fromNode.catalog !== table.catalog) {
+        return false
+      }
+      break
+    }
+    default: {
+      return false
+    }
+  }
+  return true
 }

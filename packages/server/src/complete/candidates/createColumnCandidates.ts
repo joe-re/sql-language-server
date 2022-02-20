@@ -1,11 +1,8 @@
 import { CompletionItem } from 'vscode-languageserver-types'
 import { FromTableNode } from '@joe-re/sql-parser'
 import { Table } from '../../database_libs/AbstractClient'
-import {
-  getAliasFromFromTableNode,
-  isTableMatch,
-  makeColumnName,
-} from '../utils'
+import { getAliasFromFromTableNode, makeColumnName } from '../StringUtils'
+import { isTableMatch } from '../AstUtils'
 import { ICONS } from '../CompletionItemUtils'
 import { Identifier } from '../Identifier'
 

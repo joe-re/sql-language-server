@@ -13,15 +13,14 @@ import {
 import log4js from 'log4js'
 import { CompletionItem } from 'vscode-languageserver-types'
 import { Schema, Table } from '../database_libs/AbstractClient'
+import { getRidOfAfterPosString, getLastToken } from './StringUtils'
 import {
-  getRidOfAfterPosString,
-  getLastToken,
   isPosInLocation,
   createTablesFromFromNodes,
   findColumnAtPosition,
   getAllNestedFromNodes,
   getNearestFromTableFromPos,
-} from './utils'
+} from './AstUtils'
 import { createBasicKeywordCandidates } from './candidates/createBasicKeywordCandidates'
 import { createTableCandidates } from './candidates/createTableCandidates'
 import { createJoinCondidates } from './candidates/createJoinCandidates'

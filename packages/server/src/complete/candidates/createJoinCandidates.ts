@@ -1,6 +1,6 @@
 import { CompletionItem } from 'vscode-languageserver-types'
 import { SelectStatement } from '@joe-re/sql-parser'
-import { getNearestFromTableFromPos } from '../utils'
+import { getNearestFromTableFromPos } from '../AstUtils'
 import { Table } from '../../database_libs/AbstractClient'
 import { toCompletionItemForKeyword } from '../CompletionItemUtils'
 import { createTableCandidates } from './createTableCandidates'

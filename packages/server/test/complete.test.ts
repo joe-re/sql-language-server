@@ -1,5 +1,6 @@
 import { complete } from '../src/complete'
-import { Identifier, utils } from '../src/complete/index'
+import { Identifier } from '../src/complete/index'
+import * as StringUtils from '../src/complete/StringUtils'
 import { ICONS } from '../src/complete/CompletionItemUtils'
 
 describe('keyword completion', () => {
@@ -665,25 +666,29 @@ describe('Nested ColumnName completion', () => {
   })
 
   test('getLastToken', () => {
-    expect(utils.getLastToken('SELECT  abc')).toEqual('abc')
-    expect(utils.getLastToken('SELECT  abc.def')).toEqual('abc.def')
-    expect(utils.getLastToken('SELECT  abc[0]')).toEqual('abc')
-    expect(utils.getLastToken('SELECT  abc[0].')).toEqual('abc.')
-    expect(utils.getLastToken('SELECT  abc[0].d')).toEqual('abc.d')
-    expect(utils.getLastToken('SELECT  abc[0].def[0]')).toEqual('abc.def')
-    expect(utils.getLastToken('SELECT  abc[0].def[0].')).toEqual('abc.def.')
-    expect(utils.getLastToken('SELECT  abc[0].def[0].g')).toEqual('abc.def.g')
-
-    expect(utils.getLastToken("SELECT  abc['key']")).toEqual('abc')
-    expect(utils.getLastToken("SELECT  abc['key.name'].")).toEqual('abc.')
-    expect(utils.getLastToken("SELECT  abc['key'].d")).toEqual('abc.d')
-    expect(utils.getLastToken("SELECT  abc['key'].def['key']")).toEqual(
-      'abc.def'
-    )
-    expect(utils.getLastToken("SELECT  abc['key'].def['key'].")).toEqual(
+    expect(StringUtils.getLastToken('SELECT  abc')).toEqual('abc')
+    expect(StringUtils.getLastToken('SELECT  abc.def')).toEqual('abc.def')
+    expect(StringUtils.getLastToken('SELECT  abc[0]')).toEqual('abc')
+    expect(StringUtils.getLastToken('SELECT  abc[0].')).toEqual('abc.')
+    expect(StringUtils.getLastToken('SELECT  abc[0].d')).toEqual('abc.d')
+    expect(StringUtils.getLastToken('SELECT  abc[0].def[0]')).toEqual('abc.def')
+    expect(StringUtils.getLastToken('SELECT  abc[0].def[0].')).toEqual(
       'abc.def.'
     )
-    expect(utils.getLastToken("SELECT  abc['key'].def[0].g")).toEqual(
+    expect(StringUtils.getLastToken('SELECT  abc[0].def[0].g')).toEqual(
+      'abc.def.g'
+    )
+
+    expect(StringUtils.getLastToken("SELECT  abc['key']")).toEqual('abc')
+    expect(StringUtils.getLastToken("SELECT  abc['key.name'].")).toEqual('abc.')
+    expect(StringUtils.getLastToken("SELECT  abc['key'].d")).toEqual('abc.d')
+    expect(StringUtils.getLastToken("SELECT  abc['key'].def['key']")).toEqual(
+      'abc.def'
+    )
+    expect(StringUtils.getLastToken("SELECT  abc['key'].def['key'].")).toEqual(
+      'abc.def.'
+    )
+    expect(StringUtils.getLastToken("SELECT  abc['key'].def[0].g")).toEqual(
       'abc.def.g'
     )
   })
