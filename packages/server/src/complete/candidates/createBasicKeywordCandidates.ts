@@ -1,4 +1,4 @@
-import { toCompletionItemForKeyword } from '../utils'
+import { toCompletionItemForKeyword } from '../CompletionItemUtils'
 
 const CLAUSES: string[] = [
   'SELECT',

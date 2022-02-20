@@ -1,6 +1,6 @@
 import { CompletionItem } from 'vscode-languageserver-types'
 import { FromTableNode } from '@joe-re/sql-parser'
-import { toCompletionItemForAlias } from '../utils'
+import { toCompletionItemForAlias } from '../CompletionItemUtils'
 
 export function createAliasCandidates(
   fromNodes: FromTableNode[],

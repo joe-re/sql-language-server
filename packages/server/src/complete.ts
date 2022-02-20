@@ -17,8 +17,6 @@ import {
   getRidOfAfterPosString,
   getLastToken,
   isPosInLocation,
-  toCompletionItemForKeyword,
-  ICONS,
   createTablesFromFromNodes,
   findColumnAtPosition,
   getAllNestedFromNodes,
@@ -36,6 +34,10 @@ import { createSelectAllColumnsCandidates } from './complete/candidates/createSe
 import { createFunctionCandidates } from './complete/candidates/createFunctionCandidates'
 import { createKeywordCandidatesFromExpectedLiterals } from './complete/candidates/createKeywordCandidatesFromExpectedLiterals'
 import { createJoinTablesCandidates } from './complete/candidates/createJoinTableCndidates'
+import {
+  ICONS,
+  toCompletionItemForKeyword,
+} from './complete/CompletionItemUtils'
 
 type Pos = { line: number; column: number }
 

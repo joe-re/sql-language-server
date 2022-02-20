@@ -3,10 +3,10 @@ import { FromTableNode } from '@joe-re/sql-parser'
 import { Table } from '../../database_libs/AbstractClient'
 import {
   getAliasFromFromTableNode,
-  ICONS,
   isTableMatch,
   makeColumnName,
 } from '../utils'
+import { ICONS } from '../CompletionItemUtils'
 import { Identifier } from '../Identifier'
 
 export function createCandidatesForColumnsOfAnyTable(

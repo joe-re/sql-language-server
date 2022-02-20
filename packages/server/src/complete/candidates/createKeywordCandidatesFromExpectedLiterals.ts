@@ -1,6 +1,6 @@
 import { ExpectedLiteralNode } from '@joe-re/sql-parser'
 import { CompletionItem } from 'vscode-languageserver-types'
-import { toCompletionItemForKeyword } from '../utils'
+import { toCompletionItemForKeyword } from '../CompletionItemUtils'
 
 // Check if parser expects us to terminate a single quote value or double quoted column name
 // SELECT TABLE1.COLUMN1 FROM TABLE1 WHERE TABLE1.COLUMN1 = "hoge.

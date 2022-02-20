@@ -2,12 +2,12 @@ import { FromTableNode, ExpectedLiteralNode } from '@joe-re/sql-parser'
 import { CompletionItem } from 'vscode-languageserver-types'
 import {
   getAliasFromFromTableNode,
-  ICONS,
   isTableMatch,
   makeTableAlias,
   makeTableName,
 } from '../utils'
 import { Table } from '../../database_libs/AbstractClient'
+import { ICONS } from '../CompletionItemUtils'
 
 export function createJoinTablesCandidates(
   tables: Table[],

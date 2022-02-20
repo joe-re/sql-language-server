@@ -1,5 +1,6 @@
 import { complete } from '../src/complete'
 import { Identifier, utils } from '../src/complete/index'
+import { ICONS } from '../src/complete/CompletionItemUtils'
 
 describe('keyword completion', () => {
   test("complete 'SELECT' keyword", () => {
@@ -1010,17 +1011,12 @@ describe('DELETE statement', () => {
 
 describe('toCompletionItemForIdentifier', () => {
   test('complete comlumn name', () => {
-    const item = new Identifier('col', 'column1', '', utils.ICONS.COLUMN)
+    const item = new Identifier('col', 'column1', '', ICONS.COLUMN)
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1')
   })
   test('complete aliased comlumn name', () => {
-    const item = new Identifier(
-      'ali.col',
-      'ali.column1',
-      '',
-      utils.ICONS.COLUMN
-    )
+    const item = new Identifier('ali.col', 'ali.column1', '', ICONS.COLUMN)
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1')
   })
@@ -1029,7 +1025,7 @@ describe('toCompletionItemForIdentifier', () => {
       'ali.column1.sub',
       'ali.column1.subcolumn2',
       '',
-      utils.ICONS.COLUMN
+      ICONS.COLUMN
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('subcolumn2')
@@ -1039,7 +1035,7 @@ describe('toCompletionItemForIdentifier', () => {
       'ali.colu',
       'ali.column1.subcolumn2',
       '',
-      utils.ICONS.COLUMN
+      ICONS.COLUMN
     )
     const completion = item.toCompletionItem()
     expect(completion.label).toEqual('column1.subcolumn2')

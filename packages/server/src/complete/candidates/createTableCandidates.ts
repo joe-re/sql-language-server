@@ -1,6 +1,6 @@
 import { Table } from '../../database_libs/AbstractClient'
-import { ICONS } from '../utils'
 import { Identifier } from '../Identifier'
+import { ICONS } from '../CompletionItemUtils'
 
 /**
  * Given a table returns all possible ways to refer to it.

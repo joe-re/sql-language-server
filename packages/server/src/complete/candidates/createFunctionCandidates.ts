@@ -1,5 +1,5 @@
-import { toCompletionItemForFunction } from '../utils'
 import { DbFunction } from '../../database_libs/AbstractClient'
+import { toCompletionItemForFunction } from '../CompletionItemUtils'
 
 export function createFunctionCandidates(
   functions: DbFunction[],

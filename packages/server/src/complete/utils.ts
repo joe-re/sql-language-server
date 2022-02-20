@@ -4,22 +4,12 @@ import {
   NodeRange,
   SelectStatement,
 } from '@joe-re/sql-parser'
-import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types'
 import log4js from 'log4js'
-import { Table, DbFunction } from '../database_libs/AbstractClient'
+import { Table } from '../database_libs/AbstractClient'
 
 const logger = log4js.getLogger()
 
 type Pos = { line: number; column: number }
-
-export const ICONS = {
-  KEYWORD: CompletionItemKind.Text,
-  COLUMN: CompletionItemKind.Interface,
-  TABLE: CompletionItemKind.Field,
-  FUNCTION: CompletionItemKind.Property,
-  ALIAS: CompletionItemKind.Variable,
-  UTILITY: CompletionItemKind.Event,
-}
 
 function isNotEmpty<T>(value: T | null | undefined): value is T {
   return value === null || value === undefined ? false : true
@@ -71,34 +61,6 @@ export function isPosInLocation(location: NodeRange, pos: Pos) {
     location.end.line === pos.line + 1 &&
     location.end.column >= pos.column
   )
-}
-
-export function toCompletionItemForFunction(f: DbFunction): CompletionItem {
-  const item: CompletionItem = {
-    label: f.name,
-    detail: 'function',
-    kind: ICONS.FUNCTION,
-    documentation: f.description,
-  }
-  return item
-}
-
-export function toCompletionItemForAlias(alias: string): CompletionItem {
-  const item: CompletionItem = {
-    label: alias,
-    detail: 'alias',
-    kind: ICONS.ALIAS,
-  }
-  return item
-}
-
-export function toCompletionItemForKeyword(name: string): CompletionItem {
-  const item: CompletionItem = {
-    label: name,
-    kind: ICONS.KEYWORD,
-    detail: 'keyword',
-  }
-  return item
 }
 
 export function getAliasFromFromTableNode(node: FromTableNode): string {

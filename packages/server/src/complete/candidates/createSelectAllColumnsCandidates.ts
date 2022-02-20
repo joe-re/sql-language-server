@@ -1,7 +1,8 @@
 import { FromTableNode } from '@joe-re/sql-parser'
 import { Table } from '../../database_libs/AbstractClient'
-import { ICONS, makeColumnName } from '../utils'
+import { makeColumnName } from '../utils'
 import { isTableMatch, getAliasFromFromTableNode } from '../utils'
+import { ICONS } from '../CompletionItemUtils'
 
 export function createSelectAllColumnsCandidates(
   fromNodes: FromTableNode[],
