@@ -14,42 +14,32 @@ import log4js from 'log4js'
 import { CompletionItem } from 'vscode-languageserver-types'
 import { Schema, Table } from './database_libs/AbstractClient'
 import {
-  makeTableAlias,
   getRidOfAfterPosString,
   getLastToken,
-  makeTableName,
   isPosInLocation,
   toCompletionItemForKeyword,
-  toCompletionItemForAlias,
-  toCompletionItemForFunction,
   ICONS,
-  createCandidatesForColumnsOfAnyTable,
-  createCandidatesForTables,
-  createCandidatesForExpectedLiterals,
-  getAliasFromFromTableNode,
-  isTableMatch,
-  makeColumnName,
   createTablesFromFromNodes,
   findColumnAtPosition,
   getAllNestedFromNodes,
-  getFromNodeByPos,
+  getNearestFromTableFromPos,
 } from './complete/utils'
-import { Identifier } from './complete/Identifier'
+import { createBasicKeywordCandidates } from './complete/candidates/createBasicKeywordCandidates'
+import { createTableCandidates } from './complete/candidates/createTableCandidates'
+import { createJoinCondidates } from './complete/candidates/createJoinCandidates'
+import {
+  createCandidatesForColumnsOfAnyTable,
+  createCandidatesForScopedColumns,
+} from './complete/candidates/createColumnCandidates'
+import { createAliasCandidates } from './complete/candidates/createAliasCandidates'
+import { createSelectAllColumnsCandidates } from './complete/candidates/createSelectAllColumnsCandidates'
+import { createFunctionCandidates } from './complete/candidates/createFunctionCandidates'
+import { createKeywordCandidatesFromExpectedLiterals } from './complete/candidates/createKeywordCandidatesFromExpectedLiterals'
+import { createJoinTablesCandidates } from './complete/candidates/createJoinTableCndidates'
 
 type Pos = { line: number; column: number }
 
 const logger = log4js.getLogger()
-
-const CLAUSES: string[] = [
-  'SELECT',
-  'WHERE',
-  'ORDER BY',
-  'GROUP BY',
-  'LIMIT',
-  '--',
-  '/*',
-  '(',
-]
 
 function getFromNodesFromClause(sql: string): FromClauseParserResult | null {
   try {
@@ -111,7 +101,7 @@ class Completer {
         const fromNodes = getAllNestedFromNodes(
           parsedFromClause?.from?.tables || []
         )
-        const fromNodeOnCursor = getFromNodeByPos(fromNodes, this.pos)
+        const fromNodeOnCursor = getNearestFromTableFromPos(fromNodes, this.pos)
         if (
           fromNodeOnCursor &&
           fromNodeOnCursor.type === 'incomplete_subquery'
@@ -142,18 +132,22 @@ class Completer {
   }
 
   addCandidatesForBasicKeyword() {
-    CLAUSES.map((v) => toCompletionItemForKeyword(v)).forEach((v) =>
-      this.addCandidateIfStartsWithLastToken(v)
-    )
-  }
-
-  addCandidatesForExpectedLiterals(expected: ExpectedLiteralNode[]) {
-    createCandidatesForExpectedLiterals(expected).forEach((v) => {
-      this.addCandidateIfStartsWithLastToken(v)
+    createBasicKeywordCandidates().forEach((v) => {
+      this.addCandidate(v, this.lastToken)
     })
   }
 
-  addCandidate(item: CompletionItem) {
+  addCandidatesForExpectedLiterals(expected: ExpectedLiteralNode[]) {
+    createKeywordCandidatesFromExpectedLiterals(expected).forEach((v) => {
+      this.addCandidate(v, this.lastToken)
+    })
+  }
+
+  addCandidate(item: CompletionItem, token?: string) {
+    // when token is passed and it doesn't matche to completion candidates, it doesn't add the item to candidates
+    if (token && !item.label.startsWith(token)) {
+      return
+    }
     // JupyterLab requires the dot or space character preceeding the <tab> key pressed
     // If the dot or space character are not added to the label then searching
     // in the list of suggestion does not work.
@@ -174,7 +168,7 @@ class Completer {
   }
 
   addCandidatesForTables(tables: Table[]) {
-    createCandidatesForTables(tables, this.lastToken).forEach((item) => {
+    createTableCandidates(tables, this.lastToken).forEach((item) => {
       this.addCandidate(item)
     })
   }
@@ -185,12 +179,6 @@ class Completer {
         this.addCandidate(item)
       }
     )
-  }
-
-  addCandidateIfStartsWithLastToken(item: CompletionItem) {
-    if (item.label.startsWith(this.lastToken)) {
-      this.addCandidate(item)
-    }
   }
 
   addCandidatesForIncompleteSubquery(
@@ -264,47 +252,14 @@ class Completer {
     expected: ExpectedLiteralNode[],
     fromNodes: FromTableNode[]
   ) {
-    let joinType = ''
-    if ('INNER'.startsWith(this.lastToken)) joinType = 'INNER'
-    if ('LEFT'.startsWith(this.lastToken)) joinType = 'LEFT'
-    if ('RIGH'.startsWith(this.lastToken)) joinType = 'RIGHT'
-
-    if (joinType && expected.map((v) => v.text).find((v) => v === 'JOIN')) {
-      if (fromNodes && fromNodes.length > 0) {
-        const fromNode = fromNodes[0]
-        const fromAlias = getAliasFromFromTableNode(fromNode)
-        const fromTable = this.schema.tables.find((table) =>
-          isTableMatch(fromNode, table)
-        )
-
-        this.schema.tables
-          .filter((table) => table != fromTable)
-          .forEach((table) => {
-            table.columns
-              .filter((column) =>
-                fromTable?.columns
-                  .map((col) => col.columnName)
-                  .includes(column.columnName)
-              )
-              .map((column) => {
-                return {
-                  tableName: makeTableName(table),
-                  alias: makeTableAlias(table.tableName),
-                  columnName: column.columnName,
-                }
-              })
-              .map((match) => {
-                const label = `${joinType} JOIN ${match.tableName} AS ${match.alias} ON ${match.alias}.${match.columnName} = ${fromAlias}.${match.columnName}`
-                return {
-                  label: label,
-                  detail: 'utility',
-                  kind: ICONS.UTILITY,
-                }
-              })
-              .forEach((item) => this.addCandidate(item))
-          })
-      }
-    }
+    createJoinTablesCandidates(
+      this.schema.tables,
+      expected,
+      fromNodes,
+      this.lastToken
+    ).forEach((v) => {
+      this.addCandidate(v)
+    })
   }
 
   addCandidatesForParsedDeleteStatement(ast: DeleteStatement) {
@@ -321,20 +276,14 @@ class Completer {
     }
   }
 
-  completeSelectStatement(ast: SelectStatement) {
-    if (Array.isArray(ast.columns)) {
-      this.addCandidateIfStartsWithLastToken(toCompletionItemForKeyword('FROM'))
-      this.addCandidateIfStartsWithLastToken(toCompletionItemForKeyword('AS'))
-    }
-  }
-
   addCandidatesForParsedSelectQuery(ast: SelectStatement) {
     this.addCandidatesForBasicKeyword()
-    this.completeSelectStatement(ast)
+    if (Array.isArray(ast.columns)) {
+      this.addCandidate(toCompletionItemForKeyword('FROM'), this.lastToken)
+      this.addCandidate(toCompletionItemForKeyword('AS'), this.lastToken)
+    }
     if (!ast.distinct) {
-      this.addCandidateIfStartsWithLastToken(
-        toCompletionItemForKeyword('DISTINCT')
-      )
+      this.addCandidate(toCompletionItemForKeyword('DISTINCT'), this.lastToken)
     }
     const columnRef = findColumnAtPosition(ast, this.pos)
     if (!columnRef) {
@@ -377,117 +326,51 @@ class Completer {
   }
 
   addJoinCondidates(ast: SelectStatement) {
-    // from clause: complete 'ON' keyword on 'INNER JOIN'
-    if (ast.type === 'select' && Array.isArray(ast.from?.tables)) {
-      const fromTable = getFromNodeByPos(ast.from?.tables || [], this.pos)
-      if (fromTable && fromTable.type === 'table') {
-        this.addCandidatesForTables(this.schema.tables)
-        this.addCandidateIfStartsWithLastToken(
-          toCompletionItemForKeyword('INNER JOIN')
-        )
-        this.addCandidateIfStartsWithLastToken(
-          toCompletionItemForKeyword('LEFT JOIN')
-        )
-        if (fromTable.join && !fromTable.on) {
-          this.addCandidateIfStartsWithLastToken(
-            toCompletionItemForKeyword('ON')
-          )
-        }
-      }
-    }
+    createJoinCondidates(
+      ast,
+      this.schema.tables,
+      this.pos,
+      this.lastToken
+    ).forEach((v) => {
+      // TODO: need to organize
+      this.addCandidate(v, v.kind === ICONS.TABLE ? '' : this.lastToken)
+    })
   }
 
   addCandidatesForFunctions() {
     console.time('addCandidatesForFunctions')
-    if (!this.lastToken) {
-      // Nothing was typed, return all lowercase functions
-      this.schema.functions
-        .map((func) => toCompletionItemForFunction(func))
-        .forEach((item) => this.addCandidate(item))
-    } else {
-      // If user typed the start of the function
-      const lower = this.lastToken.toLowerCase()
-      const isTypedUpper = this.lastToken != lower
-      this.schema.functions
-        // Search using lowercase prefix
-        .filter((v) => v.name.startsWith(lower))
-        // If typed string is in upper case, then return upper case suggestions
-        .map((v) => {
-          if (isTypedUpper) v.name = v.name.toUpperCase()
-          return v
-        })
-        .map((v) => toCompletionItemForFunction(v))
-        .forEach((item) => this.addCandidate(item))
-    }
+    createFunctionCandidates(this.schema.functions, this.lastToken).forEach(
+      (v) => {
+        this.addCandidate(v)
+      }
+    )
     console.timeEnd('addCandidatesForFunctions')
   }
 
   addCandidatesForSelectStar(fromNodes: FromTableNode[], tables: Table[]) {
     console.time('addCandidatesForSelectStar')
-    tables
-      .flatMap((table) => {
-        return fromNodes
-          .filter((fromNode) => isTableMatch(fromNode, table))
-          .map(getAliasFromFromTableNode)
-          .filter(
-            () =>
-              this.lastToken.toUpperCase() === 'SELECT' || // complete SELECT keyword
-              this.lastToken === ''
-          ) // complete at space after SELECT
-          .map((alias) => {
-            const columnNames = table.columns
-              .map((col) => makeColumnName(alias, col.columnName))
-              .join(',\n')
-            const label = `Select all columns from ${alias}`
-            let prefix = ''
-            if (this.lastToken) {
-              prefix = this.lastToken + '\n'
-            }
-
-            return {
-              label: label,
-              insertText: prefix + columnNames,
-              filterText: prefix + label,
-              detail: 'utility',
-              kind: ICONS.UTILITY,
-            }
-          })
-      })
-      .forEach((item) => this.addCandidate(item))
+    createSelectAllColumnsCandidates(fromNodes, tables, this.lastToken).forEach(
+      (v) => {
+        this.addCandidate(v)
+      }
+    )
     console.timeEnd('addCandidatesForSelectStar')
   }
 
   addCandidatesForScopedColumns(fromNodes: FromTableNode[], tables: Table[]) {
     console.time('addCandidatesForScopedColumns')
-    tables
-      .flatMap((table) => {
-        return fromNodes
-          .filter((fromNode) => isTableMatch(fromNode, table))
-          .map(getAliasFromFromTableNode)
-          .filter((alias) => this.lastToken.startsWith(alias + '.'))
-          .flatMap((alias) =>
-            table.columns.map((col) => {
-              return new Identifier(
-                this.lastToken,
-                makeColumnName(alias, col.columnName),
-                col.description,
-                ICONS.COLUMN
-              )
-            })
-          )
-      })
-      .filter((item) => item.matchesLastToken())
-      .map((item) => item.toCompletionItem())
-      .forEach((item) => this.addCandidate(item))
+    createCandidatesForScopedColumns(fromNodes, tables, this.lastToken).forEach(
+      (v) => {
+        this.addCandidate(v)
+      }
+    )
     console.timeEnd('addCandidatesForScopedColumns')
   }
 
   addCandidatesForAliases(fromNodes: FromTableNode[]) {
-    fromNodes
-      .map((fromNode) => fromNode.as)
-      .filter((aliasName) => aliasName && aliasName.startsWith(this.lastToken))
-      .map((aliasName) => toCompletionItemForAlias(aliasName || ''))
-      .forEach((item) => this.addCandidate(item))
+    createAliasCandidates(fromNodes, this.lastToken).forEach((v) => {
+      this.addCandidate(v)
+    })
   }
 }
 

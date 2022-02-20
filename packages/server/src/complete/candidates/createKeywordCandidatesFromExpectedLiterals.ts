@@ -1,0 +1,45 @@
+import { ExpectedLiteralNode } from '@joe-re/sql-parser'
+import { CompletionItem } from 'vscode-languageserver-types'
+import { toCompletionItemForKeyword } from '../utils'
+
+const UNDESIRED_LITERAL = [
+  '+',
+  '-',
+  '*',
+  '$',
+  ':',
+  'COUNT',
+  'AVG',
+  'SUM',
+  'MIN',
+  'MAX',
+  '`',
+  '"',
+  "'",
+]
+
+export function createKeywordCandidatesFromExpectedLiterals(
+  nodes: ExpectedLiteralNode[]
+): CompletionItem[] {
+  const literals = nodes.map((v) => v.text)
+  const uniqueLiterals = [...new Set(literals)]
+  return uniqueLiterals
+    .filter((v) => !UNDESIRED_LITERAL.includes(v))
+    .map((v) => {
+      switch (v) {
+        case 'ORDER':
+          return 'ORDER BY'
+        case 'GROUP':
+          return 'GROUP BY'
+        case 'LEFT':
+          return 'LEFT JOIN'
+        case 'RIGHT':
+          return 'RIGHT JOIN'
+        case 'INNER':
+          return 'INNER JOIN'
+        default:
+          return v
+      }
+    })
+    .map((v) => toCompletionItemForKeyword(v))
+}

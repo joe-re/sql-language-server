@@ -8,7 +8,6 @@ import {
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types'
 import log4js from 'log4js'
 import { Table, DbFunction } from '../database_libs/AbstractClient'
-import { Identifier } from './Identifier'
 
 const logger = log4js.getLogger()
 
@@ -117,49 +116,6 @@ export function toCompletionItemForKeyword(name: string): CompletionItem {
     detail: 'keyword',
   }
   return item
-}
-
-export function createCandidatesForColumnsOfAnyTable(
-  tables: Table[],
-  lastToken: string
-): CompletionItem[] {
-  return tables
-    .flatMap((table) => table.columns)
-    .map((column) => {
-      return new Identifier(
-        lastToken,
-        column.columnName,
-        column.description,
-        ICONS.TABLE
-      )
-    })
-    .filter((item) => item.matchesLastToken())
-    .map((item) => item.toCompletionItem())
-}
-
-export function createCandidatesForTables(tables: Table[], lastToken: string) {
-  return tables
-    .flatMap((table) => allTableNameCombinations(table))
-    .map((aTableNameVariant) => {
-      return new Identifier(lastToken, aTableNameVariant, '', ICONS.TABLE)
-    })
-    .filter((item) => item.matchesLastToken())
-    .map((item) => item.toCompletionItem())
-}
-
-/**
- * Given a table returns all possible ways to refer to it.
- * That is by table name only, using the database scope,
- * using the catalog and database scopes.
- * @param table
- * @returns
- */
-export function allTableNameCombinations(table: Table): string[] {
-  const names = [table.tableName]
-  if (table.database) names.push(table.database + '.' + table.tableName)
-  if (table.catalog)
-    names.push(table.catalog + '.' + table.database + '.' + table.tableName)
-  return names
 }
 
 // Check if parser expects us to terminate a single quote value or double quoted column name
@@ -346,9 +302,14 @@ export function getAllNestedFromNodes(
  * @param pos
  * @returns
  */
-export function getFromNodeByPos(fromNodes: FromTableNode[], pos: Pos) {
-  return fromNodes
-    .reverse()
-    .filter((tableNode) => isPosInLocation(tableNode.location, pos))
-    .shift()
+export function getNearestFromTableFromPos(
+  fromNodes: FromTableNode[],
+  pos: Pos
+): FromTableNode | null {
+  return (
+    fromNodes
+      .reverse()
+      .filter((tableNode) => isPosInLocation(tableNode.location, pos))
+      .shift() ?? null
+  )
 }
