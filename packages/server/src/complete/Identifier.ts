@@ -1,5 +1,5 @@
 import { CompletionItem, CompletionItemKind } from 'vscode-languageserver-types'
-import { makeTableAlias } from './utils'
+import { makeTableAlias } from './StringUtils'
 
 export const ICONS = {
   KEYWORD: CompletionItemKind.Text,
@@ -40,7 +40,7 @@ export class Identifier {
 
   toCompletionItem(): CompletionItem {
     const idx = this.lastToken.lastIndexOf('.')
-    const label = this.identifier.substr(idx + 1)
+    const label = this.identifier.substring(idx + 1)
     let kindName: string
     let tableAlias = ''
     if (this.kind === ICONS.TABLE) {

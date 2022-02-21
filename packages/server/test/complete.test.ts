@@ -1,5 +1,4 @@
 import { complete } from '../src/complete'
-import { Identifier, utils } from '../src/complete/index'
 
 describe('keyword completion', () => {
   test("complete 'SELECT' keyword", () => {
@@ -663,30 +662,6 @@ describe('Nested ColumnName completion', () => {
     expect(result.candidates[1].label).toEqual('`with spaces`.`sub space`')
   })
 
-  test('getLastToken', () => {
-    expect(utils.getLastToken('SELECT  abc')).toEqual('abc')
-    expect(utils.getLastToken('SELECT  abc.def')).toEqual('abc.def')
-    expect(utils.getLastToken('SELECT  abc[0]')).toEqual('abc')
-    expect(utils.getLastToken('SELECT  abc[0].')).toEqual('abc.')
-    expect(utils.getLastToken('SELECT  abc[0].d')).toEqual('abc.d')
-    expect(utils.getLastToken('SELECT  abc[0].def[0]')).toEqual('abc.def')
-    expect(utils.getLastToken('SELECT  abc[0].def[0].')).toEqual('abc.def.')
-    expect(utils.getLastToken('SELECT  abc[0].def[0].g')).toEqual('abc.def.g')
-
-    expect(utils.getLastToken("SELECT  abc['key']")).toEqual('abc')
-    expect(utils.getLastToken("SELECT  abc['key.name'].")).toEqual('abc.')
-    expect(utils.getLastToken("SELECT  abc['key'].d")).toEqual('abc.d')
-    expect(utils.getLastToken("SELECT  abc['key'].def['key']")).toEqual(
-      'abc.def'
-    )
-    expect(utils.getLastToken("SELECT  abc['key'].def['key'].")).toEqual(
-      'abc.def.'
-    )
-    expect(utils.getLastToken("SELECT  abc['key'].def[0].g")).toEqual(
-      'abc.def.g'
-    )
-  })
-
   test('with array subscripted', () => {
     const result = complete(
       'SELECT t.abc[0]. FROM TABLE1 as t',
@@ -1005,43 +980,5 @@ describe('DELETE statement', () => {
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('COLUMN1')
     expect(result.candidates[1].label).toEqual('COLUMN2')
-  })
-})
-
-describe('toCompletionItemForIdentifier', () => {
-  test('complete comlumn name', () => {
-    const item = new Identifier('col', 'column1', '', utils.ICONS.COLUMN)
-    const completion = item.toCompletionItem()
-    expect(completion.label).toEqual('column1')
-  })
-  test('complete aliased comlumn name', () => {
-    const item = new Identifier(
-      'ali.col',
-      'ali.column1',
-      '',
-      utils.ICONS.COLUMN
-    )
-    const completion = item.toCompletionItem()
-    expect(completion.label).toEqual('column1')
-  })
-  test('complete aliased nested comlumn last part name', () => {
-    const item = new Identifier(
-      'ali.column1.sub',
-      'ali.column1.subcolumn2',
-      '',
-      utils.ICONS.COLUMN
-    )
-    const completion = item.toCompletionItem()
-    expect(completion.label).toEqual('subcolumn2')
-  })
-  test('complete aliased nested comlumn first part name', () => {
-    const item = new Identifier(
-      'ali.colu',
-      'ali.column1.subcolumn2',
-      '',
-      utils.ICONS.COLUMN
-    )
-    const completion = item.toCompletionItem()
-    expect(completion.label).toEqual('column1.subcolumn2')
   })
 })
