@@ -123,8 +123,7 @@ describe('ColumnName completion', () => {
     expect(result.candidates.length).toEqual(0)
   })
 
-  // TODO: Implement completion
-  test.skip('complete ColumnName with back quoted table', () => {
+  test('complete ColumnName with back quoted table', () => {
     const result = complete(
       'SELECT "TABLE1". FROM "TABLE1"',
       { line: 0, column: 16 },

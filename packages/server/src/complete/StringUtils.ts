@@ -17,21 +17,6 @@ export function getRidOfAfterPosString(sql: string, pos: Pos): string {
     .join('\n')
 }
 
-// Gets the last token from the given string considering that tokens can contain dots.
-export function getLastToken(sql: string): string {
-  const match = sql.match(/^(?:.|\s)*[^A-z0-9\\.:'](.*?)$/)
-  if (match) {
-    let prevToken = ''
-    let currentToken = match[1]
-    while (currentToken != prevToken) {
-      prevToken = currentToken
-      currentToken = prevToken.replace(/\[.*?\]/, '')
-    }
-    return currentToken
-  }
-  return sql
-}
-
 export function makeTableName(table: Table): string {
   if (table.catalog) {
     return table.catalog + '.' + table.database + '.' + table.tableName
