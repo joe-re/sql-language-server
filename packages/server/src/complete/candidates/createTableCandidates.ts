@@ -17,11 +17,21 @@ function allTableNameCombinations(table: Table): string[] {
   return names
 }
 
-export function createTableCandidates(tables: Table[], lastToken: string) {
+export function createTableCandidates(
+  tables: Table[],
+  lastToken: string,
+  onFromClause?: boolean
+) {
   return tables
     .flatMap((table) => allTableNameCombinations(table))
     .map((aTableNameVariant) => {
-      return new Identifier(lastToken, aTableNameVariant, '', ICONS.TABLE)
+      return new Identifier(
+        lastToken,
+        aTableNameVariant,
+        '',
+        ICONS.TABLE,
+        onFromClause ? 'FROM' : 'OTHERS'
+      )
     })
     .filter((item) => item.matchesLastToken())
     .map((item) => item.toCompletionItem())

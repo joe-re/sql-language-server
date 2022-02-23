@@ -10,22 +10,26 @@ export const ICONS = {
   UTILITY: CompletionItemKind.Event,
 }
 
+type OnClause = 'FROM' | 'ALTER TABLE' | 'OTHERS'
 export class Identifier {
   lastToken: string
   identifier: string
   detail: string
   kind: CompletionItemKind
+  onClause: OnClause
 
   constructor(
     lastToken: string,
     identifier: string,
     detail: string,
-    kind: CompletionItemKind
+    kind: CompletionItemKind,
+    onClause?: OnClause
   ) {
     this.lastToken = lastToken
     this.identifier = identifier
-    this.detail = detail || ''
+    this.detail = detail ?? ''
     this.kind = kind
+    this.onClause = onClause ?? 'OTHERS'
   }
 
   matchesLastToken(): boolean {
@@ -49,7 +53,7 @@ export class Identifier {
       if (i > 0) {
         tableName = label.substring(i + 1)
       }
-      tableAlias = makeTableAlias(tableName)
+      tableAlias = this.onClause === 'FROM' ? makeTableAlias(tableName) : ''
       kindName = 'table'
     } else {
       kindName = 'column'
@@ -61,8 +65,12 @@ export class Identifier {
       kind: this.kind,
     }
 
-    if (this.kind == ICONS.TABLE) {
-      item.insertText = `${label} AS ${tableAlias}`
+    if (this.kind === ICONS.TABLE) {
+      if (tableAlias) {
+        item.insertText = `${label} AS ${tableAlias}`
+      } else {
+        item.insertText = label
+      }
     }
     return item
   }

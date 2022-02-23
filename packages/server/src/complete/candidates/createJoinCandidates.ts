@@ -18,7 +18,7 @@ export function createJoinCondidates(
   const result: CompletionItem[] = []
   const fromTable = getNearestFromTableFromPos(ast.from?.tables || [], pos)
   if (fromTable && fromTable.type === 'table') {
-    result.push(...createTableCandidates(tables, token))
+    result.push(...createTableCandidates(tables, token, true))
     result.push(toCompletionItemForKeyword('INNER JOIN'))
     result.push(toCompletionItemForKeyword('LEFT JOIN'))
     result.push(toCompletionItemForKeyword('ON'))
