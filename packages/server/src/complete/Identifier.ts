@@ -47,7 +47,7 @@ export class Identifier {
       let tableName = label
       const i = tableName.lastIndexOf('.')
       if (i > 0) {
-        tableName = label.substr(i + 1)
+        tableName = label.substring(i + 1)
       }
       tableAlias = makeTableAlias(tableName)
       kindName = 'table'
