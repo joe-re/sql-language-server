@@ -17,7 +17,8 @@ export function createCandidatesForColumnsOfAnyTable(
         lastToken,
         column.columnName,
         column.description,
-        ICONS.TABLE
+        ICONS.TABLE,
+        'FROM'
       )
     })
     .filter((item) => item.matchesLastToken())

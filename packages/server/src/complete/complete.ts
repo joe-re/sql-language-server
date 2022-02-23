@@ -170,10 +170,12 @@ class Completer {
     this.candidates.push(item)
   }
 
-  addCandidatesForTables(tables: Table[]) {
-    createTableCandidates(tables, this.lastToken).forEach((item) => {
-      this.addCandidate(item)
-    })
+  addCandidatesForTables(tables: Table[], onFromClause: boolean) {
+    createTableCandidates(tables, this.lastToken, onFromClause).forEach(
+      (item) => {
+        this.addCandidate(item)
+      }
+    )
   }
 
   addCandidatesForColumnsOfAnyTable(tables: Table[]) {
@@ -229,7 +231,7 @@ class Completer {
       ) || []
     this.addCandidatesForExpectedLiterals(expectedLiteralNodes)
     this.addCandidatesForFunctions()
-    this.addCandidatesForTables(this.schema.tables)
+    this.addCandidatesForTables(this.schema.tables, false)
   }
 
   addCandidatesForSelectQuery(e: ParseError, fromNodes: FromTableNode[]) {
@@ -244,7 +246,7 @@ class Completer {
     this.addCandidatesForFunctions()
     this.addCandidatesForScopedColumns(fromNodes, schemaAndSubqueries)
     this.addCandidatesForAliases(fromNodes)
-    this.addCandidatesForTables(schemaAndSubqueries)
+    this.addCandidatesForTables(schemaAndSubqueries, true)
     if (logger.isDebugEnabled())
       logger.debug(
         `candidates for error returns: ${JSON.stringify(this.candidates)}`
@@ -267,7 +269,7 @@ class Completer {
 
   addCandidatesForParsedDeleteStatement(ast: DeleteStatement) {
     if (isPosInLocation(ast.table.location, this.pos)) {
-      this.addCandidatesForTables(this.schema.tables)
+      this.addCandidatesForTables(this.schema.tables, false)
     } else if (
       ast.where &&
       isPosInLocation(ast.where.expression.location, this.pos)
@@ -304,7 +306,7 @@ class Completer {
         // Column is not scoped to a table/alias yet
         // Could be an alias, a talbe or a function
         this.addCandidatesForAliases(fromNodes)
-        this.addCandidatesForTables(schemaAndSubqueries)
+        this.addCandidatesForTables(schemaAndSubqueries, true)
         this.addCandidatesForFunctions()
       }
     }

@@ -220,6 +220,7 @@ describe('From clause', () => {
     )
     expect(result.candidates.length).toEqual(1)
     expect(result.candidates[0].label).toEqual('TABLE1')
+    expect(result.candidates[0].insertText).toEqual('TABLE1 AS TAB')
   })
 
   test('from clause: complete TableName:multi lines', () => {

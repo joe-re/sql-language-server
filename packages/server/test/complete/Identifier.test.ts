@@ -33,5 +33,21 @@ describe('Identifier', () => {
       const completion = item.toCompletionItem()
       expect(completion.label).toEqual('column1.subcolumn2')
     })
+
+    describe('ICONS.TABLE', () => {
+      test('Add alias if it is onFromClause', () => {
+        const item = new Identifier('T', 'TABLE1', '', ICONS.TABLE, 'FROM')
+        const completion = item.toCompletionItem()
+        expect(completion.label).toEqual('TABLE1')
+        expect(completion.insertText).toEqual('TABLE1 AS TAB')
+      })
+
+      test("Doesn't add alias if it isn't onFromClause", () => {
+        const item = new Identifier('T', 'TABLE1', '', ICONS.TABLE, 'OTHERS')
+        const completion = item.toCompletionItem()
+        expect(completion.label).toEqual('TABLE1')
+        expect(completion.insertText).toEqual('TABLE1')
+      })
+    })
   })
 })
