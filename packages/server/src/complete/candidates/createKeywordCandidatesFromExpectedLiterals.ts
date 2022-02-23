@@ -40,6 +40,8 @@ export function createKeywordCandidatesFromExpectedLiterals(
           return 'RIGHT JOIN'
         case 'INNER':
           return 'INNER JOIN'
+        case 'ALTER':
+          return 'ALTER TABLE'
         default:
           return v
       }
