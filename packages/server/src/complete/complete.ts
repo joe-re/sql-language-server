@@ -13,7 +13,8 @@ import {
 import log4js from 'log4js'
 import { CompletionItem } from 'vscode-languageserver-types'
 import { Schema, Table } from '../database_libs/AbstractClient'
-import { getRidOfAfterPosString, getLastToken } from './StringUtils'
+import { getRidOfAfterPosString } from './StringUtils'
+import { getLastToken } from './utils/getLastToken'
 import {
   isPosInLocation,
   createTablesFromFromNodes,
