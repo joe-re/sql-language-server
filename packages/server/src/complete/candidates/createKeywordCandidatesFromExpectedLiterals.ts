@@ -41,6 +41,10 @@ export function createKeywordCandidatesFromExpectedLiterals(
         case 'INNER':
           return 'INNER JOIN'
         case 'ALTER':
+          if (nodes.find((v) => v.text === 'ADD')) {
+            // if 'ADD' is includes on candidates, it should be for "ALTER COLUMN"
+            return 'ALTER COLUMN'
+          }
           return 'ALTER TABLE'
         default:
           return v
