@@ -96,7 +96,7 @@
 }
 
 start 
-  = &{ params = []; return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt) __ EOSQL? __ {
+  = &{ params = []; return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt) __ EOSQL? __ {
       return {
         ast   : ast,
         param : params
@@ -1051,7 +1051,9 @@ KW_DELETE         = "DELETE"i         !ident_start
 KW_INSERT         = "INSERT"i         !ident_start
 KW_REPLACE        = "REPLACE"i        !ident_start
 KW_EXPLAIN        = "EXPLAIN"i        !ident_start
+KW_ALTER_TABLE    = "ALTER TABLE"i    !ident_start
 
+KW_ADD            = "ADD"i            !ident_start
 KW_INTO           = "INTO"i           !ident_start
 KW_FROM           = "FROM"i           !ident_start
 KW_SET            = "SET"i            !ident_start
@@ -1529,3 +1531,44 @@ sequence_option_owned_by = KW_OWNED_BY __ val: column_ref {
 sequence_option_owned_by_none = KW_OWNED_BY_NONE {
   return { type: 'sequence_option_owned_by_none', location: location() }
 }
+
+alter_table_stmt
+  = keyword: alter_table_keyword __
+    table: ident __
+    add: alter_table_add_column {
+      return {
+        type: 'alter_table',
+        keyword: keyword,
+        table: table,
+        add: add
+      }
+    }
+
+alter_table_keyword
+  = val: KW_ALTER_TABLE {
+    return {
+      type: 'keyword',
+      value: val && val[0],
+      location: location()
+    }
+  }
+
+alter_table_add_column
+  = keyword: add_keyword __
+    field: field {
+      return {
+        type: 'alter_table_add',
+        field: field,
+        location: location()
+      }
+    }
+
+
+add_keyword
+  = val: KW_ADD {
+    return {
+      type: 'keyword',
+      value: val && val[0],
+      location: location()
+    }
+  }
