@@ -1054,6 +1054,7 @@ KW_EXPLAIN        = "EXPLAIN"i        !ident_start
 KW_ALTER_TABLE    = "ALTER TABLE"i    !ident_start
 
 KW_ADD            = "ADD"i            !ident_start
+KW_DROP_COLUMN    = "DROP COLUMN"i    !ident_start
 KW_INTO           = "INTO"i           !ident_start
 KW_FROM           = "FROM"i           !ident_start
 KW_SET            = "SET"i            !ident_start
@@ -1535,12 +1536,12 @@ sequence_option_owned_by_none = KW_OWNED_BY_NONE {
 alter_table_stmt
   = keyword: alter_table_keyword __
     table: ident __
-    add: alter_table_add_column {
+    command: (alter_table_add_column / alter_table_drop_column) {
       return {
         type: 'alter_table',
         keyword: keyword,
         table: table,
-        add: add
+        command: command
       }
     }
 
@@ -1557,15 +1558,33 @@ alter_table_add_column
   = keyword: add_keyword __
     field: field {
       return {
-        type: 'alter_table_add',
+        type: 'alter_table_add_column',
         field: field,
         location: location()
       }
     }
 
-
 add_keyword
   = val: KW_ADD {
+    return {
+      type: 'keyword',
+      value: val && val[0],
+      location: location()
+    }
+  }
+
+alter_table_drop_column
+  = keyword: drop_column_keyword __
+    column: column {
+      return {
+        type: 'alter_table_drop_column',
+        column: column,
+        location: location()
+      }
+    }
+
+drop_column_keyword
+  = val: KW_DROP_COLUMN {
     return {
       type: 'keyword',
       value: val && val[0],
