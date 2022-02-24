@@ -48,11 +48,11 @@ export interface ExpectedOtherNode {
 // }
 
 export type ExpectedNode =
-  ExpectedLiteralNode |
-  ExpectedClassNode |
-  ExpectedAnyNode |
-  ExpectedEndNode |
-  ExpectedOtherNode
+  | ExpectedLiteralNode
+  | ExpectedClassNode
+  | ExpectedAnyNode
+  | ExpectedEndNode
+  | ExpectedOtherNode
 
 interface BaseParseError extends Error {
   name: 'SyntaxError'
@@ -120,15 +120,15 @@ interface SelectStatement extends BaseNode {
 }
 
 interface FromClause extends BaseNode {
-  type: 'from',
-  keyword: KeywordNode,
-  tables: FromTableNode[],
+  type: 'from'
+  keyword: KeywordNode
+  tables: FromTableNode[]
 }
 
 interface WhereClause extends BaseNode {
-  type: 'where',
-  keyword: KeywordNode,
-  expression: BinaryExpressionNode | ColumnRefNode,
+  type: 'where'
+  keyword: KeywordNode
+  expression: BinaryExpressionNode | ColumnRefNode
 }
 
 interface DeleteStatement extends BaseNode {
@@ -147,20 +147,20 @@ interface InsertStatement extends BaseNode {
 }
 
 interface ValuesClause extends BaseNode {
-  type: 'values',
+  type: 'values'
   values: (SelectStatement | LiteralNode)[]
 }
 
 interface ColumnListItemNode extends BaseNode {
-  type: 'column_list_item',
-  expr: ColumnRefNode | AggrFuncNode,
-  as: string | null,
+  type: 'column_list_item'
+  expr: ColumnRefNode | AggrFuncNode
+  as: string | null
 }
 
 interface ColumnRefNode extends BaseNode {
-  type: 'column_ref',
-  table: string,
-  column: string,
+  type: 'column_ref'
+  table: string
+  column: string
 }
 
 interface AggrFuncNode extends BaseNode {
@@ -168,104 +168,167 @@ interface AggrFuncNode extends BaseNode {
   name: string
   args: {
     expr: ColumnRefNode
-  },
+  }
 }
 
 interface TableNode extends BaseNode {
-  type: 'table',
-  catalog: string | null,
-  db: string | null,
-  table: string,
-  as: string | null,
-  join?: 'INNER JOIN' | 'LEFT JOIN',
+  type: 'table'
+  catalog: string | null
+  db: string | null
+  table: string
+  as: string | null
+  join?: 'INNER JOIN' | 'LEFT JOIN'
   on?: any
 }
 
+interface ColumnNode extends BaseNode {
+  type: 'column'
+  value: string
+}
+
 interface SubqueryNode extends BaseNode {
-  type: 'subquery',
-  as: 'string' | null,
-  subquery: SelectStatement,
+  type: 'subquery'
+  as: 'string' | null
+  subquery: SelectStatement
 }
 
 interface IncompleteSubqueryNode extends BaseNode {
-  type: 'incomplete_subquery',
-  as: 'string' | null,
-  text: string,
+  type: 'incomplete_subquery'
+  as: 'string' | null
+  text: string
 }
 
 interface CreateTableStatement extends BaseNode {
-  type: 'create_table',
-  keyword: KeywordNode,
-  if_not_exists: KeywordNode | null,
-  fields: FieldNode[],
-  select: SelectStatement | null,
+  type: 'create_table'
+  keyword: KeywordNode
+  if_not_exists: KeywordNode | null
+  fields: FieldNode[]
+  select: SelectStatement | null
 }
 
 interface FieldNode extends BaseNode {
-  type: 'field',
-  name: string,
-  data_type: FieldDataTypeNode | null,
-  constraints: FieldConstraint[],
+  type: 'field'
+  name: string
+  data_type: FieldDataTypeNode | null
+  constraints: FieldConstraint[]
 }
 
 interface FieldDataTypeNode extends BaseNode {
-  type: 'field_data_type',
-  name: string,
-  value: string | null,
+  type: 'field_data_type'
+  name: string
+  value: string | null
 }
 
-type Node =
-| KeywordNode
-| LiteralStringNode
-| LiteralBoolNode
-| LiteralNumberNode
-| LiteralNullNode
-| BinaryExpressionNode
-| SelectStatement
-| FromClause
-| WhereClause
-| DeleteStatement
-| InsertStatement
-| ValuesClause
-| ColumnListItemNode
-| ColumnRefNode
-| AggrFuncNode
-| TableNode
-| SubqueryNode
-| IncompleteSubqueryNode
-| CreateTableStatement
-| FieldNode
-| FieldDataTypeNode
+interface AlterTableStatement extends BaseNode {
+  type: 'alter_table'
+  keyword: KeywordNode
+  table: string
+  command: AlterTableCommandNode
+}
 
-export type StarNode = { type: 'star', value: '*' }
+interface AlterTableCommandDropColumnNode extends BaseNode {
+  type: 'alter_table_drop_column'
+  keyword: KeywordNode
+  column: ColumnNode
+}
+
+interface AlterTableCommandAddColumnNode extends BaseNode {
+  type: 'alter_table_add_column'
+  keyword: KeywordNode
+  field: FieldNode
+}
+
+interface AlterTableCommandModifyColumnNode extends BaseNode {
+  type: 'alter_table_modify_column'
+  keyword: KeywordNode
+  field: FieldNode
+}
+
+type AlterTableCommandNode =
+  | AlterTableCommandDropColumnNode
+  | AlterTableCommandAddColumnNode
+  | AlterTableCommandModifyColumnNode
+
+export interface FieldConstraintNotNull extends BaseNode {
+  type: 'constraint_not_null'
+  keyword: KeywordNode
+}
+export interface FieldConstraintPrimaryKey extends BaseNode {
+  type: 'constraint_primary_key'
+  keyword: KeywordNode
+}
+export interface FieldConstraintUnique extends BaseNode {
+  type: 'constraint_unique'
+  keyword: KeywordNode
+}
 
 export type FieldConstraint =
-  FieldConstraintNotNull |
-  FieldConstraintPrimaryKey |
-  FieldConstraintUnique
+  | FieldConstraintNotNull
+  | FieldConstraintPrimaryKey
+  | FieldConstraintUnique
 
-export type FieldConstraintNotNull = { type: 'constraint_not_null', keyword: KeywordNode }
-export type FieldConstraintPrimaryKey = { type: 'constraint_primary_key', keyword: KeywordNode }
-export type FieldConstraintUnique = { type: 'constraint_unique', keyword: KeywordNode }
+type Node =
+  | KeywordNode
+  | LiteralStringNode
+  | LiteralBoolNode
+  | LiteralNumberNode
+  | LiteralNullNode
+  | BinaryExpressionNode
+  | SelectStatement
+  | FromClause
+  | WhereClause
+  | DeleteStatement
+  | InsertStatement
+  | ValuesClause
+  | ColumnListItemNode
+  | ColumnRefNode
+  | AggrFuncNode
+  | TableNode
+  | ColumnNode
+  | SubqueryNode
+  | IncompleteSubqueryNode
+  | CreateTableStatement
+  | FieldNode
+  | FieldDataTypeNode
+  | FieldConstraint
+  | AlterTableStatement
+  | AlterTableCommandNode
+
+export type StarNode = { type: 'star'; value: '*' }
 
 export type FromTableNode = TableNode | SubqueryNode | IncompleteSubqueryNode
 
-export type AST = SelectStatement | DeleteStatement | InsertStatement | CreateTableStatement
+export type AST =
+  | SelectStatement
+  | DeleteStatement
+  | InsertStatement
+  | CreateTableStatement
+  | AlterTableStatement
+
 export type LiteralNode =
-  LiteralStringNode |
-  LiteralBoolNode |
-  LiteralNumberNode |
-  LiteralNullNode
+  | LiteralStringNode
+  | LiteralBoolNode
+  | LiteralNumberNode
+  | LiteralNullNode
 
 export type ComparisonOperator =
-  '+' | '-' | '*' | '/' | '>' | '>=' | '<' | '<=' | '!=' | '<>' | '='
+  | '+'
+  | '-'
+  | '*'
+  | '/'
+  | '>'
+  | '>='
+  | '<'
+  | '<='
+  | '!='
+  | '<>'
+  | '='
 
-export type Operator =
-   ComparisonOperator | 'OR' | 'AND' | 'NOT'
+export type Operator = ComparisonOperator | 'OR' | 'AND' | 'NOT'
 
 type FromClauseParserResult = {
-  before: string,
-  from: FromClause | null,
+  before: string
+  from: FromClause | null
   after: string
 }
 

@@ -37,7 +37,10 @@ describe('ALTER TABLE statement', () => {
         },
         command: {
           type: 'alter_table_drop_column',
-          column: 'Email',
+          column: {
+            type: 'column',
+            value: 'Email',
+          },
         },
       })
     })

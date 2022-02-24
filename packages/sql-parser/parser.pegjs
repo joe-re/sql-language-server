@@ -811,6 +811,17 @@ column =
     return name;
   }
 
+// This is for syntax that COLUMN should not have table.
+// eg. alter table table_name add COLUMN_NAME column_definition;
+column_node
+  = col:column {
+    return {
+      type: 'column',
+      value: col,
+      location: location()
+    };
+  }
+
 backtik_column = '`' chars:[^`]+ '`'
 
 // Supports nested column names like `books.chapters.paragraphs`
@@ -1578,7 +1589,7 @@ add_keyword
 
 alter_table_drop_column
   = keyword: drop_column_keyword __
-    column: column {
+    column: (column_node / !{error('EXPECTED COLUMN NAME')}) {
       return {
         type: 'alter_table_drop_column',
         keyword: keyword,
@@ -1598,7 +1609,7 @@ drop_column_keyword
 
 alter_table_modify_column
   = keyword: modify_keyword __
-    field: field {
+    field: (field / !{error('EXPECTED COLUMN NAME')}) {
       return {
         type: 'alter_table_modify_column',
         keyword: keyword,

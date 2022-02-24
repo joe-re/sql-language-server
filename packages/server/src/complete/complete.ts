@@ -9,6 +9,7 @@ import {
   ParseError,
   ExpectedLiteralNode,
   AST,
+  AlterTableStatement,
 } from '@joe-re/sql-parser'
 import log4js from 'log4js'
 import { CompletionItem } from 'vscode-languageserver-types'
@@ -281,6 +282,17 @@ class Completer {
     }
   }
 
+  addCandidatesForParsedAlterTableStatement(ast: AlterTableStatement) {
+    if (ast.command.type === 'alter_table_drop_column') {
+      if (isPosInLocation(ast.command.column.location, this.pos)) {
+        const table = this.schema.tables.find((v) => v.tableName === ast.table)
+        this.addCandidatesForColumnsOfAnyTable(
+          table ? [table] : this.schema.tables
+        )
+      }
+    }
+  }
+
   addCandidatesForParsedSelectQuery(ast: SelectStatement) {
     this.addCandidatesForBasicKeyword()
     if (Array.isArray(ast.columns)) {
@@ -325,6 +337,8 @@ class Completer {
       this.addCandidatesForParsedDeleteStatement(ast)
     } else if (ast.type === 'select') {
       this.addCandidatesForParsedSelectQuery(ast)
+    } else if (ast.type === 'alter_table') {
+      this.addCandidatesForParsedAlterTableStatement(ast)
     } else {
       console.log(`AST type not supported yet: ${ast.type}`)
     }
