@@ -141,7 +141,7 @@ Please restart sql-language-server process after create .sqllsrc.json.
 | Key          | Description                                                                                                               | value                   | required | default                           |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------- | ----------------------- | -------- | --------------------------------- |
 | name         | Connection name(free-form text)                                                                                           |                         | true     |                                   |
-| adapter      | Database type                                                                                                             | "mysql" or "postgres" or "sqlite3"  | true     |                                   |
+| adapter      | Database type                                                                                                             | "mysql" or "postgres" or "sqlite3" or "bigquery"  | true     |                                   |
 | host         | Database host                                                                                                             | string                  | false    |                                   |
 | port         | Database port                                                                                                             | string                  | false    | mysql:3306, postgres:5432         |
 | user         | Database user                                                                                                             | string                  | false    | mysql:"root", postgres:"postgres" |
@@ -160,7 +160,7 @@ Please restart sql-language-server process after create .sqllsrc.json.
 | user         | User name on the server                  | string | false    |                           |
 | dbHost       | Database host on the server              | string | false    | 127.0.0.1                 |
 | dbPort       | Databse port on the server               | number | false    | mysql:3306, postgres:5432 |
-| identitiFile | Identity file for ssh                    | string | false    | ~/.ssh/config/id_rsa      |
+| identityFile | Identity file for ssh                    | string | false    | ~/.ssh/config/id_rsa      |
 | passphrase   | Passphrase to allow to use identity file | string | false    |                           |
 
 #### Personal confuguration file
