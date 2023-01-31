@@ -2,7 +2,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { ConnectionMethod, createServer } from '../src/createServer'
 
-const cli = yargs(hideBin(process.argv))
+yargs(hideBin(process.argv))
   .usage('SQL Language Server Command Line Interface')
   .command('up', 'run sql-language-server', (v) => {
     return v.option('method', {
@@ -22,13 +22,9 @@ const cli = yargs(hideBin(process.argv))
     process.stdin.resume()
   })
   .example('$0 up --method stdio', ': start up sql-language-server - communicate via stdio')
+  .demandCommand()
   .help()
-
-cli.parse()
-
-if ((cli.argv as any)._.length === 0) {
-  cli.showHelp()
-}
+  .parse();
 
 process.stdin.on('close', () => {
   process.exit(0);
