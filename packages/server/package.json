@@ -21,8 +21,8 @@
   ],
   "license": "MIT",
   "scripts": {
-    "compile:cli": "esbuild bin/cli.ts --bundle --platform=node --external:pg-native --outfile=dist/cli.js",
-    "compile:vscode": "esbuild bin/vscodeExtensionServer.ts --bundle --platform=node --external:pg-native --outfile=dist/vscodeExtensionServer.js",
+    "compile:cli": "esbuild bin/cli.ts --bundle --platform=node --external:pg-native --external:aws-sdk --external:mock-aws-s3 --external:nock --outfile=dist/cli.js",
+    "compile:vscode": "esbuild bin/vscodeExtensionServer.ts --bundle --platform=node --external:pg-native --external:aws-sdk --external:mock-aws-s3 --external:nock --outfile=dist/vscodeExtensionServer.js",
     "compile:index": "tsc -p .",
     "clean": "rm -rf dist",
     "watch:cli": "yarn compile:cli --watch",
