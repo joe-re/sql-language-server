@@ -56,17 +56,72 @@ describe('complete ALTER TABLE statement', () => {
   })
 
   describe('Column name completion', () => {
-    // TODO: Deal with column completion
-    it.skip('completes column name', () => {
-      const sql = 'ALTER TABLE TABLE1 MODIFY C'
-      const result = complete(
-        sql,
-        { line: 0, column: sql.length },
-        SIMPLE_SCHEMA
-      )
-      expect(result.candidates.length).toEqual(2)
-      expect(result.candidates[0].label).toEqual('COLUMN1')
-      expect(result.candidates[0].insertText).toEqual('COLUMN1')
+    describe('ADD command keyword', () => {
+      it("doen't completes column name", () => {
+        const sql = 'ALTER TABLE TABLE1 ADD C'
+        const result = complete(
+          sql,
+          { line: 0, column: sql.length },
+          SIMPLE_SCHEMA
+        )
+        expect(result.candidates.length).toEqual(0)
+      })
+    })
+
+    describe('DROP COLUMN command keyword', () => {
+      it("doen't completes column name", () => {
+        const sql = 'ALTER TABLE TABLE1 DROP COLUMN C'
+        const result = complete(
+          sql,
+          { line: 0, column: sql.length },
+          SIMPLE_SCHEMA
+        )
+        expect(result.candidates.length).toEqual(2)
+        expect(result.candidates[0].label).toEqual('COLUMN1')
+        expect(result.candidates[0].insertText).toEqual('COLUMN1')
+      })
+    })
+
+    describe('MODIFY command keyword', () => {
+      it('completes column name', () => {
+        const sql = 'ALTER TABLE TABLE1 MODIFY C'
+        const result = complete(
+          sql,
+          { line: 0, column: sql.length },
+          SIMPLE_SCHEMA
+        )
+        expect(result.candidates.length).toEqual(2)
+        expect(result.candidates[0].label).toEqual('COLUMN1')
+        expect(result.candidates[0].insertText).toEqual('COLUMN1')
+      })
+    })
+
+    describe('MODIFY COLUMN command keyword', () => {
+      it('completes column name', () => {
+        const sql = 'ALTER TABLE TABLE1 MODIFY COLUMN C'
+        const result = complete(
+          sql,
+          { line: 0, column: sql.length },
+          SIMPLE_SCHEMA
+        )
+        expect(result.candidates.length).toEqual(2)
+        expect(result.candidates[0].label).toEqual('COLUMN1')
+        expect(result.candidates[0].insertText).toEqual('COLUMN1')
+      })
+    })
+
+    describe('ALTER COLUMN command keyword', () => {
+      it('completes column name', () => {
+        const sql = 'ALTER TABLE TABLE1 ALTER COLUMN C'
+        const result = complete(
+          sql,
+          { line: 0, column: sql.length },
+          SIMPLE_SCHEMA
+        )
+        expect(result.candidates.length).toEqual(2)
+        expect(result.candidates[0].label).toEqual('COLUMN1')
+        expect(result.candidates[0].insertText).toEqual('COLUMN1')
+      })
     })
   })
 })
