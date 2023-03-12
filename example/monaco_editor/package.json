@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "sql-lsp-monaco-editor-example",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
