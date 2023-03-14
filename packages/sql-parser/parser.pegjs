@@ -915,7 +915,7 @@ func_call
     }
 
 literal 
-  = l:(literal_string / literal_numeric / literal_bool /literal_null)!DOT {
+  = l:(literal_string / literal_numeric / literal_bool / literal_null)!DOT {
     return l
   }
 
@@ -1122,9 +1122,10 @@ COMMA     = ','
 STAR      = '*'
 LPAREN    = '('
 RPAREN    = ')'
-
 LBRAKE    = '['
 RBRAKE    = ']'
+LBRACE    = '{'
+RBRACE    = '}'
 DQUOTE    = '"'
 
 __ =
@@ -1244,17 +1245,31 @@ proc_array =
     }
   }
 
+var_decl = var_decl_std / var_decl_pg_promise
 
-var_decl 
+var_decl_std
   = KW_VAR_PRE name:ident_name m:mem_chain {
     //push for analysis
     varList.push(name);
     return {
       type : 'var',
       name : name,
-      members : m
+      members : m,
+      location: location()
     }
   } 
+
+// ref: https://github.com/vitaly-t/pg-promise
+var_decl_pg_promise
+  = KW_VAR_PRE LBRACE name:ident_name m:mem_chain RBRACE {
+    varList.push(name);
+    return {
+      type : 'var_pg_promise',
+      name : name,
+      members : m,
+      location: location()
+    }
+  }
 
 mem_chain 
   = l:('.' ident_name)* {

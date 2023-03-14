@@ -36,17 +36,6 @@ export interface ExpectedOtherNode {
   description: string
 }
 
-// peg$SyntaxError {
-//   message: 'EXPECTED COLUMN NAME',
-//   expected: null,
-//   found: null,
-//   location: {
-//     start: { offset: 18, line: 1, column: 19 },
-//     end: { offset: 18, line: 1, column: 19 }
-//   },
-//   name: 'SyntaxError'
-// }
-
 export type ExpectedNode =
   | ExpectedLiteralNode
   | ExpectedClassNode
@@ -267,6 +256,20 @@ export type FieldConstraint =
   | FieldConstraintPrimaryKey
   | FieldConstraintUnique
 
+export interface VarDeclarationStandardNode extends BaseNode {
+  type: 'var',
+  name: string,
+  members: string[]
+}
+
+export interface VarDeclarationPgPromiseNode extends BaseNode {
+  type: 'var_pg_promise',
+  name: string,
+  members: string[]
+}
+
+type VarDeclarationNode = VarDeclarationStandardNode | VarDeclarationPgPromiseNode
+
 type Node =
   | KeywordNode
   | LiteralStringNode
@@ -293,6 +296,7 @@ type Node =
   | FieldConstraint
   | AlterTableStatement
   | AlterTableCommandNode
+  | VarDeclarationNode
 
 export type StarNode = { type: 'star'; value: '*' }
 
