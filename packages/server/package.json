@@ -34,7 +34,8 @@
   "files": [
     "package.json",
     "npm_bin",
-    "dist"
+    "dist",
+    "LICENSE"
   ],
   "dependencies": {
     "@google-cloud/bigquery": "^5.9.0",

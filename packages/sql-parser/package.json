@@ -14,7 +14,8 @@
     "base",
     "index.js",
     "index.d.ts",
-    "package.json"
+    "package.json",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=0.8.0"
