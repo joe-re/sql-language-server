@@ -7,7 +7,7 @@ import {
   CompletionItem,
   CompletionParams,
 } from 'vscode-languageserver/node'
-import { LSPObject, TextDocuments } from 'vscode-languageserver'
+import { TextDocuments } from 'vscode-languageserver'
 import { CompletionTriggerKind } from 'vscode-languageserver-protocol/lib/common/protocol'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import {
@@ -212,8 +212,10 @@ export function createServerWithConnection(
       )
       return
     }
-    const sqlLanguageServerSetting = (change.settings as LSPObject)
-      .sqlLanguageServer as LSPObject
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sqlLanguageServerSetting = (change.settings as { [key: string]: any })
+      .sqlLanguageServer
 
     const connections = (sqlLanguageServerSetting.connections ??
       []) as SettingConnection[]
