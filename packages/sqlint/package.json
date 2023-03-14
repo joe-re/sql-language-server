@@ -27,7 +27,8 @@
   "files": [
     "package.json",
     "dist",
-    "bin"
+    "bin",
+    "LICENSE"
   ],
   "types": "./dist/src",
   "dependencies": {
