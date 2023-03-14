@@ -40,7 +40,8 @@
     "watch:dev-server:server": "wait-on ./packages/server/dist/src/index.js && cd ./example/monaco_editor && yarn run start",
     "dev": "yarn build:sqlint && run-p watch:sqlint watch:server watch:dev-server:client watch:dev-server:server",
     "vscode:prepublish": "yarn run vsc-compile",
-    "npm:prepublish": "yarn build:sqlint && yarn build:server"
+    "npm:prepublish": "yarn build:sqlint && yarn build:server",
+    "version": "lerna version"
   },
   "engines": {
     "vscode": "^1.45.1"
