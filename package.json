@@ -2,7 +2,7 @@
   "name": "sql-language-server",
   "displayName": "SQL Language Server",
   "description": "SQL Language Server Extension for VSC",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "main": "./packages/client/out/extension",
   "repository": {
     "type": "git",
