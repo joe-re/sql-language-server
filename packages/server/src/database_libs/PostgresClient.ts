@@ -1,6 +1,9 @@
 import PG from 'pg'
+import log4js from 'log4js'
 import { Connection } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
+
+const logger = log4js.getLogger()
 
 export default class PosgresClient extends AbstractClient {
   connection: PG.Client | null = null
@@ -19,7 +22,7 @@ export default class PosgresClient extends AbstractClient {
     return 'postgres'
   }
 
-  connect() {
+  connect(): Promise<boolean> {
     const client: PG.Client = new PG.Client({
       user: this.settings.user || '',
       host: this.settings.host || '',
@@ -27,9 +30,19 @@ export default class PosgresClient extends AbstractClient {
       password: this.settings.password || '',
       port: this.settings.port || 5432,
     })
-    client.connect()
-    this.connection = client
-    return true
+    return new Promise((resolve, reject) => {
+      client.connect((err) => {
+        if (err) {
+          logger.debug('Failed to connect to postgresql server')
+          logger.error(err)
+          reject(err)
+          return
+        }
+        this.connection = client
+        logger.debug('Success to connect to postgresql server')
+        resolve(true)
+      })
+    })
   }
 
   disconnect() {
@@ -39,7 +52,7 @@ export default class PosgresClient extends AbstractClient {
     this.connection = null
   }
 
-  getTables(): Promise<string[]> {
+  async getTables(): Promise<string[]> {
     const sql = `
       SELECT c.relname as table_name FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
        WHERE n.nspname = 'public'

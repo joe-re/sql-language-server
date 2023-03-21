@@ -160,8 +160,7 @@ export function createServerWithConnection(
               SettingStore.getInstance().getSetting()
             )
             schema = await client.getSchema()
-            logger.debug('get schema')
-            logger.debug(JSON.stringify(schema))
+            logger.debug('get schema', JSON.stringify(schema))
           } catch (e) {
             logger.error('failed to get schema info')
             if (e instanceof RequireSqlite3Error) {
