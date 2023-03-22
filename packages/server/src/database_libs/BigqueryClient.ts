@@ -1,6 +1,9 @@
 import { BigQuery } from '@google-cloud/bigquery'
+import log4js from 'log4js'
 import { Connection } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
+
+const logger = log4js.getLogger()
 
 export default class BigqueryClient extends AbstractClient {
   connection: BigQuery | null = null
@@ -34,19 +37,25 @@ export default class BigqueryClient extends AbstractClient {
   async getTables(): Promise<string[]> {
     const ds = this.connection!.dataset(this.settings.database!)!
     const [tables] = await ds.getTables()
-    return tables.map((t) => t.metadata.id)
+    return tables.map((t) => t.id!).filter((t) => !!t)
   }
 
   async getColumns(tableName: string): Promise<RawField[]> {
-    const [meta] = await this.connection!.dataset(this.settings.database!)
-      .table(tableName)
-      .getMetadata()!
-    return meta.schema.fields.map(
-      (f: { name: string; type: string; mode: string }) => ({
-        field: f.name,
-        type: f.type,
-        null: f.mode === 'NULLABLE' ? 'Yes' : 'No',
-      })
-    )
+    try {
+      const [meta] = await this.connection!.dataset(this.settings.database!)
+        .table(tableName)
+        .getMetadata()!
+      return meta.schema.fields.map(
+        (f: { name: string; type: string; mode: string }) => ({
+          field: f.name,
+          type: f.type,
+          null: f.mode === 'NULLABLE' ? 'Yes' : 'No',
+        })
+      )
+    } catch (e) {
+      logger.debug(`Failed to get columns: ${tableName}`)
+      logger.error(e)
+      throw e
+    }
   }
 }

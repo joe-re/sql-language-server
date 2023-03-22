@@ -117,6 +117,7 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     if (fileExists(personalConfigPath)) {
       personalConfig = JSON.parse(readFile(personalConfigPath))
       this.personalConfig = personalConfig
+      logger.debug(`Found personalConfig. ${JSON.stringify(personalConfig)}`)
     } else {
       logger.debug(`There isn't personal config file. ${personalConfigPath}`)
     }
@@ -190,9 +191,7 @@ export default class SettingStore extends EventEmitter.EventEmitter {
       v.projectPaths?.includes(projectPath)
     )
     if (!con) {
-      logger.debug(
-        `Not to extract personal config, { path: ${projectPath}, projectName: ${projectPath} }`
-      )
+      logger.debug(`Not found personal config, { path: ${projectPath} }`)
     }
     return con
   }
