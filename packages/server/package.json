@@ -27,6 +27,7 @@
     "clean": "rm -rf dist",
     "watch:cli": "yarn compile:cli --watch",
     "watch:index": "tsc -w",
+    "watch:vscode": "esbuild bin/vscodeExtensionServer.ts --bundle --platform=node --external:pg-native --external:aws-sdk --external:mock-aws-s3 --external:nock --outfile=dist/vscodeExtensionServer.js --watch",
     "test": "jest",
     "prepare-vsc-extension": "yarn clean && yarn compile:vscode",
     "prepublish": "yarn clean && yarn compile:index"
