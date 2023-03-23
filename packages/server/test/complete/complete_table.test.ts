@@ -102,7 +102,7 @@ describe('TableName completion', () => {
       { line: 0, column: 7 },
       SIMPLE_SCHEMA
     )
-    expect(result.candidates.length).toEqual(13)
+    expect(result.candidates.length).toEqual(14)
     const expected = [
       expect.objectContaining({
         label: 'Select all columns from TABLE1',
