@@ -117,7 +117,7 @@ start
     }
 
 union_stmt
-  = head:select_stmt tail:(__ KW_UNION __ select_stmt)* {
+  = head:select_stmt tail:(__ KW_UNION __ KW_ALL? __ select_stmt)* {
       var cur = head;
       for (var i = 0; i < tail.length; i++) {
         cur._next = tail[i][3];
@@ -143,8 +143,50 @@ extract_from_clause
       }
     }
 
+with_clause
+  = keyword: KW_WITH __ recursive: KW_RECURSIVE? __ cteList: CTE_list {
+    return {
+      type: "with",
+      keyword: keyword,
+      recursive: recursive,
+      cteList: cteList,
+    }
+  }
+
+CTE_list
+  = first: CTE_definition __ "," __ rest: CTE_list {
+    return [first].concat(rest)
+  }
+  / cte:CTE_definition {
+    return [cte]
+  }
+
+CTE_definition
+  = name:ident __ args:arguments? __ "AS" __ "(" __ query:union_stmt __ ")" {
+      return {
+        type: "cte",
+        name: name,
+        arguments: args || [],
+        query: query
+      };
+    }
+
+arguments
+  = "(" __ args:ident_list __ ")" {
+      return args;
+    }
+
+ident_list
+  = first:ident __ "," __ rest:ident_list {
+      return [first].concat(rest);
+    }
+  / identifier:ident {
+      return [identifier];
+    }
+
 select_stmt_nake
-  = val:select_keyword  __
+  = with_clause:with_clause?  __
+    val:select_keyword  __
     d:KW_DISTINCT?      __
     c:column_clause     __
     f:from_clause?      __
@@ -155,6 +197,7 @@ select_stmt_nake
       return {
         type      : 'select',
         keyword   : val,
+        with      : with_clause,
         distinct  : d,
         columns   : c,
         from      : f,
@@ -397,7 +440,8 @@ limit_clause
     }
 
 update_stmt
-  = KW_UPDATE    __
+  = with_clause: with_clause? __
+    KW_UPDATE    __
     db:db_name   __ DOT __
     t:table_name __
     KW_SET       __
@@ -405,26 +449,30 @@ update_stmt
     w:where_clause? {
       return {
         type  : 'update',
+        with: with_clause,
         db    : db,
         table : t,
         set   : l,
         where : w
       }
     }
-  / KW_UPDATE    __
+  / with_clause: with_clause? __
+    KW_UPDATE    __
     t:table_name __
     KW_SET       __
     l:set_list   __
     w:where_clause? {
       return {
         type  : 'update',
+        with: with_clause,
         db    : '',
         table : t,
         set   : l,
         where : w
       }
     }
-  / KW_UPDATE    __
+  / with_clause: with_clause? __
+    KW_UPDATE    __
     t:table_name __
     j:table_ref* __
     KW_SET       __
@@ -432,6 +480,7 @@ update_stmt
     w:where_clause? {
       return {
         type  : 'update',
+        with: with_clause,
         db    : '',
         table : t,
         join  : j,
@@ -467,21 +516,24 @@ set_item
   / !{error('EXPECTED COLUMN NAME')}
 
 replace_insert_stmt
-  = ri:replace_insert       __
-    KW_INTO                 __
-    db:db_name    __  DOT   __
+  = with_clause: with_clause? __
+    ri:replace_insert        __
+    KW_INTO                  __
+    db:db_name    __  DOT    __
     t:table_name  __
     c:insert_column_list __
     v:value_clause             {
       return {
         type      : ri,
+        with: with_clause,
         db        : db,
         table     : t,
         columns   : c,
         values    : v
       }
     }
-  / ri:replace_insert       __
+  / with_clause: with_clause? __
+    ri:replace_insert       __
     KW_INTO                 __
     db:db_name       __ DOT __
     t:table_name            __
@@ -490,6 +542,7 @@ replace_insert_stmt
     u:on_duplicate_key_update? {
       var v = {
         type  : ri,
+        with: with_clause,
         db    : db,
         table : t,
         set   : l
@@ -501,20 +554,23 @@ replace_insert_stmt
 
       return v;
     }
-  / ri:replace_insert       __
+  / with_clause: with_clause? __
+    ri:replace_insert       __
     KW_INTO                 __
     t:table_name  __
     c:insert_column_list __
     v:value_clause             {
       return {
         type      : ri,
+        with: with_clause,
         db        : '',
         table     : t,
         columns   : c,
         values    : v
       }
     }
-  / ri:replace_insert       __
+  / with_clause: with_clause? __
+    ri:replace_insert       __
     KW_INTO                 __
     t:table_name            __
     KW_SET                  __
@@ -522,6 +578,7 @@ replace_insert_stmt
     u:on_duplicate_key_update? {
       var v = {
         type  : ri,
+        with: with_clause,
         db    : '',
         table : t,
         set   : l
@@ -1056,7 +1113,7 @@ KW_BY_DEFAULT         = "BY DEFAULT"i         !ident_start
 KW_BY_DEFAULT_ON_NULL = "BY DEFAULT ON NULL"i !ident_start
 KW_IDENTITY           = "IDENTITY"i           !ident_start
 KW_START              = "START"i              !ident_start
-KW_WITH               = "WITH"i               !ident_start
+KW_WITH               = val:"WITH"i           !ident_start { return makeKeywordNode(val, location()) }
 KW_MINVALUE           = "MINVALUE"i           !ident_start
 KW_NO_MINVALUE        = "NO MINVALUE"i        !ident_start
 KW_MAXVALUE           = "MAXVALUE"i           !ident_start
@@ -1136,6 +1193,7 @@ KW_SUM            = "SUM"i            !ident_start    { return 'SUM';      }
 KW_AVG            = "AVG"i            !ident_start    { return 'AVG';      }
 
 KW_CAST           = val:"CAST"i       !ident_start { return makeKeywordNode(val, location()) }
+KW_RECURSIVE      = val:"RECURSIVE"i  !ident_start { return makeKeywordNode(val, location()) }
 
 //specail character
 DOT       = '.'
@@ -1308,12 +1366,14 @@ mem_chain
  KW_ASSIGN = ':='
 
 delete_stmt
-  = val:delete_keyword    __
+  = with_clause: with_clause? __
+    val:delete_keyword    __
     KW_FROM      __
     t:delete_table __
     w:where_clause? {
       return {
         type    : 'delete',
+        with    : with_clause,
         table   : t,
         where   : w
       }

@@ -13,6 +13,7 @@ describe('Subquery in where clause', () => {
     expect(result.where.expression.left).toMatchObject({ type: 'column_ref' })
     expect(result.where.expression.right).toMatchObject({ type: 'select' })
   })
+
   it('should not accept WHERE as an alias', () => {
     const sql = `
       SELECT *
@@ -24,12 +25,11 @@ describe('Subquery in where clause', () => {
     expect(result).toMatchObject({ type: 'select' })
     expect(result.from.tables[0]).toMatchObject({ as: null, table: 'T1' })
   })
-  it('should not accept WHERE as an alias parseFromClause', () => {
+
+  it('should not accept WHERE as an alias in parseFromClause', () => {
     const sql = `SELECT * FROM T1 WHERE T1.`
     const result = parseFromClause(sql)
     expect(result).toBeDefined()
     expect(result.from.tables[0]).toMatchObject({ as: null, table: 'T1' })
   })
-
-
 })
