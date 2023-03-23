@@ -61,6 +61,14 @@
     return result;
   }
 
+  function makeKeywordNode(val, location) {
+    return {
+      type: 'keyword',
+      value: val,
+      location: location
+    }
+  }
+
   var cmpPrefixMap = {
     '+' : true,
     '-' : true,
@@ -841,7 +849,6 @@ ident_part  = [A-Za-z0-9_]
 // Allow square brackets and quote to support nested columns with subscripts for example `books['title'].chapters[12].paragraphs`
 column_char  = [A-Za-z0-9_:\[\]\']
 
-
 param 
   = l:([:@] ident_name) {
     var p = {
@@ -905,7 +912,9 @@ star_expr
       }
     }
 
-func_call
+func_call = func_call_cast / func_call_others
+
+func_call_others
   = name:ident __ LPAREN __ l:expr_list_or_empty __ RPAREN {
       return {
         type : 'function',
@@ -913,6 +922,16 @@ func_call
         args : l
       }
     }
+
+func_call_cast
+  = keyword:KW_CAST __ LPAREN __ e:expr __ KW_AS __ datatype:ident __ RPAREN {
+    return {
+      type: 'cast_function',
+      keyword: keyword,
+      datatype: datatype,
+      expr: e
+    }
+  }
 
 literal 
   = l:(literal_string / literal_numeric / literal_bool / literal_null)!DOT {
@@ -1115,6 +1134,8 @@ KW_MAX            = "MAX"i            !ident_start    { return 'MAX';      }
 KW_MIN            = "MIN"i            !ident_start    { return 'MIN';      }
 KW_SUM            = "SUM"i            !ident_start    { return 'SUM';      }
 KW_AVG            = "AVG"i            !ident_start    { return 'AVG';      }
+
+KW_CAST           = val:"CAST"i       !ident_start { return makeKeywordNode(val, location()) }
 
 //specail character
 DOT       = '.'
