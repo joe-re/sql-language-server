@@ -1,13 +1,8 @@
 {
-  var util = require('util');
   var reservedMap = module.exports.reservedMap || {};
 
   function debug(str){
     console.log(str);
-  }
-
-  function inspect(obj){
-    console.log(util.inspect(obj, false, 10));
   }
 
   function createUnaryExpr(op, e) {
@@ -42,7 +37,6 @@
     var ep;
     for (var i = 0; i < epList.length; i++) {
       ep = epList[i]; 
-      //the ep has already added to the global params
       if (ep && ep.type == 'param') {
         ep.room = room;
         ep.pos  = i;
@@ -68,46 +62,12 @@
       location: location
     }
   }
-
-  var cmpPrefixMap = {
-    '+' : true,
-    '-' : true,
-    '*' : true,
-    '/' : true,
-    '>' : true,
-    '<' : true,
-    '!' : true,
-    '=' : true,
-
-    //between
-    'B' : true,
-    'b' : true,
-    //for is or in
-    'I' : true,
-    'i' : true,
-    //for like
-    'L' : true,
-    'l' : true,
-    //for not
-    'N' : true, 
-    'n' : true, 
-    //for contains
-    'C' : true, 
-    'c' : true, 
-  }
-
-  //used for store refered parmas
-  var params = [];
-
-  //used for dependency analysis
-  var varList = [];
 }
 
 start 
-  = &{ params = []; return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt) __ EOSQL? __ {
+  = &{ return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt) __ EOSQL? __ {
       return {
         ast   : ast,
-        param : params
       } 
     } 
     /ast:proc_stmts {
@@ -494,11 +454,6 @@ set_list
       return createList(head, tail);
     }
 
-/**
- * here only use `additive_expr` to support 'col1 = col1+2'
- * if you want to use lower operator, please use '()' like below
- * 'col1 = (col2 > 3)'
- */
 set_item
   = c:column __ '=' __ v:additive_expr {
       return {
@@ -642,19 +597,6 @@ expr_list_or_empty
       }
     }
 
-/** 
- * Borrowed from PL/SQL ,the priority of below list IS ORDER BY DESC 
- * ---------------------------------------------------------------------------------------------------
- * | +, -                                                     | identity, negation                   |     
- * | *, /                                                     | multiplication, division             |
- * | +, -                                                     | addition, subtraction, concatenation |
- * | =, <, >, <=, >=, <>, !=, IS, LIKE, BETWEEN, IN, CONTAINS | comparion                            |
- * | !, NOT                                                   | logical negation                     |
- * | AND                                                      | conjunction                          |
- * | OR                                                       | inclusion                            |      
- * ---------------------------------------------------------------------------------------------------
- */
-
 expr = or_expr
     
 or_expr
@@ -667,7 +609,7 @@ and_expr
       return createBinaryExprChain(head, tail);
     }
 
-//here we should use `NOT` instead of `comparision_expr` to support chain-expr
+// here we should use `NOT` instead of `comparision_expr` to support chain-expr
 not_expr
   = (KW_NOT / "!" !"=") __ expr:not_expr {
       return createUnaryExpr('NOT', expr);
@@ -688,25 +630,6 @@ comparison_expr
         return res;
       }
     }
-
-/* 
-//optimization for comparison judge, bug because we in use `additive` expr
-//in column clause now , it have little effect
-cmp_prefix_char
-  = c:char &{ debug(c); return cmpPrefixMap[c]; }
-
-comparison_op_right 
-  = &cmp_prefix_char  body:(
-      arithmetic_op_right
-      / in_op_right
-      / between_op_right 
-      / is_op_right
-      / like_op_right
-      / contains_op_right
-    ){
-      return body; 
-    }
-*/
 
 comparison_op_right 
   = arithmetic_op_right
@@ -902,7 +825,7 @@ ident_start = [A-Za-z_]
 
 ident_part  = [A-Za-z0-9_]
 
-//to support column name like `cf1:name` in hbase
+// to support column name like `cf1:name` in hbase
 // Allow square brackets and quote to support nested columns with subscripts for example `books['title'].chapters[12].paragraphs`
 column_char  = [A-Za-z0-9_:\[\]\']
 
@@ -912,10 +835,6 @@ param
       type : 'param',
       value: l[1]
     } 
-    //var key = 'L' + line + 'C' + column;
-    //debug(key);
-    //params[key] = p;
-    params.push(p);
     return p;
   }
 
@@ -1235,10 +1154,9 @@ proc_stmts
   = proc_stmt* 
 
 proc_stmt 
-  = &{ varList = []; return true; } __ s:(assign_stmt / return_stmt) {
+  = &{ return true; } __ s:(assign_stmt / return_stmt) {
       return {
         stmt : s,
-        vars: varList
       }
     }
 
@@ -1328,8 +1246,6 @@ var_decl = var_decl_std / var_decl_pg_promise
 
 var_decl_std
   = KW_VAR_PRE name:ident_name m:mem_chain {
-    //push for analysis
-    varList.push(name);
     return {
       type : 'var',
       name : name,
@@ -1341,7 +1257,6 @@ var_decl_std
 // ref: https://github.com/vitaly-t/pg-promise
 var_decl_pg_promise
   = KW_VAR_PRE LBRACE name:ident_name m:mem_chain RBRACE {
-    varList.push(name);
     return {
       type : 'var_pg_promise',
       name : name,
