@@ -1,6 +1,6 @@
 {
   "name": "sqlint",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "main": "dist/src/index",
   "bin": "bin/cli.js",
   "author": "joe-re<joe.tialtngo@gmail.com>",
@@ -32,7 +32,7 @@
   ],
   "types": "./dist/src",
   "dependencies": {
-    "@joe-re/sql-parser": "^1.3.3",
+    "@joe-re/sql-parser": "^1.4.0",
     "ajv": "^6.12.2",
     "chalk": "^4.0.0",
     "js-yaml": "^3.14.0",
