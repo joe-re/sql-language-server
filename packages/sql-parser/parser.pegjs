@@ -1022,7 +1022,6 @@ hexDigit
 e
   = e:[eE] sign:[+-]? { return e + (sign || ''); }
 
-
 KW_NULL               = "NULL"i               !ident_start
 KW_NOT_NULL           = "NOT NULL"i           !ident_start
 KW_UNIQUE             = "UNIQUE"i             !ident_start
@@ -1117,6 +1116,8 @@ KW_AVG            = "AVG"i            !ident_start    { return 'AVG';      }
 
 KW_CAST           = val:"CAST"i       !ident_start { return makeKeywordNode(val, location()) }
 KW_RECURSIVE      = val:"RECURSIVE"i  !ident_start { return makeKeywordNode(val, location()) }
+KW_FOREIGN_KEY    = val:"FOREIGN KEY"i !ident_start { return makeKeywordNode(val, location()) }
+KW_REFERENCES     = val:"REFERENCES"i !ident_start { return makeKeywordNode(val, location()) }
 
 //specail character
 DOT       = '.'
@@ -1355,7 +1356,7 @@ create_table_stmt
         type: 'create_table',
         keyword: keyword,
         if_not_exists: null,
-        fields: [],
+        column_definitions: [],
         select: select,
         location: location(),
       }
@@ -1364,14 +1365,14 @@ create_table_stmt
     if_not_exists_keyword: if_not_exists_keyword __
     table: ident __
     LPAREN __
-    fields: field_list __
+    fields: column_definition_list __
     RPAREN
    {
       return {
         type: 'create_table',
         keyword: keyword,
         if_not_exists: if_not_exists_keyword,
-        fields: fields,
+        column_definitions: fields,
         select: null,
         location: location(),
       }
@@ -1379,14 +1380,14 @@ create_table_stmt
   / keyword: create_table_keyword __
     table: ident __
     LPAREN __
-    fields: field_list __
+    fields: column_definition_list __
     RPAREN
    {
       return {
         type: 'create_table',
         if_not_exists: null,
         keyword: keyword,
-        fields: fields,
+        column_definitions: fields,
         select: null,
         location: location(),
       }
@@ -1410,10 +1411,10 @@ if_not_exists_keyword
     }
   }
 
-field_list
-  = head:field tail:(__ COMMA __ field)* {
-    return createList(head, tail);
-  }
+column_definition = foreign_key / field
+column_definition_list = head: column_definition tail:(__ COMMA __ column_definition)* {
+  return createList(head, tail);
+}
 
 field
   = name:ident __ type:field_data_type __ constraints: field_constraint_list {
@@ -1431,6 +1432,21 @@ field
       name: name,
       data_type: type,
       constraints: [],
+      location: location()
+    }
+  }
+
+foreign_key
+  = k1: KW_FOREIGN_KEY __
+    LPAREN __ col_head:ident col_tail:(__ COMMA __ ident)* __ RPAREN __
+    k2: KW_REFERENCES __ ref_table:ident __ LPAREN __ ref_col_head:ident ref_col_tail:(__ COMMA __ ident)* __ RPAREN {
+    return {
+      type: 'foreign_key',
+      foreign_keyword: k1,
+      columns: createList(col_head, col_tail),
+      references_keyword: k2,
+      references_table: ref_table,
+      references_columns: createList(ref_col_head, ref_col_tail),
       location: location()
     }
   }
