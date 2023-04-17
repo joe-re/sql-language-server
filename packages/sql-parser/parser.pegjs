@@ -1231,7 +1231,8 @@ proc_func_call
         args : {
           type  : 'expr_list',
           value : l
-        }
+        },
+        location: location(),
       }
     }
 
@@ -1249,7 +1250,7 @@ special_system_function
   ) {
       return {
         type : 'special_system_function',
-        value : value,
+        name : value,
         location: location(),
       }
     }

@@ -75,7 +75,7 @@ describe('CREATE TABLE statement', () => {
     })
   })
 
-  describe('DEFAULT constrants', () => {
+  describe('FOREIGN KEY', () => {
     it('should success to parse', () => {
       const sql = `
         CREATE TABLE IF NOT EXISTS purchases (
@@ -85,16 +85,17 @@ describe('CREATE TABLE statement', () => {
           confirmed_at TIMESTAMP,
           cancelled_at TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (device_id) REFERENCES devices(id)
+          FOREIGN KEY (device_id, item_id) REFERENCES devices(id, item_id)
         );
       `
-      try {
-        const result = parse(sql)
-        expect(result).toBeDefined()
-      } catch (e) {
-        console.log(e)
-        throw e
-      }
+      const result = parse(sql)
+      expect(result).toBeDefined()
+      expect(result.column_definitions).toHaveLength(7)
+      expect(result.column_definitions[6].type).toEqual('foreign_key')
+      const foreignKey = result.column_definitions[6]
+      expect(foreignKey.columns).toHaveLength(2)
+      expect(foreignKey.references_table).toEqual('devices')
+      expect(foreignKey.references_columns).toHaveLength(2)
     })
   })
 })

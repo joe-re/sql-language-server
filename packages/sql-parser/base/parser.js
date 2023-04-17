@@ -1074,7 +1074,8 @@ function peg$parse(input, options) {
               args : {
                 type  : 'expr_list',
                 value : l
-              }
+              },
+              location: location(),
             }
           },
       peg$c426 = "current_user",
@@ -1098,7 +1099,7 @@ function peg$parse(input, options) {
       peg$c444 = function(value) {
             return {
               type : 'special_system_function',
-              value : value,
+              name : value,
               location: location(),
             }
           },
