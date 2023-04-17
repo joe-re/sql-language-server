@@ -13,9 +13,9 @@ describe('CREATE TABLE statement', () => {
           value: 'CREATE TABLE'
         },
         if_not_exists: null,
-        fields: [
-          { type: 'field', name: 'PersonID', data_type: { name: 'int', value: null } },
-          { type: 'field', name: 'LastName', data_type: { name: 'varchar', value: '255' } }
+        column_definitions: [
+          { type: 'field', name: 'PersonID', data_type: { name: 'int', args: [] } },
+          { type: 'field', name: 'LastName', data_type: { name: 'varchar', args: ['255'] } }
         ]
       })
     })
@@ -37,9 +37,9 @@ describe('CREATE TABLE statement', () => {
           type: 'keyword',
           value: 'IF NOT EXISTS'
         },
-        fields: [
-          { type: 'field', name: 'PersonID', data_type: { name: 'int', value: null } },
-          { type: 'field', name: 'LastName', data_type: { name: 'varchar', value: '255' } }
+        column_definitions: [
+          { type: 'field', name: 'PersonID', data_type: { name: 'int', args: [] } },
+          { type: 'field', name: 'LastName', data_type: { name: 'varchar', args: ['255'] } }
         ]
       })
     })
@@ -49,16 +49,17 @@ describe('CREATE TABLE statement', () => {
     it('should success to parse', () => {
       const sql = `
         CREATE TABLE Persons (
-          PersonID int NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT,
+          PersonID int NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT DEFAULT CURRENT_TIMESTAMP,
           LastName varchar(255)
         );`
       const result = parse(sql)
-      expect(result.fields[0].constraints).toBeDefined()
-      expect(result.fields[0].constraints.length).toEqual(4)
-      expect(result.fields[0].constraints[0].type).toEqual('constraint_not_null')
-      expect(result.fields[0].constraints[1].type).toEqual('constraint_unique')
-      expect(result.fields[0].constraints[2].type).toEqual('constraint_primary_key')
-      expect(result.fields[0].constraints[3].type).toEqual('constraint_auto_increment')
+      expect(result.column_definitions[0].constraints).toBeDefined()
+      expect(result.column_definitions[0].constraints.length).toEqual(5)
+      expect(result.column_definitions[0].constraints[0].type).toEqual('constraint_not_null')
+      expect(result.column_definitions[0].constraints[1].type).toEqual('constraint_unique')
+      expect(result.column_definitions[0].constraints[2].type).toEqual('constraint_primary_key')
+      expect(result.column_definitions[0].constraints[3].type).toEqual('constraint_auto_increment')
+      expect(result.column_definitions[0].constraints[4].type).toEqual('constraint_default')
     })
   })
 
@@ -71,6 +72,52 @@ describe('CREATE TABLE statement', () => {
       `
       const result = parse(sql)
       expect(result).toBeDefined()
+    })
+  })
+
+  describe('FOREIGN KEY', () => {
+    it('should success to parse', () => {
+      const sql = `
+        CREATE TABLE IF NOT EXISTS purchases (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          device_id INT NOT NULL,
+          method VARCHAR(255) NOT NULL,
+          confirmed_at TIMESTAMP,
+          cancelled_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (device_id, item_id) REFERENCES devices(id, item_id)
+        );
+      `
+      const result = parse(sql)
+      expect(result).toBeDefined()
+      expect(result.column_definitions).toHaveLength(7)
+      expect(result.column_definitions[6].type).toEqual('foreign_key')
+      const foreignKey = result.column_definitions[6]
+      expect(foreignKey.columns).toHaveLength(2)
+      expect(foreignKey.references_table).toEqual('devices')
+      expect(foreignKey.references_columns).toHaveLength(2)
+    })
+  })
+
+  describe('PRIMARY KEY', () => {
+    it('should success to parse', () => {
+      const sql = `
+        CREATE TABLE IF NOT EXISTS purchases (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          device_id INT NOT NULL,
+          method VARCHAR(255) NOT NULL,
+          confirmed_at TIMESTAMP,
+          cancelled_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (device_id, method)
+        );
+      `
+      const result = parse(sql)
+      expect(result).toBeDefined()
+      expect(result.column_definitions).toHaveLength(7)
+      expect(result.column_definitions[6].type).toEqual('primary_key')
+      const primaryKey = result.column_definitions[6]
+      expect(primaryKey.columns).toHaveLength(2)
     })
   })
 })

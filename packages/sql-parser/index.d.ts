@@ -191,7 +191,7 @@ interface CreateTableStatement extends BaseNode {
   type: 'create_table'
   keyword: KeywordNode
   if_not_exists: KeywordNode | null
-  fields: FieldNode[]
+  column_definitions: (ForeignKeyNode | FieldNode)[]
   select: SelectStatement | null
 }
 
@@ -205,7 +205,7 @@ interface FieldNode extends BaseNode {
 interface FieldDataTypeNode extends BaseNode {
   type: 'field_data_type'
   name: string
-  value: string | null
+  args: string[]
 }
 
 interface AlterTableStatement extends BaseNode {
@@ -251,22 +251,53 @@ export interface FieldConstraintUnique extends BaseNode {
   keyword: KeywordNode
 }
 
+export interface FieldConstraintDefault extends BaseNode {
+  type: 'constraint_default'
+  keyword: KeywordNode
+  value: LiteralNode | FunctionNode | SpecialSystemFunctionNode
+}
+
 export type FieldConstraint =
   | FieldConstraintNotNull
   | FieldConstraintPrimaryKey
   | FieldConstraintUnique
+  | FieldConstraintDefault
 
 export interface VarDeclarationStandardNode extends BaseNode {
-  type: 'var',
-  name: string,
+  type: 'var'
+  name: string
   members: string[]
 }
 
 export interface VarDeclarationPgPromiseNode extends BaseNode {
-  type: 'var_pg_promise',
-  name: string,
+  type: 'var_pg_promise'
+  name: string
   members: string[]
 }
+
+export interface FunctionNode extends BaseNode {
+  type: 'function'
+  name: string
+  args: {
+    type  : 'expr_list'
+    value : any[] // TODO: fix this
+  }
+}
+
+export interface SpecialSystemFunctionNode extends BaseNode {
+  type: 'special_system_function'
+  name: string
+}
+
+export interface ForeignKeyNode extends BaseNode {
+  type: 'foreign_key'
+  foreign_keyword: KeywordNode
+  columns: string[]
+  references_keyword: KeywordNode
+  references_table: string
+  references_columns: string[]
+}
+
 
 type VarDeclarationNode = VarDeclarationStandardNode | VarDeclarationPgPromiseNode
 
@@ -297,6 +328,9 @@ type Node =
   | AlterTableStatement
   | AlterTableCommandNode
   | VarDeclarationNode
+  | FunctionNode
+  | SpecialSystemFunctionNode
+  | ForeignKeyNode
 
 export type StarNode = { type: 'star'; value: '*' }
 
