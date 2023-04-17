@@ -911,11 +911,7 @@ func_call_cast
 
 literal 
   = l:(literal_string / literal_numeric / literal_bool / literal_null)!DOT {
-    return {
-      type: 'literal',
-      value: l,
-      location: location()
-    }
+    return l
   }
 
 literal_list
@@ -1412,7 +1408,7 @@ if_not_exists_keyword
     }
   }
 
-column_definition = foreign_key / field
+column_definition = foreign_key / primary_key / field
 column_definition_list = head: column_definition tail:(__ COMMA __ column_definition)* {
   return createList(head, tail);
 }
@@ -1452,12 +1448,22 @@ foreign_key
     }
   }
 
+primary_key
+  = k: KW_PRIMARY_KEY __ LPAREN __ col_head:ident col_tail:(__ COMMA __ ident)* __ RPAREN {
+    return {
+      type: 'primary_key',
+      keyword: k,
+      columns: createList(col_head, col_tail),
+      location: location()
+    }
+  }
+
 field_data_type
-  = name:ident __ LPAREN __? val:int __? RPAREN {
+  = name:ident __ LPAREN __? args_head:int args_tail:(__ COMMA __ int)* __? RPAREN {
     return {
       type: 'field_data_type',
       name: name,
-      value: val,
+      args: createList(args_head, args_tail),
       location: location()
     }
   }
@@ -1465,7 +1471,7 @@ field_data_type
     return {
       type: 'field_data_type',
       name: name,
-      value: null,
+      args: [],
       location: location()
     }
   }

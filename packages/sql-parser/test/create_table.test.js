@@ -14,8 +14,8 @@ describe('CREATE TABLE statement', () => {
         },
         if_not_exists: null,
         column_definitions: [
-          { type: 'field', name: 'PersonID', data_type: { name: 'int', value: null } },
-          { type: 'field', name: 'LastName', data_type: { name: 'varchar', value: '255' } }
+          { type: 'field', name: 'PersonID', data_type: { name: 'int', args: [] } },
+          { type: 'field', name: 'LastName', data_type: { name: 'varchar', args: ['255'] } }
         ]
       })
     })
@@ -38,8 +38,8 @@ describe('CREATE TABLE statement', () => {
           value: 'IF NOT EXISTS'
         },
         column_definitions: [
-          { type: 'field', name: 'PersonID', data_type: { name: 'int', value: null } },
-          { type: 'field', name: 'LastName', data_type: { name: 'varchar', value: '255' } }
+          { type: 'field', name: 'PersonID', data_type: { name: 'int', args: [] } },
+          { type: 'field', name: 'LastName', data_type: { name: 'varchar', args: ['255'] } }
         ]
       })
     })
@@ -96,6 +96,28 @@ describe('CREATE TABLE statement', () => {
       expect(foreignKey.columns).toHaveLength(2)
       expect(foreignKey.references_table).toEqual('devices')
       expect(foreignKey.references_columns).toHaveLength(2)
+    })
+  })
+
+  describe('PRIMARY KEY', () => {
+    it('should success to parse', () => {
+      const sql = `
+        CREATE TABLE IF NOT EXISTS purchases (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          device_id INT NOT NULL,
+          method VARCHAR(255) NOT NULL,
+          confirmed_at TIMESTAMP,
+          cancelled_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (device_id, method)
+        );
+      `
+      const result = parse(sql)
+      expect(result).toBeDefined()
+      expect(result.column_definitions).toHaveLength(7)
+      expect(result.column_definitions[6].type).toEqual('primary_key')
+      const primaryKey = result.column_definitions[6]
+      expect(primaryKey.columns).toHaveLength(2)
     })
   })
 })

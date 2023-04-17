@@ -205,7 +205,7 @@ interface FieldNode extends BaseNode {
 interface FieldDataTypeNode extends BaseNode {
   type: 'field_data_type'
   name: string
-  value: string | null
+  args: string[]
 }
 
 interface AlterTableStatement extends BaseNode {

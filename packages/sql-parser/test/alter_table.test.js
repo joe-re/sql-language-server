@@ -17,7 +17,7 @@ describe('ALTER TABLE statement', () => {
           field: {
             type: 'field',
             name: 'Email',
-            data_type: { name: 'varchar', value: '255' },
+            data_type: { name: 'varchar', args: ['255'] },
           },
         },
       })
@@ -67,7 +67,7 @@ describe('ALTER TABLE statement', () => {
             field: {
               type: 'field',
               name: 'Email',
-              data_type: { name: 'varchar', value: '255' },
+              data_type: { name: 'varchar', args: ['255'] },
             },
           },
         })
@@ -94,7 +94,7 @@ describe('ALTER TABLE statement', () => {
             field: {
               type: 'field',
               name: 'Email',
-              data_type: { name: 'varchar', value: '255' },
+              data_type: { name: 'varchar', args: ['255'] },
             },
           },
         })
@@ -121,7 +121,7 @@ describe('ALTER TABLE statement', () => {
             field: {
               type: 'field',
               name: 'Email',
-              data_type: { name: 'varchar', value: '255' },
+              data_type: { name: 'varchar', args: ['255'] },
             },
           },
         })
