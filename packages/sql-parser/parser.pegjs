@@ -911,7 +911,11 @@ func_call_cast
 
 literal 
   = l:(literal_string / literal_numeric / literal_bool / literal_null)!DOT {
-    return l
+    return {
+      type: 'literal',
+      value: l,
+      location: location()
+    }
   }
 
 literal_list
@@ -1025,7 +1029,7 @@ KW_UNIQUE             = "UNIQUE"i             !ident_start
 KW_PRIMARY_KEY        = "PRIMARY KEY"i        !ident_start
 KW_INCREMENT          = "INCREMENT"i          !ident_start
 KW_AUTO_INCREMENT     = "AUTO_INCREMENT"i     !ident_start
-KW_DEFAULT            = "DEFAULT"i            !ident_start
+KW_DEFAULT            = val:"DEFAULT"i        !ident_start { return makeKeywordNode(val, location()) }
 KW_GENERATED          = "GENERATED"i          !ident_start
 KW_ALWAYS             = "ALWAYS"i             !ident_start
 KW_BY_DEFAULT         = "BY DEFAULT"i         !ident_start
@@ -1210,6 +1214,7 @@ proc_primary
   = literal
   / var_decl
   / proc_func_call 
+  / special_system_function
   / param
   / LPAREN __ e:proc_additive_expr __ RPAREN { 
       e.paren = true; 
@@ -1226,6 +1231,25 @@ proc_func_call
           type  : 'expr_list',
           value : l
         }
+      }
+    }
+
+special_system_function
+  = value:(
+    'CURRENT_USER'i        !ident_start
+    / 'CURRENT_DATE'i      !ident_start
+    / 'CURRENT_TIME'i      !ident_start
+    / 'CURRENT_TIMESTAMP'i !ident_start
+    / 'LOCALTIME'i         !ident_start
+    / 'LOCALTIMESTAMP'i    !ident_start
+    / 'SESSION_USER'i      !ident_start
+    / 'SYSTEM_USER'i       !ident_start
+    / 'USER'i              !ident_start
+  ) {
+      return {
+        type : 'special_system_function',
+        value : value,
+        location: location(),
       }
     }
 
@@ -1440,6 +1464,7 @@ field_constraint
   / field_constraint_unique
   / field_constraint_auto_increment
   / field_constraint_generated
+  / field_constraint_default
 
 field_constraint_not_null = k: keyword_not_null {
   return { type: 'constraint_not_null', keyword: k, location: location() }
@@ -1483,6 +1508,12 @@ constraint_generated_option = k: keyword_always {
   return { type: 'constraint_generated_option', option: 'BY_DEFAULT', keyword: k }
 } / k: keyword_by_default_on_null {
   return { type: 'constraint_generated_option', option: 'BY_DEFAULT_ON_NULL', keyword: k }
+}
+
+field_constraint_default 
+  = k: KW_DEFAULT __
+    value: (literal / proc_func_call / special_system_function) {
+      return { type: 'constraint_default', keyword: k, value: value, location: location() }
 }
 
 keyword_always = k: KW_ALWAYS {

@@ -49,16 +49,17 @@ describe('CREATE TABLE statement', () => {
     it('should success to parse', () => {
       const sql = `
         CREATE TABLE Persons (
-          PersonID int NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT,
+          PersonID int NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT DEFAULT CURRENT_TIMESTAMP,
           LastName varchar(255)
         );`
       const result = parse(sql)
       expect(result.fields[0].constraints).toBeDefined()
-      expect(result.fields[0].constraints.length).toEqual(4)
+      expect(result.fields[0].constraints.length).toEqual(5)
       expect(result.fields[0].constraints[0].type).toEqual('constraint_not_null')
       expect(result.fields[0].constraints[1].type).toEqual('constraint_unique')
       expect(result.fields[0].constraints[2].type).toEqual('constraint_primary_key')
       expect(result.fields[0].constraints[3].type).toEqual('constraint_auto_increment')
+      expect(result.fields[0].constraints[4].type).toEqual('constraint_default')
     })
   })
 
