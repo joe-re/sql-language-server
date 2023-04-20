@@ -298,6 +298,18 @@ export interface ForeignKeyNode extends BaseNode {
   references_columns: string[]
 }
 
+export interface CreateIndexStatement extends BaseNode {
+  type: 'create_index'
+  create_keyword: KeywordNode
+  index_keyword: KeywordNode
+  if_not_exists_keyword: KeywordNode | null
+  if_not_exists: boolean
+  name: string
+  on_keyword: KeywordNode
+  table: string
+  columns: string[]
+}
+
 
 type VarDeclarationNode = VarDeclarationStandardNode | VarDeclarationPgPromiseNode
 
@@ -331,6 +343,7 @@ type Node =
   | FunctionNode
   | SpecialSystemFunctionNode
   | ForeignKeyNode
+  | CreateIndexStatement
 
 export type StarNode = { type: 'star'; value: '*' }
 
@@ -342,6 +355,7 @@ export type AST =
   | InsertStatement
   | CreateTableStatement
   | AlterTableStatement
+  | CreateIndexStatement
 
 export type LiteralNode =
   | LiteralStringNode

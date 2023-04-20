@@ -65,7 +65,7 @@
 }
 
 start 
-  = &{ return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt) __ EOSQL? __ {
+  = &{ return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt / create_index_stmt) __ EOSQL? __ {
       return {
         ast   : ast,
       } 
@@ -1049,7 +1049,7 @@ KW_SHOW           = "SHOW"i           !ident_start
 KW_DROP           = "DROP"i           !ident_start
 KW_SELECT         = "SELECT"i         !ident_start
 KW_UPDATE         = "UPDATE"i         !ident_start
-KW_CREATE         = "CREATE"i         !ident_start
+KW_CREATE         = val:"CREATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
 KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
 KW_DELETE         = "DELETE"i         !ident_start
@@ -1114,6 +1114,7 @@ KW_CAST           = val:"CAST"i       !ident_start { return makeKeywordNode(val,
 KW_RECURSIVE      = val:"RECURSIVE"i  !ident_start { return makeKeywordNode(val, location()) }
 KW_FOREIGN_KEY    = val:"FOREIGN KEY"i !ident_start { return makeKeywordNode(val, location()) }
 KW_REFERENCES     = val:"REFERENCES"i !ident_start { return makeKeywordNode(val, location()) }
+KW_INDEX          = val:"INDEX"i      !ident_start { return makeKeywordNode(val, location()) }
 
 //specail character
 DOT       = '.'
@@ -1703,6 +1704,28 @@ modify_keyword
     return {
       type: 'keyword',
       value: (val || []).map((v) => (v && v[0]) || [], []).join(''),
+      location: location()
+    }
+  }
+
+create_index_stmt
+  = kw_create: KW_CREATE __
+    kw_index: KW_INDEX __
+    kw_if_not_exists: KW_IF_NOT_EXISTS? __
+    name: ident __
+    kw_on: KW_ON __
+    table: ident __
+    LPAREN __ columns: column_list __ RPAREN {
+    return {
+      type: 'create_index',
+      create_keyword: kw_create,
+      index_keyword: kw_index,
+      if_not_exists_keyword: kw_if_not_exists,
+      if_not_exists: !!kw_if_not_exists,
+      name: name,
+      on_keyword: kw_on,
+      table: table,
+      columns: columns,
       location: location()
     }
   }
