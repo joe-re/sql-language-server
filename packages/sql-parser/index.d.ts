@@ -386,3 +386,4 @@ type FromClauseParserResult = {
 
 export function parseFromClause(sql: string): FromClauseParserResult
 export function parse(sql: string): AST
+export function parseAll(sql: string): AST[]

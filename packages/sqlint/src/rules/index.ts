@@ -1,4 +1,4 @@
-import { parse, NodeRange, AST, Node, BaseNode } from '@joe-re/sql-parser'
+import { parseAll, NodeRange, AST, Node, BaseNode } from '@joe-re/sql-parser'
 import log4js from 'log4js'
 import { Fixer, FixDescription, createFixer } from '../fixer'
 import { reservedWordCase } from './reservedWordCase'
@@ -80,8 +80,12 @@ export function execute(sql: string, config: Config): Diagnostic[] {
   registerRule(requireAsToRenameColumn, config, sql)
 
   try {
-    const ast = parse(sql)
-    return walk(ast)
+    const ast = parseAll(sql)
+    return ast
+      .map((v) => {
+        return walk(v)
+      })
+      .flat()
   } catch (e) {
     logger.debug(e)
     return []

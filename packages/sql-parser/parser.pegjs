@@ -65,9 +65,10 @@
 }
 
 start 
-  = &{ return true; } __ ast:(union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt / create_index_stmt) __ EOSQL? __ {
+  = &{ return true; } __ ast:ast __ tail: ((EOSQL __ start / EOSQL))* {
       return {
         ast   : ast,
+        asts  : [ast].concat(tail.map(v => v[2].ast))
       } 
     } 
     /ast:proc_stmts {
@@ -75,6 +76,7 @@ start
         ast : ast  
       }
     }
+ast = union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt / create_index_stmt
 
 union_stmt
   = head:select_stmt tail:(__ KW_UNION __ KW_ALL? __ select_stmt)* {
