@@ -8,11 +8,17 @@ exports.parse = function (sql){
   return ap.ast;
 };
 
+exports.parseAll = function (sql) {
+  var ap = Parser.parse(sql);
+  return ap.asts;
+}
+
 exports.parseFromClause = function (sql) {
   return FromClauseParser.parse(sql)
 }
 
 module.exports = {
   parse: exports.parse,
-  parseFromClause: exports.parseFromClause
+  parseFromClause: exports.parseFromClause,
+  parseAll: exports.parseAll,
 }

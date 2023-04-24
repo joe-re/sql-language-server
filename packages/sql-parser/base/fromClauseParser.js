@@ -142,9 +142,10 @@ function peg$parse(input, options) {
       peg$startRuleFunction  = peg$parseextract_from_clause,
 
       peg$c0 = function() { return true; },
-      peg$c1 = function(ast) {
+      peg$c1 = function(ast, tail) {
             return {
               ast   : ast,
+              asts  : [ast].concat(tail.map(v => v[2].ast))
             } 
           },
       peg$c2 = function(ast) {
@@ -1512,7 +1513,7 @@ function peg$parse(input, options) {
   }
 
   function peg$parsestart() {
-    var s0, s1, s2, s3, s4, s5, s6;
+    var s0, s1, s2, s3, s4, s5, s6, s7, s8, s9;
 
     s0 = peg$currPos;
     peg$savedPos = peg$currPos;
@@ -1525,42 +1526,66 @@ function peg$parse(input, options) {
     if (s1 !== peg$FAILED) {
       s2 = peg$parse__();
       if (s2 !== peg$FAILED) {
-        s3 = peg$parseunion_stmt();
-        if (s3 === peg$FAILED) {
-          s3 = peg$parseupdate_stmt();
-          if (s3 === peg$FAILED) {
-            s3 = peg$parsereplace_insert_stmt();
-            if (s3 === peg$FAILED) {
-              s3 = peg$parsedelete_stmt();
-              if (s3 === peg$FAILED) {
-                s3 = peg$parsecreate_table_stmt();
-                if (s3 === peg$FAILED) {
-                  s3 = peg$parsealter_table_stmt();
-                  if (s3 === peg$FAILED) {
-                    s3 = peg$parsecreate_index_stmt();
-                  }
-                }
-              }
-            }
-          }
-        }
+        s3 = peg$parseast();
         if (s3 !== peg$FAILED) {
           s4 = peg$parse__();
           if (s4 !== peg$FAILED) {
-            s5 = peg$parseEOSQL();
-            if (s5 === peg$FAILED) {
-              s5 = null;
+            s5 = [];
+            s6 = peg$currPos;
+            s7 = peg$parseEOSQL();
+            if (s7 !== peg$FAILED) {
+              s8 = peg$parse__();
+              if (s8 !== peg$FAILED) {
+                s9 = peg$parsestart();
+                if (s9 !== peg$FAILED) {
+                  s7 = [s7, s8, s9];
+                  s6 = s7;
+                } else {
+                  peg$currPos = s6;
+                  s6 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s6;
+                s6 = peg$FAILED;
+              }
+            } else {
+              peg$currPos = s6;
+              s6 = peg$FAILED;
+            }
+            if (s6 === peg$FAILED) {
+              s6 = peg$parseEOSQL();
+            }
+            while (s6 !== peg$FAILED) {
+              s5.push(s6);
+              s6 = peg$currPos;
+              s7 = peg$parseEOSQL();
+              if (s7 !== peg$FAILED) {
+                s8 = peg$parse__();
+                if (s8 !== peg$FAILED) {
+                  s9 = peg$parsestart();
+                  if (s9 !== peg$FAILED) {
+                    s7 = [s7, s8, s9];
+                    s6 = s7;
+                  } else {
+                    peg$currPos = s6;
+                    s6 = peg$FAILED;
+                  }
+                } else {
+                  peg$currPos = s6;
+                  s6 = peg$FAILED;
+                }
+              } else {
+                peg$currPos = s6;
+                s6 = peg$FAILED;
+              }
+              if (s6 === peg$FAILED) {
+                s6 = peg$parseEOSQL();
+              }
             }
             if (s5 !== peg$FAILED) {
-              s6 = peg$parse__();
-              if (s6 !== peg$FAILED) {
-                peg$savedPos = s0;
-                s1 = peg$c1(s3);
-                s0 = s1;
-              } else {
-                peg$currPos = s0;
-                s0 = peg$FAILED;
-              }
+              peg$savedPos = s0;
+              s1 = peg$c1(s3, s5);
+              s0 = s1;
             } else {
               peg$currPos = s0;
               s0 = peg$FAILED;
@@ -1589,6 +1614,32 @@ function peg$parse(input, options) {
         s1 = peg$c2(s1);
       }
       s0 = s1;
+    }
+
+    return s0;
+  }
+
+  function peg$parseast() {
+    var s0;
+
+    s0 = peg$parseunion_stmt();
+    if (s0 === peg$FAILED) {
+      s0 = peg$parseupdate_stmt();
+      if (s0 === peg$FAILED) {
+        s0 = peg$parsereplace_insert_stmt();
+        if (s0 === peg$FAILED) {
+          s0 = peg$parsedelete_stmt();
+          if (s0 === peg$FAILED) {
+            s0 = peg$parsecreate_table_stmt();
+            if (s0 === peg$FAILED) {
+              s0 = peg$parsealter_table_stmt();
+              if (s0 === peg$FAILED) {
+                s0 = peg$parsecreate_index_stmt();
+              }
+            }
+          }
+        }
+      }
     }
 
     return s0;
