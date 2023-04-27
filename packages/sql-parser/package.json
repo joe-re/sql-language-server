@@ -7,8 +7,8 @@
   "scripts": {
     "test": "jest",
     "build": "npm run generateParser && npm run generateFromClauseParser",
-    "generateParser": "pegjs -o ./base/parser.js parser.pegjs",
-    "generateFromClauseParser": "pegjs -o ./base/fromClauseParser.js  --allowed-start-rules extract_from_clause parser.pegjs"
+    "generateParser": "peggy -o ./base/parser.js parser.pegjs",
+    "generateFromClauseParser": "peggy -o ./base/fromClauseParser.js  --allowed-start-rules extract_from_clause parser.pegjs"
   },
   "files": [
     "base",
@@ -21,8 +21,7 @@
     "node": ">=0.8.0"
   },
   "devDependencies": {
-    "jest": "^26.0.1",
-    "pegjs": "=0.10.0"
+    "jest": "^26.0.1"
   },
   "readmeFilename": "README.md",
   "main": "index.js",
@@ -30,5 +29,8 @@
     "SQL",
     "Parer"
   ],
-  "license": "GPLv2"
+  "license": "GPLv2",
+  "dependencies": {
+    "peggy": "^3.0.2"
+  }
 }
