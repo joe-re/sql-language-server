@@ -296,6 +296,14 @@ export interface ForeignKeyNode extends BaseNode {
   references_keyword: KeywordNode
   references_table: string
   references_columns: string[]
+  on: ForeignKeyOnNode | null
+}
+
+export interface ForeignKeyOnNode extends BaseNode {
+  type: 'foreign_key_on'
+  on_keyword: KeywordNode
+  trigger: KeywordNode
+  action: KeywordNode
 }
 
 export interface CreateIndexStatement extends BaseNode {
