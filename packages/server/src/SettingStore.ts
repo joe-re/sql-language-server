@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as path from 'path'
 import EventEmitter from 'events'
 import log4js from 'log4js'
 
@@ -40,9 +41,9 @@ type PersonalConfig = {
   connections: Connection[]
 }
 
-function fileExists(path: string) {
+function fileExists(filePath: string) {
   try {
-    return fs.statSync(path).isFile()
+    return fs.statSync(path.resolve(filePath)).isFile()
   } catch (e) {
     const err = e as NodeJS.ErrnoException
     if (err && err.code === 'ENOENT') {
@@ -53,7 +54,7 @@ function fileExists(path: string) {
 }
 
 function readFile(filePath: string) {
-  return fs.readFileSync(filePath, 'utf8').replace(/^\ufeff/u, '')
+  return fs.readFileSync(path.resolve(filePath), 'utf8').replace(/^\ufeff/u, '')
 }
 
 export default class SettingStore extends EventEmitter.EventEmitter {
