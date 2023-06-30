@@ -3,7 +3,13 @@
 
   function debug(str){
     console.log(str);
-  }
+    const sql = `
+      SELECT "T1"."COL1" FROM "T1" WHERE "T1"."num" = 1;
+      SELECT "T1"."COL1" FROM "T1" WHERE "T1"."num" = 2;
+     `
+  const result = parse(sql)
+  expect(result).toBeDefined()
+  expect(result).toMatchObject({ type: 'select' })}
 
   function createUnaryExpr(op, e) {
     return {
@@ -652,24 +658,31 @@ arithmetic_op_right
 arithmetic_comparison_operator
   = ">=" / ">" / "<=" / "<>" / "<" / "=" / "!="  
 
-is_op_right
-  = op:KW_IS __ right:additive_expr {
-      return {
-        op    : op,   
-        right : right
-      }
-    }
-
 between_op_right
   = op:KW_BETWEEN __  begin:additive_expr __ KW_AND __ end:additive_expr {
-      return {
-        op    : op,
-        right : {
-          type : 'expr_list',
-          value : [begin, end]
-        }
+    return {
+      op: op,
+      right: {
+        type: 'expr_list',
+        value: [begin, end]
       }
     }
+  }
+
+is_op_right
+  = op:KW_IS __ not:KW_NOT? __ right:KW_NULL {
+    return {
+      op    : op,
+      right : ((not || '') + ' ' + right[0]).trim()
+    }
+  }
+  / op:KW_IS __ right:additive_expr {
+    return {
+      op    : op,
+      right : right
+    }
+  }
+
 
 like_op
   = nk:(KW_NOT __ KW_LIKE) { return nk[0] + ' ' + nk[2]; }
