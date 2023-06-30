@@ -1063,11 +1063,11 @@ KW_FALSE              = "FALSE"i              !ident_start
 KW_SHOW           = "SHOW"i           !ident_start
 KW_DROP           = "DROP"i           !ident_start
 KW_SELECT         = "SELECT"i         !ident_start
-KW_UPDATE         = "UPDATE"i         !ident_start
+KW_UPDATE         = val:"UPDATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE         = val:"CREATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
 KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
-KW_DELETE         = "DELETE"i         !ident_start
+KW_DELETE         = val:"DELETE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_INSERT         = "INSERT"i         !ident_start
 KW_REPLACE        = "REPLACE"i        !ident_start
 KW_EXPLAIN        = "EXPLAIN"i        !ident_start
@@ -1084,7 +1084,7 @@ KW_AS             = "AS"i             !ident_start
 KW_TABLE          = "TABLE"i          !ident_start
 KW_COLUMN         = "COLUMN"i         !ident_start
 
-KW_ON             = "ON"i             !ident_start
+KW_ON             = val:"ON"i         !ident_start { return makeKeywordNode(val, location()) }
 KW_LEFT           = "LEFT"i           !ident_start
 KW_INNER          = "INNER"i          !ident_start
 KW_JOIN           = "JOIN"i           !ident_start
@@ -1125,11 +1125,17 @@ KW_MIN            = "MIN"i            !ident_start    { return 'MIN';      }
 KW_SUM            = "SUM"i            !ident_start    { return 'SUM';      }
 KW_AVG            = "AVG"i            !ident_start    { return 'AVG';      }
 
-KW_CAST           = val:"CAST"i       !ident_start { return makeKeywordNode(val, location()) }
-KW_RECURSIVE      = val:"RECURSIVE"i  !ident_start { return makeKeywordNode(val, location()) }
+KW_CAST           = val:"CAST"i        !ident_start { return makeKeywordNode(val, location()) }
+KW_RECURSIVE      = val:"RECURSIVE"i   !ident_start { return makeKeywordNode(val, location()) }
 KW_FOREIGN_KEY    = val:"FOREIGN KEY"i !ident_start { return makeKeywordNode(val, location()) }
-KW_REFERENCES     = val:"REFERENCES"i !ident_start { return makeKeywordNode(val, location()) }
-KW_INDEX          = val:"INDEX"i      !ident_start { return makeKeywordNode(val, location()) }
+KW_REFERENCES     = val:"REFERENCES"i  !ident_start { return makeKeywordNode(val, location()) }
+KW_INDEX          = val:"INDEX"i       !ident_start { return makeKeywordNode(val, location()) }
+
+KW_CASCADE        = val:"CASCADE"i     !ident_start { return makeKeywordNode(val, location()) }
+KW_SET_NULL       = val:"SET NULL"i    !ident_start { return makeKeywordNode(val, location()) }
+KW_SET_DEFAULT    = val:"SET DEFAULT"i !ident_start { return makeKeywordNode(val, location()) }
+KW_RESTRICT       = val:"RESTRICT"i    !ident_start { return makeKeywordNode(val, location()) }
+KW_NO_ACTION      = val:"NO ACTION"i   !ident_start { return makeKeywordNode(val, location()) }
 
 //specail character
 DOT       = '.'
@@ -1320,7 +1326,7 @@ mem_chain
 
 delete_stmt
   = with_clause: with_clause? __
-    val:delete_keyword    __
+    val:KW_DELETE    __
     KW_FROM      __
     t:delete_table __
     w:where_clause? {
@@ -1331,15 +1337,6 @@ delete_stmt
         where   : w
       }
     }
-
-delete_keyword
-  = val: KW_DELETE {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
-  }
 
 delete_table
   = db:db_name __ DOT __ t:table_name {
@@ -1452,7 +1449,8 @@ field
 foreign_key
   = k1: KW_FOREIGN_KEY __
     LPAREN __ col_head:ident col_tail:(__ COMMA __ ident)* __ RPAREN __
-    k2: KW_REFERENCES __ ref_table:ident __ LPAREN __ ref_col_head:ident ref_col_tail:(__ COMMA __ ident)* __ RPAREN {
+    k2: KW_REFERENCES __ ref_table:ident __ LPAREN __ ref_col_head:ident ref_col_tail:(__ COMMA __ ident)* __ RPAREN __
+    on:foreign_key_on? {
     return {
       type: 'foreign_key',
       foreign_keyword: k1,
@@ -1460,6 +1458,20 @@ foreign_key
       references_keyword: k2,
       references_table: ref_table,
       references_columns: createList(ref_col_head, ref_col_tail),
+      on: on,
+      location: location()
+    }
+  }
+
+foreign_key_on
+  = on:KW_ON __
+    trigger:(KW_DELETE/KW_UPDATE) __
+    action:(KW_CASCADE/KW_SET_NULL/KW_SET_DEFAULT/KW_RESTRICT/KW_NO_ACTION) {
+    return {
+      type: 'foreign_key_on',
+      on_keyword: on,
+      trigger: trigger,
+      action: action,
       location: location()
     }
   }

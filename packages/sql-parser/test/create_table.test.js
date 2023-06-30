@@ -96,6 +96,45 @@ describe('CREATE TABLE statement', () => {
       expect(foreignKey.columns).toHaveLength(2)
       expect(foreignKey.references_table).toEqual('devices')
       expect(foreignKey.references_columns).toHaveLength(2)
+      expect(foreignKey.on).toBeNull()
+    })
+
+    describe('ON option', () => {
+      [
+        { trigger: 'DELETE', action: 'CASCADE' },
+        { trigger: 'DELETE', action: 'SET NULL' },
+        { trigger: 'DELETE', action: 'SET DEFAULT' },
+        { trigger: 'DELETE', action: 'RESTRICT' },
+        { trigger: 'DELETE', action: 'NO ACTION' },
+        { trigger: 'UPDATE', action: 'CASCADE' },
+        { trigger: 'UPDATE', action: 'SET NULL' },
+        { trigger: 'UPDATE', action: 'SET DEFAULT' },
+        { trigger: 'UPDATE', action: 'RESTRICT' },
+        { trigger: 'UPDATE', action: 'NO ACTION' }
+      ].forEach(({ trigger, action }) => {
+        describe(`ON ${trigger} ${action}`, () => {
+          const sql = `
+            CREATE TABLE IF NOT EXISTS wallets (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              device_id INT NOT NULL,
+              balance DECIMAL(5, 2),
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      
+              FOREIGN KEY (device_id) REFERENCES devices (id) ON ${trigger} ${action}
+            );
+          `
+          const result = parse(sql)
+          expect(result).toBeDefined()
+          expect(result.column_definitions).toHaveLength(5)
+          expect(result.column_definitions[4].type).toEqual('foreign_key')
+          const foreignKey = result.column_definitions[4]
+          expect(foreignKey.on).toBeDefined()
+          const on = foreignKey.on
+          expect(on.type).toEqual('foreign_key_on')
+          expect(on.trigger.value).toEqual(trigger)
+          expect(on.action.value).toEqual(action)
+        })
+      })
     })
   })
 
@@ -120,4 +159,6 @@ describe('CREATE TABLE statement', () => {
       expect(primaryKey.columns).toHaveLength(2)
     })
   })
+
+
 })
