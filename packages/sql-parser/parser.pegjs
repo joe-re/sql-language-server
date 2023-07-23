@@ -82,7 +82,7 @@ start
         ast : ast  
       }
     }
-ast = union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt / create_index_stmt
+ast = union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt / create_index_stmt / create_type_stmt
 
 union_stmt
   = head:select_stmt tail:(__ KW_UNION __ KW_ALL? __ select_stmt)* {
@@ -1137,6 +1137,9 @@ KW_SET_DEFAULT    = val:"SET DEFAULT"i !ident_start { return makeKeywordNode(val
 KW_RESTRICT       = val:"RESTRICT"i    !ident_start { return makeKeywordNode(val, location()) }
 KW_NO_ACTION      = val:"NO ACTION"i   !ident_start { return makeKeywordNode(val, location()) }
 
+KW_TYPE           = val:"TYPE"i        !ident_start { return makeKeywordNode(val, location()) }
+KW_ENUM           = val:"ENUM"i        !ident_start { return makeKeywordNode(val, location()) }
+
 //specail character
 DOT       = '.'
 COMMA     = ','
@@ -1755,4 +1758,69 @@ create_index_stmt
       columns: columns,
       location: location()
     }
+  }
+
+create_type_stmt
+  = create_type_stmt_composite / create_type_stmt_enum
+
+create_type_stmt_composite =
+  kw_create: KW_CREATE __
+  kw_type: KW_TYPE __
+  name: ident __
+  kw_as: KW_AS __
+  LPAREN __
+  fields: composite_type_field_list __
+  RPAREN {
+    return {
+      type: 'create_type',
+      type_variant: 'composite_type',
+      create_keyword: kw_create,
+      type_keyword: kw_type,
+      name: name,
+      as_keyword: kw_as,
+      fields: fields,
+      location: location()
+    }
+  }
+
+composite_type_field =
+  name:ident __ type:field_data_type {
+    return {
+      type: 'composite_type_field',
+      name: name,
+      data_type: type,
+      location: location()
+    }
+  }
+
+composite_type_field_list =
+  head:composite_type_field tail:(__ COMMA __ composite_type_field)* {
+    return createList(head, tail);
+  } 
+
+create_type_stmt_enum =
+  kw_create: KW_CREATE __
+  kw_type: KW_TYPE __
+  name: ident __
+  kw_as: KW_AS __
+  kw_enum: KW_ENUM __
+  LPAREN __
+  values: create_type_value_list __
+  RPAREN {
+    return {
+      type: 'create_type',
+      type_variant: 'enum_type',
+      create_keyword: kw_create,
+      type_keyword: kw_type,
+      name: name,
+      as_keyword: kw_as,
+      enum_keyword: kw_enum,
+      values: values,
+      location: location()
+    }
+  }
+
+create_type_value_list =
+  head:literal_string tail:(__ COMMA __ literal_string)* {
+    return createList(head, tail);
   }
