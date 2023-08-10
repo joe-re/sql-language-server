@@ -82,7 +82,7 @@ start
         ast : ast  
       }
     }
-ast = union_stmt / update_stmt / replace_insert_stmt / delete_stmt / create_table_stmt / alter_table_stmt / create_index_stmt
+ast = union_stmt / update_stmt / replace_insert_stmt / delete_stmt / drop_table_stmt / create_table_stmt / alter_table_stmt / create_index_stmt
 
 union_stmt
   = head:select_stmt tail:(__ KW_UNION __ KW_ALL? __ select_stmt)* {
@@ -1067,6 +1067,7 @@ KW_UPDATE         = val:"UPDATE"i     !ident_start { return makeKeywordNode(val,
 KW_CREATE         = val:"CREATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
 KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
+KW_IF_EXISTS      = "IF EXISTS"i      !ident_start
 KW_DELETE         = val:"DELETE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_INSERT         = "INSERT"i         !ident_start
 KW_REPLACE        = "REPLACE"i        !ident_start
@@ -1355,6 +1356,47 @@ delete_table
         location: location()
       }
     }
+
+drop_table_stmt
+  = keyword: drop_table_keyword __
+    if_exists_keyword: if_exists_keyword __
+    table: ident __
+    {
+      return {
+        type: 'drop_table',
+        keyword: keyword,
+        if_exists: if_exists_keyword,
+        table: table
+      }
+    }
+  / keyword: drop_table_keyword __
+    table: ident __
+   {
+      return {
+        type: 'drop_table',
+        keyword: keyword,
+        if_exists: null,
+        table: table
+      }
+    }
+
+drop_table_keyword
+  = val: (KW_DROP __ KW_TABLE) {
+    return {
+      type: 'keyword',
+      value: (val || []).map((v) => (v && v[0]) || [], []).join(''),
+      location: location()
+    }
+  }
+
+if_exists_keyword
+  = val: KW_IF_EXISTS {
+    return {
+      type: 'keyword',
+      value: val && val[0],
+      location: location()
+    }
+  }
 
 create_table_stmt
   = keyword: create_table_keyword __
