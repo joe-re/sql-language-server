@@ -126,8 +126,9 @@ describe('keyword completion', () => {
   test("complete 'DELETE' keyword", () => {
     const sql = 'D'
     const result = complete(sql, { line: 0, column: sql.length })
-    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('DELETE')
+    expect(result.candidates[1].label).toEqual('DROP')
   })
 })
 
