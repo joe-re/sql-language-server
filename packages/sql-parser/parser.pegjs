@@ -1066,6 +1066,7 @@ KW_SELECT         = "SELECT"i         !ident_start
 KW_UPDATE         = val:"UPDATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE         = val:"CREATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
+KW_DROP_TABLE     = "DROP TABLE"i     !ident_start
 KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
 KW_IF_EXISTS      = "IF EXISTS"i      !ident_start
 KW_DELETE         = val:"DELETE"i     !ident_start { return makeKeywordNode(val, location()) }
@@ -1360,7 +1361,7 @@ delete_table
 drop_table_stmt
   = keyword: drop_table_keyword __
     if_exists_keyword: if_exists_keyword __
-    table: ident __
+    table: delete_table __
     {
       return {
         type: 'drop_table',
@@ -1370,7 +1371,7 @@ drop_table_stmt
       }
     }
   / keyword: drop_table_keyword __
-    table: ident __
+    table: delete_table __
    {
       return {
         type: 'drop_table',
@@ -1381,10 +1382,10 @@ drop_table_stmt
     }
 
 drop_table_keyword
-  = val: (KW_DROP __ KW_TABLE) {
+  = val: KW_DROP_TABLE {
     return {
       type: 'keyword',
-      value: (val || []).map((v) => (v && v[0]) || [], []).join(''),
+      value: val && val[0],
       location: location()
     }
   }

@@ -13,6 +13,10 @@ describe('DROP TABLE statement', () => {
           type: 'keyword',
           value: 'DROP TABLE'
         },
+        table: {
+          type: 'table',
+          table: 'Persons',
+        }
       })
     })
   })
@@ -24,14 +28,18 @@ describe('DROP TABLE statement', () => {
       expect(result).toBeDefined()
       expect(result).toMatchObject({
         type: 'drop_table',
-        if_exists: {
-          type: 'keyword',
-          value: 'IF EXISTS'
-        },
         keyword: {
           type: 'keyword',
           value: 'DROP TABLE'
         },
+        if_exists: {
+          type: 'keyword',
+          value: 'IF EXISTS'
+        },
+        table: {
+          type: 'table',
+          table: 'Persons',
+        }
       })
     })
   })
