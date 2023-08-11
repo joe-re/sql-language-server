@@ -6,11 +6,11 @@ import {
   IncompleteSubqueryNode,
   FromClauseParserResult,
   DeleteStatement,
-  DropStatement,
   ParseError,
   ExpectedLiteralNode,
   AST,
   AlterTableStatement,
+  DropTableStatement,
 } from '@joe-re/sql-parser'
 import log4js from 'log4js'
 import { CompletionItem } from 'vscode-languageserver-types'
@@ -283,7 +283,7 @@ class Completer {
     }
   }
 
-  addCandidatesForParsedDropStatement(ast: DropStatement) {
+  addCandidatesForParsedDropStatement(ast: DropTableStatement) {
     if (isPosInLocation(ast.table.location, this.pos)) {
       this.addCandidatesForTables(this.schema.tables, false)
     }
