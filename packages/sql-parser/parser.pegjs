@@ -1142,6 +1142,7 @@ KW_NO_ACTION      = val:"NO ACTION"i   !ident_start { return makeKeywordNode(val
 
 KW_TYPE           = val:"TYPE"i        !ident_start { return makeKeywordNode(val, location()) }
 KW_ENUM           = val:"ENUM"i        !ident_start { return makeKeywordNode(val, location()) }
+KW_RANGE          = val:"RANGE"i       !ident_start { return makeKeywordNode(val, location()) }
 
 //specail character
 DOT       = '.'
@@ -1805,7 +1806,7 @@ create_index_stmt
   }
 
 create_type_stmt
-  = create_type_stmt_composite / create_type_stmt_enum
+  = create_type_stmt_composite / create_type_stmt_enum / create_type_stmt_range
 
 create_type_stmt_composite =
   kw_create: KW_CREATE __
@@ -1866,5 +1867,42 @@ create_type_stmt_enum =
 
 create_type_value_list =
   head:literal_string tail:(__ COMMA __ literal_string)* {
+    return createList(head, tail);
+  }
+
+create_type_stmt_range =
+  kw_create: KW_CREATE __
+  kw_type: KW_TYPE __
+  name: ident __
+  kw_as: KW_AS __
+  kw_range: KW_RANGE __
+  LPAREN __
+  values: assign_value_expr_list __
+  RPAREN {
+    return {
+      type: 'create_type',
+      type_variant: 'range_type',
+      create_keyword: kw_create,
+      type_keyword: kw_type,
+      name: name,
+      as_keyword: kw_as,
+      range_keyword: kw_range,
+      values: values,
+      location: location()
+    }
+  }
+
+assign_value_expr =
+  name:ident __ "=" __ val:ident {
+    return {
+      type: 'assign_value_expr',
+      name: name,
+      value: val,
+      location: location()
+    }
+  }
+
+assign_value_expr_list =
+  head:assign_value_expr tail:(__ COMMA __ assign_value_expr)* {
     return createList(head, tail);
   }

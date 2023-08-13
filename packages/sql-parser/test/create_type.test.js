@@ -34,4 +34,28 @@ describe('CREATE TYPE statement', () => {
       expect(result.values[2].value).toEqual('happy')
     })
   })
+
+  describe('Range Types', () => {
+    it('should success to parse', () => {
+      const sql = `CREATE TYPE box AS RANGE (
+        subtype = box,
+        subtype_diff = box_subdiff,
+        subtype_opclass = box_ops
+      );`
+      const result = parse(sql)
+      expect(result).toBeDefined()
+      expect(result.type).toEqual('create_type')
+      expect(result.type_variant).toEqual('range_type')
+      expect(result.values).toHaveLength(3)
+      expect(result.values[0].type).toEqual('assign_value_expr')
+      expect(result.values[0].name).toEqual('subtype')
+      expect(result.values[0].value).toEqual('box')
+      expect(result.values[1].type).toEqual('assign_value_expr')
+      expect(result.values[1].name).toEqual('subtype_diff')
+      expect(result.values[1].value).toEqual('box_subdiff')
+      expect(result.values[2].type).toEqual('assign_value_expr')
+      expect(result.values[2].name).toEqual('subtype_opclass')
+      expect(result.values[2].value).toEqual('box_ops')
+    })
+  })
 })
