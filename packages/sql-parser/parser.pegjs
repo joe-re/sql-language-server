@@ -1806,7 +1806,7 @@ create_index_stmt
   }
 
 create_type_stmt
-  = create_type_stmt_composite / create_type_stmt_enum / create_type_stmt_range
+  = create_type_stmt_composite / create_type_stmt_enum / create_type_stmt_range / create_type_stmt_base
 
 create_type_stmt_composite =
   kw_create: KW_CREATE __
@@ -1893,11 +1893,22 @@ create_type_stmt_range =
   }
 
 assign_value_expr =
-  name:ident __ "=" __ val:ident {
+  name:ident __ "=" __ val:(ident / literal_numeric) {
+    if (val.type === 'number') {
+      val = val.value
+    }
     return {
       type: 'assign_value_expr',
       name: name,
       value: val,
+      location: location()
+    }
+  } /
+  name:ident {
+    return {
+      type: 'assign_value_expr',
+      name: name,
+      value: true,
       location: location()
     }
   }
@@ -1905,4 +1916,24 @@ assign_value_expr =
 assign_value_expr_list =
   head:assign_value_expr tail:(__ COMMA __ assign_value_expr)* {
     return createList(head, tail);
+  }
+
+create_type_stmt_base =
+  kw_create: KW_CREATE __
+  kw_type: KW_TYPE __
+  name: ident __
+  values:(
+    LPAREN __
+    assign_value_expr_list __
+    RPAREN
+  )? {
+    return {
+      type: 'create_type',
+      type_variant: 'base_type',
+      create_keyword: kw_create,
+      type_keyword: kw_type,
+      name: name,
+      values: (values && values[2]) || [],
+      location: location()
+    }
   }

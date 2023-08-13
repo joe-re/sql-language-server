@@ -58,4 +58,63 @@ describe('CREATE TYPE statement', () => {
       expect(result.values[2].value).toEqual('box_ops')
     })
   })
+
+  describe('Base Types', () => {
+    it('should success to parse', () => {
+      const sql = `CREATE TYPE mytype;`
+      const result = parse(sql)
+      expect(result).toBeDefined()
+      expect(result.type).toEqual('create_type')
+      expect(result.type_variant).toEqual('base_type')
+      expect(result.values).toHaveLength(0)
+    })
+
+    describe('with attributes', () => {
+      it('should success to parse', () => {
+        const sql = `CREATE TYPE mytype (
+          INPUT = myinputfunc,
+          OUTPUT = myoutputfunc,
+          RECEIVE = myreceivefunc,
+          SEND = mysendfunc,
+          TYPMOD_IN = mytypmodinfunc,
+          TYPMOD_OUT = mytypmodoutfunc,
+          ANALYZE = myanalyzefunc,
+          INTERNALLENGTH = 42,
+          PASSEDBYVALUE
+        );`
+        const result = parse(sql)
+        expect(result).toBeDefined()
+        expect(result.type).toEqual('create_type')
+        expect(result.type_variant).toEqual('base_type')
+        expect(result.values).toHaveLength(9)
+        expect(result.values[0].type).toEqual('assign_value_expr')
+        expect(result.values[0].name).toEqual('INPUT')
+        expect(result.values[0].value).toEqual('myinputfunc')
+        expect(result.values[1].type).toEqual('assign_value_expr')
+        expect(result.values[1].name).toEqual('OUTPUT')
+        expect(result.values[1].value).toEqual('myoutputfunc')
+        expect(result.values[2].type).toEqual('assign_value_expr')
+        expect(result.values[2].name).toEqual('RECEIVE')
+        expect(result.values[2].value).toEqual('myreceivefunc')
+        expect(result.values[3].type).toEqual('assign_value_expr')
+        expect(result.values[3].name).toEqual('SEND')
+        expect(result.values[3].value).toEqual('mysendfunc')
+        expect(result.values[4].type).toEqual('assign_value_expr')
+        expect(result.values[4].name).toEqual('TYPMOD_IN')
+        expect(result.values[4].value).toEqual('mytypmodinfunc')
+        expect(result.values[5].type).toEqual('assign_value_expr')
+        expect(result.values[5].name).toEqual('TYPMOD_OUT')
+        expect(result.values[5].value).toEqual('mytypmodoutfunc')
+        expect(result.values[6].type).toEqual('assign_value_expr')
+        expect(result.values[6].name).toEqual('ANALYZE')
+        expect(result.values[6].value).toEqual('myanalyzefunc')
+        expect(result.values[7].type).toEqual('assign_value_expr')
+        expect(result.values[7].name).toEqual('INTERNALLENGTH')
+        expect(result.values[7].value).toEqual(42)
+        expect(result.values[8].type).toEqual('assign_value_expr')
+        expect(result.values[8].name).toEqual('PASSEDBYVALUE')
+        expect(result.values[8].value).toEqual(true)
+      })
+    })
+  })
 })
