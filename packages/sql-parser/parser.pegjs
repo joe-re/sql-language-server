@@ -3,13 +3,7 @@
 
   function debug(str){
     console.log(str);
-    const sql = `
-      SELECT "T1"."COL1" FROM "T1" WHERE "T1"."num" = 1;
-      SELECT "T1"."COL1" FROM "T1" WHERE "T1"."num" = 2;
-     `
-  const result = parse(sql)
-  expect(result).toBeDefined()
-  expect(result).toMatchObject({ type: 'select' })}
+  }
 
   function createUnaryExpr(op, e) {
     return {
@@ -83,7 +77,17 @@ start
       }
     }
 
-ast = union_stmt / update_stmt / replace_insert_stmt / delete_stmt / drop_table_stmt / create_table_stmt / alter_table_stmt / create_index_stmt / create_type_stmt
+ast =
+  union_stmt /
+  update_stmt /
+  replace_insert_stmt /
+  delete_stmt /
+  drop_table_stmt /
+  create_table_stmt /
+  alter_table_stmt /
+  create_index_stmt /
+  create_type_stmt /
+  drop_type_stmt
 
 union_stmt
   = head:select_stmt tail:(__ KW_UNION __ KW_ALL? __ select_stmt)* {
@@ -1062,14 +1066,14 @@ KW_TRUE               = "TRUE"i               !ident_start
 KW_FALSE              = "FALSE"i              !ident_start
 
 KW_SHOW           = "SHOW"i           !ident_start
-KW_DROP           = "DROP"i           !ident_start
+KW_DROP           = val:"DROP"i       !ident_start { return makeKeywordNode(val, location()) }
 KW_SELECT         = "SELECT"i         !ident_start
 KW_UPDATE         = val:"UPDATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE         = val:"CREATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
 KW_DROP_TABLE     = "DROP TABLE"i     !ident_start
 KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
-KW_IF_EXISTS      = "IF EXISTS"i      !ident_start
+KW_IF_EXISTS      = val:"IF EXISTS"i  !ident_start { return makeKeywordNode(val, location()) }
 KW_DELETE         = val:"DELETE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_INSERT         = "INSERT"i         !ident_start
 KW_REPLACE        = "REPLACE"i        !ident_start
@@ -1365,7 +1369,7 @@ delete_table
 
 drop_table_stmt
   = keyword: drop_table_keyword __
-    if_exists_keyword: if_exists_keyword __
+    if_exists_keyword: KW_IF_EXISTS __
     table: delete_table __
     {
       return {
@@ -1388,15 +1392,6 @@ drop_table_stmt
 
 drop_table_keyword
   = val: KW_DROP_TABLE {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
-  }
-
-if_exists_keyword
-  = val: KW_IF_EXISTS {
     return {
       type: 'keyword',
       value: val && val[0],
@@ -1934,6 +1929,24 @@ create_type_stmt_base =
       type_keyword: kw_type,
       name: name,
       values: (values && values[2]) || [],
+      location: location()
+    }
+  }
+
+drop_type_stmt =
+  kw_drop: KW_DROP __
+  kw_type: KW_TYPE __
+  kw_if_exists: KW_IF_EXISTS? __
+  names: ident_list __
+  dependency_action: (KW_CASCADE / KW_RESTRICT)?
+  {
+    return {
+      type: 'drop_type',
+      drop_keyword: kw_drop,
+      type_keyword: kw_type,
+      names: names,
+      if_exists: kw_if_exists || null,
+      dependency_action: dependency_action || null,
       location: location()
     }
   }
