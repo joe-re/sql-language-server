@@ -33,7 +33,6 @@ describe("IS NULL condition", () => {
     const result = parse(sql)
     expect(result).toBeDefined()
     expect(result).toMatchObject({ type: 'select' })
-    console.log(result.where.expression)
   })
 })
 
@@ -45,6 +44,5 @@ describe("IS NOT NULL condition", () => {
     const result = parse(sql)
     expect(result).toBeDefined()
     expect(result).toMatchObject({ type: 'select' })
-    console.log(result.where.expression)
   })
 })
