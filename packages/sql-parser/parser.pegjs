@@ -3,13 +3,7 @@
 
   function debug(str){
     console.log(str);
-    const sql = `
-      SELECT "T1"."COL1" FROM "T1" WHERE "T1"."num" = 1;
-      SELECT "T1"."COL1" FROM "T1" WHERE "T1"."num" = 2;
-     `
-  const result = parse(sql)
-  expect(result).toBeDefined()
-  expect(result).toMatchObject({ type: 'select' })}
+  }
 
   function createUnaryExpr(op, e) {
     return {
@@ -82,7 +76,18 @@ start
         ast : ast  
       }
     }
-ast = union_stmt / update_stmt / replace_insert_stmt / delete_stmt / drop_table_stmt / create_table_stmt / alter_table_stmt / create_index_stmt
+
+ast =
+  union_stmt /
+  update_stmt /
+  replace_insert_stmt /
+  delete_stmt /
+  drop_table_stmt /
+  create_table_stmt /
+  alter_table_stmt /
+  create_index_stmt /
+  create_type_stmt /
+  drop_type_stmt
 
 union_stmt
   = head:select_stmt tail:(__ KW_UNION __ KW_ALL? __ select_stmt)* {
@@ -1061,14 +1066,14 @@ KW_TRUE               = "TRUE"i               !ident_start
 KW_FALSE              = "FALSE"i              !ident_start
 
 KW_SHOW           = "SHOW"i           !ident_start
-KW_DROP           = "DROP"i           !ident_start
+KW_DROP           = val:"DROP"i       !ident_start { return makeKeywordNode(val, location()) }
 KW_SELECT         = "SELECT"i         !ident_start
 KW_UPDATE         = val:"UPDATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE         = val:"CREATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
 KW_DROP_TABLE     = "DROP TABLE"i     !ident_start
 KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
-KW_IF_EXISTS      = "IF EXISTS"i      !ident_start
+KW_IF_EXISTS      = val:"IF EXISTS"i  !ident_start { return makeKeywordNode(val, location()) }
 KW_DELETE         = val:"DELETE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_INSERT         = "INSERT"i         !ident_start
 KW_REPLACE        = "REPLACE"i        !ident_start
@@ -1138,6 +1143,10 @@ KW_SET_NULL       = val:"SET NULL"i    !ident_start { return makeKeywordNode(val
 KW_SET_DEFAULT    = val:"SET DEFAULT"i !ident_start { return makeKeywordNode(val, location()) }
 KW_RESTRICT       = val:"RESTRICT"i    !ident_start { return makeKeywordNode(val, location()) }
 KW_NO_ACTION      = val:"NO ACTION"i   !ident_start { return makeKeywordNode(val, location()) }
+
+KW_TYPE           = val:"TYPE"i        !ident_start { return makeKeywordNode(val, location()) }
+KW_ENUM           = val:"ENUM"i        !ident_start { return makeKeywordNode(val, location()) }
+KW_RANGE          = val:"RANGE"i       !ident_start { return makeKeywordNode(val, location()) }
 
 //specail character
 DOT       = '.'
@@ -1360,7 +1369,7 @@ delete_table
 
 drop_table_stmt
   = keyword: drop_table_keyword __
-    if_exists_keyword: if_exists_keyword __
+    if_exists_keyword: KW_IF_EXISTS __
     table: delete_table __
     {
       return {
@@ -1383,15 +1392,6 @@ drop_table_stmt
 
 drop_table_keyword
   = val: KW_DROP_TABLE {
-    return {
-      type: 'keyword',
-      value: val && val[0],
-      location: location()
-    }
-  }
-
-if_exists_keyword
-  = val: KW_IF_EXISTS {
     return {
       type: 'keyword',
       value: val && val[0],
@@ -1796,6 +1796,157 @@ create_index_stmt
       on_keyword: kw_on,
       table: table,
       columns: columns,
+      location: location()
+    }
+  }
+
+create_type_stmt
+  = create_type_stmt_composite / create_type_stmt_enum / create_type_stmt_range / create_type_stmt_base
+
+create_type_stmt_composite =
+  kw_create: KW_CREATE __
+  kw_type: KW_TYPE __
+  name: ident __
+  kw_as: KW_AS __
+  LPAREN __
+  fields: composite_type_field_list __
+  RPAREN {
+    return {
+      type: 'create_type',
+      type_variant: 'composite_type',
+      create_keyword: kw_create,
+      type_keyword: kw_type,
+      name: name,
+      as_keyword: kw_as,
+      fields: fields,
+      location: location()
+    }
+  }
+
+composite_type_field =
+  name:ident __ type:field_data_type {
+    return {
+      type: 'composite_type_field',
+      name: name,
+      data_type: type,
+      location: location()
+    }
+  }
+
+composite_type_field_list =
+  head:composite_type_field tail:(__ COMMA __ composite_type_field)* {
+    return createList(head, tail);
+  } 
+
+create_type_stmt_enum =
+  kw_create: KW_CREATE __
+  kw_type: KW_TYPE __
+  name: ident __
+  kw_as: KW_AS __
+  kw_enum: KW_ENUM __
+  LPAREN __
+  values: create_type_value_list __
+  RPAREN {
+    return {
+      type: 'create_type',
+      type_variant: 'enum_type',
+      create_keyword: kw_create,
+      type_keyword: kw_type,
+      name: name,
+      as_keyword: kw_as,
+      enum_keyword: kw_enum,
+      values: values,
+      location: location()
+    }
+  }
+
+create_type_value_list =
+  head:literal_string tail:(__ COMMA __ literal_string)* {
+    return createList(head, tail);
+  }
+
+create_type_stmt_range =
+  kw_create: KW_CREATE __
+  kw_type: KW_TYPE __
+  name: ident __
+  kw_as: KW_AS __
+  kw_range: KW_RANGE __
+  LPAREN __
+  values: assign_value_expr_list __
+  RPAREN {
+    return {
+      type: 'create_type',
+      type_variant: 'range_type',
+      create_keyword: kw_create,
+      type_keyword: kw_type,
+      name: name,
+      as_keyword: kw_as,
+      range_keyword: kw_range,
+      values: values,
+      location: location()
+    }
+  }
+
+assign_value_expr =
+  name:ident __ "=" __ val:(ident / literal_numeric) {
+    if (val.type === 'number') {
+      val = val.value
+    }
+    return {
+      type: 'assign_value_expr',
+      name: name,
+      value: val,
+      location: location()
+    }
+  } /
+  name:ident {
+    return {
+      type: 'assign_value_expr',
+      name: name,
+      value: true,
+      location: location()
+    }
+  }
+
+assign_value_expr_list =
+  head:assign_value_expr tail:(__ COMMA __ assign_value_expr)* {
+    return createList(head, tail);
+  }
+
+create_type_stmt_base =
+  kw_create: KW_CREATE __
+  kw_type: KW_TYPE __
+  name: ident __
+  values:(
+    LPAREN __
+    assign_value_expr_list __
+    RPAREN
+  )? {
+    return {
+      type: 'create_type',
+      type_variant: 'base_type',
+      create_keyword: kw_create,
+      type_keyword: kw_type,
+      name: name,
+      values: (values && values[2]) || [],
+      location: location()
+    }
+  }
+
+drop_type_stmt =
+  kw_drop: KW_DROP __
+  kw_type: KW_TYPE __
+  kw_if_exists: KW_IF_EXISTS? __
+  names: ident_list __
+  dependency_action: (KW_CASCADE / KW_RESTRICT)?
+  {
+    return {
+      type: 'drop_type',
+      drop_keyword: kw_drop,
+      type_keyword: kw_type,
+      names: names,
+      if_exists: kw_if_exists || null,
+      dependency_action: dependency_action || null,
       location: location()
     }
   }
