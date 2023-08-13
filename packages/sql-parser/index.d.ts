@@ -325,6 +325,73 @@ export interface CreateIndexStatement extends BaseNode {
   columns: string[]
 }
 
+export interface CreateTypeEnumStatement extends BaseNode {
+  type: 'create_type'
+  type_variant: 'enum_type'
+  create_keyword: KeywordNode
+  type_keyword: KeywordNode
+  name: string
+  as_keyword: KeywordNode
+  enum_keyword: KeywordNode
+  values: string[]
+}
+
+export interface CreateTypeCompositeFieldNode extends BaseNode {
+  type: 'composite_type_field'
+  name: string
+  data_type: FieldDataTypeNode
+}
+
+export interface CreateTypeCompositeStatement extends BaseNode {
+  type: 'create_type'
+  type_variant: 'composite_type'
+  create_keyword: KeywordNode
+  type_keyword: KeywordNode
+  name: string
+  as_keyword: KeywordNode
+  fields: CreateTypeCompositeFieldNode[]
+}
+
+export interface AssignValueExpressionNode extends BaseNode {
+  type: 'assign_value_expr'
+  name: string
+  value: string | boolean | number
+}
+export interface CreateTypeRangeStatement extends BaseNode {
+  type: 'create_type'
+  type_variant: 'range_type'
+  create_keyword: KeywordNode
+  type_keyword: KeywordNode
+  name: string
+  as_keyword: KeywordNode
+  range_keyword: KeywordNode
+  values: AssignValueExpressionNode[]
+}
+
+export interface CreateTypeBaseStatement extends BaseNode {
+  type: 'create_type'
+  type_variant: 'base_type'
+  create_keyword: KeywordNode
+  type_keyword: KeywordNode
+  name: string
+  values: AssignValueExpressionNode[]
+}
+
+export type CreateTypeStatement =
+  | CreateTypeEnumStatement
+  | CreateTypeCompositeStatement
+  | CreateTypeRangeStatement
+  | CreateTypeBaseStatement
+
+interface DropTypeStatement extends BaseNode {
+  type: 'drop_type'
+  drop_keyword: KeywordNode
+  type_keyword: KeywordNode
+  names: string[]
+  if_exists: KeywordNode | null
+  dependency_action: KeywordNode | null
+}
+
 
 type VarDeclarationNode = VarDeclarationStandardNode | VarDeclarationPgPromiseNode
 
@@ -360,6 +427,9 @@ type Node =
   | SpecialSystemFunctionNode
   | ForeignKeyNode
   | CreateIndexStatement
+  | CreateTypeStatement
+  | AssignValueExpressionNode
+  | DropTypeStatement
 
 export type StarNode = { type: 'star'; value: '*' }
 
@@ -373,6 +443,8 @@ export type AST =
   | CreateTableStatement
   | AlterTableStatement
   | CreateIndexStatement
+  | CreateTypeStatement
+  | DropTypeStatement
 
 export type LiteralNode =
   | LiteralStringNode
