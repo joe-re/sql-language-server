@@ -128,6 +128,13 @@ interface DeleteStatement extends BaseNode {
   where: WhereClause | null
 }
 
+interface DropTableStatement extends BaseNode {
+  type: 'drop_table'
+  keyword: KeywordNode
+  table: TableNode
+  if_exists: KeywordNode | null
+}
+
 interface InsertStatement extends BaseNode {
   type: 'insert'
   table: string
@@ -342,6 +349,7 @@ type Node =
   | SubqueryNode
   | IncompleteSubqueryNode
   | CreateTableStatement
+  | DropTableStatement
   | FieldNode
   | FieldDataTypeNode
   | FieldConstraint
@@ -360,6 +368,7 @@ export type FromTableNode = TableNode | SubqueryNode | IncompleteSubqueryNode
 export type AST =
   | SelectStatement
   | DeleteStatement
+  | DropTableStatement
   | InsertStatement
   | CreateTableStatement
   | AlterTableStatement

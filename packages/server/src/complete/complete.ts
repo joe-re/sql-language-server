@@ -10,6 +10,7 @@ import {
   ExpectedLiteralNode,
   AST,
   AlterTableStatement,
+  DropTableStatement,
 } from '@joe-re/sql-parser'
 import log4js from 'log4js'
 import { CompletionItem } from 'vscode-languageserver-types'
@@ -282,6 +283,12 @@ class Completer {
     }
   }
 
+  addCandidatesForParsedDropStatement(ast: DropTableStatement) {
+    if (isPosInLocation(ast.table.location, this.pos)) {
+      this.addCandidatesForTables(this.schema.tables, false)
+    }
+  }
+
   addCandidatesForParsedAlterTableStatement(ast: AlterTableStatement) {
     if (ast.command.type === 'alter_table_drop_column') {
       if (isPosInLocation(ast.command.column.location, this.pos)) {
@@ -339,6 +346,8 @@ class Completer {
       this.addCandidatesForParsedSelectQuery(ast)
     } else if (ast.type === 'alter_table') {
       this.addCandidatesForParsedAlterTableStatement(ast)
+    } else if (ast.type === 'drop_table') {
+      this.addCandidatesForParsedDropStatement(ast)
     } else {
       console.log(`AST type not supported yet: ${ast.type}`)
     }

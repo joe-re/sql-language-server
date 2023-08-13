@@ -126,8 +126,15 @@ describe('keyword completion', () => {
   test("complete 'DELETE' keyword", () => {
     const sql = 'D'
     const result = complete(sql, { line: 0, column: sql.length })
-    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates.length).toEqual(2) // includes drop table
     expect(result.candidates[0].label).toEqual('DELETE')
+  })
+
+  test("complete 'DROP TABLE' keyword", () => {
+    const sql = 'D'
+    const result = complete(sql, { line: 0, column: sql.length })
+    expect(result.candidates.length).toEqual(2) // includes delete
+    expect(result.candidates[1].label).toEqual('DROP TABLE')
   })
 })
 
@@ -981,5 +988,14 @@ describe('DELETE statement', () => {
     expect(result.candidates.length).toEqual(2)
     expect(result.candidates[0].label).toEqual('COLUMN1')
     expect(result.candidates[1].label).toEqual('COLUMN2')
+  })
+})
+
+describe('DROP statement', () => {
+  test('complete table name', () => {
+    const sql = 'DROP TABLE T'
+    const result = complete(sql, { line: 0, column: sql.length }, SIMPLE_SCHEMA)
+    expect(result.candidates.length).toEqual(1)
+    expect(result.candidates[0].label).toEqual('TABLE1')
   })
 })
