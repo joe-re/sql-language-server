@@ -286,8 +286,8 @@ export interface FunctionNode extends BaseNode {
   type: 'function'
   name: string
   args: {
-    type  : 'expr_list'
-    value : any[] // TODO: fix this
+    type: 'expr_list'
+    value: any[] // TODO: fix this
   }
 }
 

@@ -20,7 +20,7 @@
       left      : left,
       right     : right,
       location  : location()
-    }  
+    }
   }
 
   function createList(head, tail, idx=3) {
@@ -36,12 +36,12 @@
     var exprList  = [];
     var ep;
     for (var i = 0; i < epList.length; i++) {
-      ep = epList[i]; 
+      ep = epList[i];
       if (ep && ep.type == 'param') {
         ep.room = room;
         ep.pos  = i;
       } else {
-        exprList.push(ep);  
+        exprList.push(ep);
       }
     }
     return exprList;
@@ -64,16 +64,16 @@
   }
 }
 
-start 
+start
   = &{ return true; } __ ast:ast __ tail: ((EOSQL __ start / EOSQL))* {
       return {
         ast   : ast,
         asts  : [ast].concat(tail.map(v => v[2].ast))
-      } 
-    } 
+      }
+    }
     /ast:proc_stmts {
       return {
-        ast : ast  
+        ast : ast
       }
     }
 
@@ -97,8 +97,8 @@ union_stmt
         cur._next = tail[i][3];
         cur = cur._next
       }
-      return head; 
-    } 
+      return head;
+    }
 
 select_stmt
   =  select_stmt_nake
@@ -191,26 +191,26 @@ select_keyword
 column_clause
   = (KW_ALL / (STAR !ident_start)) {
       return { type: 'star', value: '*' };
-    }  
+    }
   / head:column_list_item tail:(__ COMMA __ column_list_item)* {
       return createList(head, tail);
     }
 
 /**
- * maybe you should use `expr` instead of `primary` or `additive_expr` 
+ * maybe you should use `expr` instead of `primary` or `additive_expr`
  * to support complicated expression in column clause
  */
 column_list_item
-  = e:additive_expr __ alias:alias_clause? { 
+  = e:additive_expr __ alias:alias_clause? {
       return {
         type: 'column_list_item',
-        expr : e, 
+        expr : e,
         as : alias,
         location: location()
-      }; 
-    } 
+      };
+    }
 
-alias_clause 
+alias_clause
   = KW_AS? __ i:ident { return i; }
 
 from_clause
@@ -240,12 +240,12 @@ table_ref_list
       return tail;
     }
 
-table_ref 
+table_ref
   = __ COMMA __ t:table_base { return t; }
-  / __ t:table_join { return t; } 
-  
-  
-table_join 
+  / __ t:table_join { return t; }
+
+
+table_join
   = op:join_op __ t:table_base __ expr:on_clause? {
     t.join = op;
     t.on   = expr;
@@ -340,10 +340,10 @@ table_name
       return v.name;
     }
 
-on_clause 
+on_clause
   = KW_ON __ e:expr { return e; }
 
-where_clause 
+where_clause
   = k: where_keyword __
     e:expr {
       return {
@@ -352,7 +352,7 @@ where_clause
         expression: e,
         location: location()
       }
-    } 
+    }
 
 where_keyword
   = val: KW_WHERE {
@@ -406,7 +406,7 @@ limit_clause
         res.unshift({
           type  : 'number',
           value : 0
-        });  
+        });
       } else {
         res.push(tail[2]);
       }
@@ -567,7 +567,7 @@ insert_column_list =
 
 
 replace_insert
-  = KW_INSERT   { return 'insert'; } 
+  = KW_INSERT   { return 'insert'; }
   / KW_REPLACE  { return 'replace' }
 
 value_clause
@@ -594,25 +594,25 @@ values
 expr_list
   = head:expr tail:(__ COMMA __ expr)*{
       var el = {
-        type : 'expr_list'  
+        type : 'expr_list'
       }
-      var l = createExprList(head, tail, el); 
+      var l = createExprList(head, tail, el);
 
       el.value = l;
       return el;
     }
 
 expr_list_or_empty
-  = l:expr_list 
+  = l:expr_list
   / "" {
-      return { 
+      return {
         type  : 'expr_list',
         value : []
       }
     }
 
 expr = or_expr
-    
+
 or_expr
   = head:and_expr tail:(__ KW_OR __ and_expr)* {
       return createBinaryExprChain(head, tail);
@@ -633,7 +633,7 @@ not_expr
 comparison_expr
   = left:additive_expr __ rh:comparison_op_right? {
       if (rh === null) {
-        return left;  
+        return left;
       } else {
         var res = null;
         if (rh !== null && rh.type == 'arithmetic') {
@@ -645,10 +645,10 @@ comparison_expr
       }
     }
 
-comparison_op_right 
+comparison_op_right
   = arithmetic_op_right
     / in_op_right
-    / between_op_right 
+    / between_op_right
     / is_op_right
     / like_op_right
     / contains_op_right
@@ -659,10 +659,10 @@ arithmetic_op_right
         type : 'arithmetic',
         tail : l
       }
-    } 
+    }
 
 arithmetic_comparison_operator
-  = ">=" / ">" / "<=" / "<>" / "<" / "=" / "!="  
+  = ">=" / ">" / "<=" / "<>" / "<" / "=" / "!="
 
 between_op_right
   = op:KW_BETWEEN __  begin:additive_expr __ KW_AND __ end:additive_expr {
@@ -692,13 +692,13 @@ is_op_right
 
 like_op
   = nk:(KW_NOT __ KW_LIKE) { return nk[0] + ' ' + nk[2]; }
-  / KW_LIKE 
+  / KW_LIKE
 
-in_op 
+in_op
   = nk:(KW_NOT __ KW_IN) { return nk[0] + ' ' + nk[2]; }
   / KW_IN
 
-contains_op 
+contains_op
   = nk:(KW_NOT __ KW_CONTAINS) { return nk[0] + ' ' + nk[2]; }
   / KW_CONTAINS
 
@@ -725,7 +725,7 @@ in_op_right
     }
   / op:in_op __ e:var_decl {
       return {
-        op    : op,  
+        op    : op,
         right : e
       }
     }
@@ -733,13 +733,13 @@ in_op_right
 contains_op_right
   = op:contains_op __ LPAREN  __ l:expr_list __ RPAREN {
       return {
-        op    : op,  
+        op    : op,
         right : l
       }
     }
   / op:contains_op __ e:var_decl {
       return {
-        op    : op,  
+        op    : op,
         right : e
       }
     }
@@ -762,32 +762,32 @@ multiplicative_expr
 multiplicative_operator
   = "*" / "/" / "%"
 
-primary 
+primary
   = literal
   / aggr_func
-  / func_call 
-  / column_ref 
+  / func_call
+  / column_ref
   / param
-  / LPAREN __ e:expr __ RPAREN { 
-      e.paren = true; 
-      return e; 
-    } 
+  / LPAREN __ e:expr __ RPAREN {
+      e.paren = true;
+      return e;
+    }
   / select_stmt
   / var_decl
 
-column_ref 
+column_ref
   = tbl:ident __ DOT __ col:column {
       return {
         type  : 'column_ref',
-        table : tbl, 
+        table : tbl,
         column : col,
         location: location()
-      }; 
-    } 
+      };
+    }
   / col:column {
       return {
         type  : 'column_ref',
-        table : '', 
+        table : '',
         column: col,
         location: location()
       };
@@ -809,7 +809,7 @@ ident =
     return chars.join('');
   }
 
-column = 
+column =
   name:column_name !{ return reservedMap[name.toUpperCase()] === true; } {
     return name;
   }
@@ -839,7 +839,7 @@ column_name
      return text();
   }
 
-ident_name  
+ident_name
   =  start:ident_start parts:ident_part* { return start + parts.join(''); }
 
 ident_start = [A-Za-z_]
@@ -850,12 +850,12 @@ ident_part  = [A-Za-z0-9_]
 // Allow square brackets and quote to support nested columns with subscripts for example `books['title'].chapters[12].paragraphs`
 column_char  = [A-Za-z0-9_:\[\]\']
 
-param 
+param
   = l:([:@] ident_name) {
     var p = {
       type : 'param',
       value: l[1]
-    } 
+    }
     return p;
   }
 
@@ -863,45 +863,45 @@ aggr_func
   = aggr_fun_count
   / aggr_fun_smma
 
-aggr_fun_smma 
+aggr_fun_smma
   = name:KW_SUM_MAX_MIN_AVG  __ LPAREN __ e:additive_expr __ RPAREN {
       return {
         type : 'aggr_func',
         name : name,
         args : {
-          expr : e  
+          expr : e
         },
         location: location()
-      }   
+      }
     }
 
 KW_SUM_MAX_MIN_AVG
-  = KW_SUM / KW_MAX / KW_MIN / KW_AVG 
+  = KW_SUM / KW_MAX / KW_MIN / KW_AVG
 
-aggr_fun_count 
+aggr_fun_count
   = name:KW_COUNT __ LPAREN __ arg:count_arg __ RPAREN {
       return {
         type : 'aggr_func',
         name : name,
         args : arg,
         location: location()
-      }   
+      }
     }
 
-count_arg 
+count_arg
   = e:star_expr {
       return {
-        expr  : e 
+        expr  : e
       }
     }
   / d:KW_DISTINCT? __ c:column_ref {
       return {
-        distinct : d, 
+        distinct : d,
         expr   : c
       }
     }
 
-star_expr 
+star_expr
   = "*" {
       return {
         type  : 'star',
@@ -915,7 +915,7 @@ func_call_others
   = name:ident __ LPAREN __ l:expr_list_or_empty __ RPAREN {
       return {
         type : 'function',
-        name : name, 
+        name : name,
         args : l
       }
     }
@@ -930,14 +930,14 @@ func_call_cast
     }
   }
 
-literal 
+literal
   = l:(literal_string / literal_numeric / literal_bool / literal_null)!DOT {
     return l
   }
 
 literal_list
   = head:literal tail:(__ COMMA __ literal)* {
-      return createList(head, tail); 
+      return createList(head, tail);
     }
 
 literal_null
@@ -946,27 +946,27 @@ literal_null
         type     : 'null',
         value    : null,
         location : location()
-      };  
+      };
     }
 
-literal_bool 
-  = KW_TRUE { 
+literal_bool
+  = KW_TRUE {
       return {
         type     : 'bool',
         value    : true,
         location : location()
-      };  
+      };
     }
-  / KW_FALSE { 
+  / KW_FALSE {
       return {
         type     : 'bool',
         value    : false,
         location : location()
-      };  
+      };
     }
 
-literal_string 
-  = ca:( ('"' double_char* '"') 
+literal_string
+  = ca:( ('"' double_char* '"')
         /("'" single_char* "'")) {
       return {
         type     : 'string',
@@ -1005,8 +1005,8 @@ literal_numeric
       return {
         type    : 'number',
         value   : n,
-        location: location() 
-      }  
+        location: location()
+      }
     }
 
 number
@@ -1178,25 +1178,25 @@ SingleLineComment =
 MultiLineComment =
   "/*" (!"*/" char)* "*/"
 
-EOL 
+EOL
   = EOF
   / [\n\r]+
-  
+
 EOF = !.
 EOSQL = ';'
 
 //begin procedure extension
-proc_stmts 
-  = proc_stmt* 
+proc_stmts
+  = proc_stmt*
 
-proc_stmt 
+proc_stmt
   = &{ return true; } __ s:(assign_stmt / return_stmt) {
       return {
         stmt : s,
       }
     }
 
-assign_stmt 
+assign_stmt
   = va:var_decl __ KW_ASSIGN __ e:proc_expr {
     return {
       type : 'assign',
@@ -1205,7 +1205,7 @@ assign_stmt
     }
   }
 
-return_stmt 
+return_stmt
   = KW_RETURN __ e:proc_expr {
   return {
     type : 'return',
@@ -1213,10 +1213,10 @@ return_stmt
   }
 }
 
-proc_expr 
-  = select_stmt 
-  / proc_join 
-  / proc_additive_expr 
+proc_expr
+  = select_stmt
+  / proc_join
+  / proc_additive_expr
   / proc_array
 
 proc_additive_expr
@@ -1235,30 +1235,30 @@ proc_join
   = lt:var_decl __ op:join_op  __ rt:var_decl __ expr:on_clause {
       return {
         type    : 'join',
-        ltable  : lt, 
+        ltable  : lt,
         rtable  : rt,
         op      : op,
         on      : expr
       }
     }
 
-proc_primary 
+proc_primary
   = literal
   / var_decl
-  / proc_func_call 
+  / proc_func_call
   / special_system_function
   / param
-  / LPAREN __ e:proc_additive_expr __ RPAREN { 
-      e.paren = true; 
-      return e; 
-    } 
+  / LPAREN __ e:proc_additive_expr __ RPAREN {
+      e.paren = true;
+      return e;
+    }
 
 proc_func_call
   = name:ident __ LPAREN __ l:proc_primary_list __ RPAREN {
       //compatible with original func_call
       return {
         type : 'function',
-        name : name, 
+        name : name,
         args : {
           type  : 'expr_list',
           value : l
@@ -1286,12 +1286,12 @@ special_system_function
       }
     }
 
-proc_primary_list 
+proc_primary_list
   = head:proc_primary tail:(__ COMMA __ proc_primary)* {
       return createList(head, tail);
-    } 
+    }
 
-proc_array = 
+proc_array =
   LBRAKE __ l:proc_primary_list __ RBRAKE {
     return {
       type : 'array',
@@ -1309,7 +1309,7 @@ var_decl_std
       members : m,
       location: location()
     }
-  } 
+  }
 
 // ref: https://github.com/vitaly-t/pg-promise
 var_decl_pg_promise
@@ -1322,11 +1322,11 @@ var_decl_pg_promise
     }
   }
 
-mem_chain 
+mem_chain
   = l:('.' ident_name)* {
     var s = [];
     for (var i = 0; i < l.length; i++) {
-      s.push(l[i][1]); 
+      s.push(l[i][1]);
     }
     return s;
   }
@@ -1606,7 +1606,7 @@ constraint_generated_option = k: keyword_always {
   return { type: 'constraint_generated_option', option: 'BY_DEFAULT_ON_NULL', keyword: k }
 }
 
-field_constraint_default 
+field_constraint_default
   = k: KW_DEFAULT __
     value: (literal / proc_func_call / special_system_function) {
       return { type: 'constraint_default', keyword: k, value: value, location: location() }
@@ -1860,7 +1860,7 @@ composite_type_field =
 composite_type_field_list =
   head:composite_type_field tail:(__ COMMA __ composite_type_field)* {
     return createList(head, tail);
-  } 
+  }
 
 create_type_stmt_enum =
   kw_create: KW_CREATE __
