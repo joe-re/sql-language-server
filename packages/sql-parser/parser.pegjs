@@ -86,6 +86,7 @@ ast =
   create_table_stmt /
   alter_table_stmt /
   create_index_stmt /
+  drop_index_stmt /
   create_type_stmt /
   drop_type_stmt
 
@@ -1065,20 +1066,21 @@ KW_CHECK              = "CHECK"i              !ident_start
 KW_TRUE               = "TRUE"i               !ident_start
 KW_FALSE              = "FALSE"i              !ident_start
 
-KW_SHOW           = "SHOW"i           !ident_start
-KW_DROP           = val:"DROP"i       !ident_start { return makeKeywordNode(val, location()) }
-KW_SELECT         = "SELECT"i         !ident_start
-KW_UPDATE         = val:"UPDATE"i     !ident_start { return makeKeywordNode(val, location()) }
-KW_CREATE         = val:"CREATE"i     !ident_start { return makeKeywordNode(val, location()) }
-KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
-KW_DROP_TABLE     = "DROP TABLE"i     !ident_start
-KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
-KW_IF_EXISTS      = val:"IF EXISTS"i  !ident_start { return makeKeywordNode(val, location()) }
-KW_DELETE         = val:"DELETE"i     !ident_start { return makeKeywordNode(val, location()) }
-KW_INSERT         = "INSERT"i         !ident_start
-KW_REPLACE        = "REPLACE"i        !ident_start
-KW_EXPLAIN        = "EXPLAIN"i        !ident_start
-KW_ALTER          = "ALTER"i          !ident_start
+KW_SHOW           = "SHOW"i             !ident_start
+KW_DROP           = val:"DROP"i         !ident_start { return makeKeywordNode(val, location()) }
+KW_SELECT         = "SELECT"i           !ident_start
+KW_UPDATE         = val:"UPDATE"i       !ident_start { return makeKeywordNode(val, location()) }
+KW_CREATE         = val:"CREATE"i       !ident_start { return makeKeywordNode(val, location()) }
+KW_CREATE_TABLE   = "CREATE TABLE"i     !ident_start
+KW_DROP_TABLE     = "DROP TABLE"i       !ident_start
+KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i    !ident_start
+KW_IF_EXISTS      = val:"IF EXISTS"i    !ident_start { return makeKeywordNode(val, location()) }
+KW_CONCURRENTLY   = val:"CONCURRENTLY"i !ident_start { return makeKeywordNode(val, location()) }
+KW_DELETE         = val:"DELETE"i       !ident_start { return makeKeywordNode(val, location()) }
+KW_INSERT         = "INSERT"i           !ident_start
+KW_REPLACE        = "REPLACE"i          !ident_start
+KW_EXPLAIN        = "EXPLAIN"i          !ident_start
+KW_ALTER          = "ALTER"i            !ident_start
 
 KW_ADD            = "ADD"i            !ident_start
 KW_MODIFY         = "MODIFY"i         !ident_start
@@ -1799,6 +1801,28 @@ create_index_stmt
       location: location()
     }
   }
+
+drop_index_stmt
+  = kw_drop: KW_DROP __
+    kw_index: KW_INDEX __
+    kw_concurrently: KW_CONCURRENTLY? __
+    kw_if_exists: KW_IF_EXISTS? __
+    names: ident_list __
+    dependency_action: (KW_CASCADE / KW_RESTRICT)?
+    {
+      return {
+        type: 'drop_index',
+        drop_keyword: kw_drop,
+        index_keyword: kw_index,
+        if_exists_keyword: kw_if_exists,
+        if_exists: !!kw_if_exists,
+        concurrently_keyword: kw_concurrently,
+        concurrently: !!kw_concurrently,
+        dependency_action: dependency_action || null,
+        names: names,
+        location: location()
+      }
+    }
 
 create_type_stmt
   = create_type_stmt_composite / create_type_stmt_enum / create_type_stmt_range / create_type_stmt_base

@@ -325,6 +325,16 @@ export interface CreateIndexStatement extends BaseNode {
   columns: string[]
 }
 
+export interface DropIndexStatement extends BaseNode {
+  type: 'drop_type'
+  drop_keyword: KeywordNode
+  index_keyword: KeywordNode
+  names: string[]
+  if_exists: KeywordNode | null
+  concurrently: KeywordNode | null
+  dependency_action: KeywordNode | null
+}
+
 export interface CreateTypeEnumStatement extends BaseNode {
   type: 'create_type'
   type_variant: 'enum_type'
