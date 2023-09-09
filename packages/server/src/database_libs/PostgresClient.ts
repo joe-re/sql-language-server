@@ -21,6 +21,9 @@ export default class PosgresClient extends AbstractClient {
   get DefaultUser() {
     return 'postgres'
   }
+  get DefaultSchema() {
+    return 'public'
+  }
 
   connect(): Promise<boolean> {
     const client: PG.Client = new PG.Client({
@@ -53,9 +56,12 @@ export default class PosgresClient extends AbstractClient {
   }
 
   async getTables(): Promise<string[]> {
+    const sanitizedSchema = this.settings.schema
+      ? this.settings.schema.replace(/[^\w]/g, '')
+      : this.DefaultSchema
     const sql = `
       SELECT c.relname as table_name FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
-       WHERE n.nspname = 'public'
+       WHERE n.nspname = '${sanitizedSchema}'
          AND c.relkind IN ('r','v','m','f')
     `
     return new Promise((resolve, reject) => {

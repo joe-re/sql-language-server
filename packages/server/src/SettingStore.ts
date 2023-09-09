@@ -33,6 +33,7 @@ export type Connection = {
   keyFile: string | null // for BigQuery
   projectId: string | null // for BigQuery
   projectPaths: string[]
+  schema: string | null // for PostgreSQL
   ssh: SSHConfig | null
   jupyterLabMode: boolean
 }
@@ -71,6 +72,7 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     filename: null,
     keyFile: null,
     projectId: null,
+    schema: null,
     projectPaths: [],
     jupyterLabMode: false,
   }
