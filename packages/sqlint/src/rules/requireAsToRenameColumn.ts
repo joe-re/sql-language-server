@@ -22,7 +22,7 @@ export const requireAsToRenameColumn: Rule<SelectStatement, RuleConfig> = {
       })
     return invalidColumns.map((v) => {
       return {
-        message: 'Require AS keyword to rename a column',
+        message: 'The AS keyword is required to rename a column',
         location: v.location,
         fix: (fixer) => {
           return fixer.insertText(v.expr.location.end.offset, ' AS')

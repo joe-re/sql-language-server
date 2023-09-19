@@ -1,7 +1,7 @@
 import { execute } from '../../src/rules'
 import { applyFixes } from '../testUtil'
 
-test('space surrounding always', () => {
+test('Operators must be surrounded by spaces', () => {
   const sql = `
 SELECT *
 FROM foo
@@ -15,11 +15,11 @@ WHERE foo.a > 1
   })
   expect(result.length).toEqual(2)
 
-  expect(result[0].message).toEqual('space surrounding always')
+  expect(result[0].message).toEqual('Operators must be surrounded by spaces')
   expect(result[0].location.start).toEqual({ line: 5, offset: 46, column: 12 })
   expect(result[0].location.end).toEqual({ line: 5, offset: 50, column: 16 })
 
-  expect(result[1].message).toEqual('space surrounding always')
+  expect(result[1].message).toEqual('Operators must be surrounded by spaces')
   expect(result[1].location.start).toEqual({ line: 6, offset: 61, column: 12 })
   expect(result[1].location.end).toEqual({ line: 6, offset: 64, column: 15 })
   const fixed = applyFixes(sql, result.map((v) => v.fix!).flat())
@@ -33,7 +33,7 @@ WHERE foo.a > 1
 `)
 })
 
-test('space surrounding never', () => {
+test('Operators must not be surrounded by spaces', () => {
   const sql = `
 SELECT *
 FROM foo
@@ -47,11 +47,15 @@ WHERE foo.a > 1
   })
   expect(result.length).toEqual(2)
 
-  expect(result[0].message).toEqual('space surrounding never')
+  expect(result[0].message).toEqual(
+    'Operators must not be surrounded by spaces'
+  )
   expect(result[0].location.start).toEqual({ line: 4, offset: 30, column: 12 })
   expect(result[0].location.end).toEqual({ line: 4, offset: 32, column: 14 })
 
-  expect(result[1].message).toEqual('space surrounding never')
+  expect(result[1].message).toEqual(
+    'Operators must not be surrounded by spaces'
+  )
   expect(result[1].location.start).toEqual({ line: 7, offset: 78, column: 12 })
   expect(result[1].location.end).toEqual({ line: 7, offset: 81, column: 15 })
   expect(applyFixes(sql, result.map((v) => v.fix!).flat())).toEqual(`

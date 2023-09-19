@@ -29,12 +29,16 @@ test('require as to rename column', () => {
     rules: { 'require-as-to-rename-column': { level: 2 } },
   })
   expect(result.length).toEqual(2)
-  expect(result[0].message).toEqual('Require AS keyword to rename a column')
+  expect(result[0].message).toEqual(
+    'The AS keyword is required to rename a column'
+  )
   expect(result[0].location).toEqual({
     start: { column: 5, line: 3, offset: 14 },
     end: { column: 33, line: 3, offset: 42 },
   })
-  expect(result[1].message).toEqual('Require AS keyword to rename a column')
+  expect(result[1].message).toEqual(
+    'The AS keyword is required to rename a column'
+  )
   expect(result[1].location).toEqual({
     start: { column: 5, line: 4, offset: 48 },
     end: { column: 40, line: 4, offset: 83 },

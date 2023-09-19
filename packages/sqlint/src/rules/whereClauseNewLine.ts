@@ -46,7 +46,7 @@ export const whereClauseNewLine: Rule<SelectStatement, RuleConfig<Options>> = {
     }
 
     return invalidClauses.map((v) => ({
-      message: 'Multiple where clause must go on a new line.',
+      message: 'Multiple where clauses must go on a new line.',
       location: v.location,
       fix: (fixer) => {
         const afterSpaces = context.getSQL(v.location).match(/\s+$/)

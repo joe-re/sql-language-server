@@ -15,7 +15,7 @@ describe('option: upper', () => {
       rules: { 'reserved-word-case': { level: 2, option: 'upper' } },
     })
     expect(result.length).toEqual(1)
-    expect(result[0].message).toEqual('reserved word must be uppercase')
+    expect(result[0].message).toEqual('Reserved word must be uppercase')
     expect(result[0].location.start).toEqual({ line: 1, offset: 0, column: 1 })
     expect(result[0].location.end).toEqual({ line: 1, offset: 6, column: 7 })
     expect(applyFixes(sql, [result[0].fix!].flat())).toEqual(
@@ -28,7 +28,7 @@ describe('option: upper', () => {
       rules: { 'reserved-word-case': { level: 2, option: 'upper' } },
     })
     expect(result.length).toEqual(1)
-    expect(result[0].message).toEqual('reserved word must be uppercase')
+    expect(result[0].message).toEqual('Reserved word must be uppercase')
     expect(result[0].location.start).toEqual({
       line: 1,
       offset: 9,
@@ -42,7 +42,7 @@ describe('option: upper', () => {
       rules: { 'reserved-word-case': { level: 2, option: 'upper' } },
     })
     expect(result.length).toEqual(1)
-    expect(result[0].message).toEqual('reserved word must be uppercase')
+    expect(result[0].message).toEqual('Reserved word must be uppercase')
     expect(result[0].location.start).toEqual({
       line: 1,
       offset: 18,
@@ -59,7 +59,7 @@ describe('option: lower', () => {
       rules: { 'reserved-word-case': { level: 2, option: 'lower' } },
     })
     expect(result.length).toEqual(1)
-    expect(result[0].message).toEqual('reserved word must be lowercase')
+    expect(result[0].message).toEqual('Reserved word must be lowercase')
     expect(result[0].location.start).toEqual({ line: 1, offset: 0, column: 1 })
     expect(result[0].location.end).toEqual({ line: 1, offset: 6, column: 7 })
     expect(applyFixes(sql, [result[0].fix!].flat())).toEqual(
