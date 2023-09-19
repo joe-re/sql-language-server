@@ -26,7 +26,7 @@ test('Multiple clauses must go on a new line', () => {
   })
   expect(result.length).toEqual(2)
   expect(result[0].message).toEqual(
-    'Multiple where clause must go on a new line.'
+    'Multiple where clauses must go on a new line.'
   )
   expect(result[0].location).toEqual({
     start: {

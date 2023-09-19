@@ -7,8 +7,8 @@ const META = {
   name: 'reserved-word-case',
   type: 'keyword',
   messages: {
-    upper: 'reserved word must be uppercase',
-    lower: 'reserved word must be lowercase',
+    upper: 'Reserved word must be uppercase',
+    lower: 'Reserved word must be lowercase',
   },
 }
 

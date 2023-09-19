@@ -230,7 +230,7 @@ WHERE foo.a > 1
 
 ##### where-clause-new-line
 
-Multiple where clause must go on a new line.
+Multiple where clauses must go on a new line.
 
 Good
 ```sql

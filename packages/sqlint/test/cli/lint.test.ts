@@ -12,12 +12,12 @@ describe('lint', () => {
       expect(result).toContain(
         `${chalk.dim('1:0')} ${chalk.red(
           'error'
-        )} reserved word must be uppercase`
+        )} Reserved word must be uppercase`
       )
       expect(result).toContain(
         `${chalk.dim('1:9')} ${chalk.red(
           'error'
-        )} reserved word must be uppercase`
+        )} Reserved word must be uppercase`
       )
     })
   })
@@ -39,7 +39,7 @@ describe('lint', () => {
           end: { column: 7, line: 1, offset: 6 },
           start: { column: 1, line: 1, offset: 0 },
         },
-        message: 'reserved word must be uppercase',
+        message: 'Reserved word must be uppercase',
         rulename: 'reserved-word-case',
       })
       expect(parsed[0].diagnostics[1]).toMatchObject({
@@ -47,7 +47,7 @@ describe('lint', () => {
           end: { column: 14, line: 1, offset: 13 },
           start: { column: 10, line: 1, offset: 9 },
         },
-        message: 'reserved word must be uppercase',
+        message: 'Reserved word must be uppercase',
         rulename: 'reserved-word-case',
       })
     })

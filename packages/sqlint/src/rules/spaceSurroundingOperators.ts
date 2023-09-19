@@ -8,8 +8,8 @@ const META = {
   type: 'binary_expr',
   options: [['always', 'never']],
   messages: {
-    always: 'space surrounding always',
-    never: 'space surrounding never',
+    always: 'Operators must be surrounded by spaces',
+    never: 'Operators must not be surrounded by spaces',
   },
 }
 
