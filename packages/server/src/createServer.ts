@@ -175,14 +175,15 @@ export function createServerWithConnection(
         logger.error(e)
       }
     })
-    const connections =
+
+    const settings =
       (hasConfigurationCapability &&
-        (
-          await connection.workspace.getConfiguration({
-            section: 'sqlLanguageServer',
-          })
-        )?.connections) ||
-      []
+        (await connection.workspace.getConfiguration({
+          section: 'sqlLanguageServer',
+        }))) ||
+      null
+
+    const connections = (settings?.connections ?? []) as SettingConnection[]
     if (connections.length > 0) {
       SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
     } else if (rootPath) {
@@ -191,6 +192,14 @@ export function createServerWithConnection(
         `${rootPath}/.sqllsrc.json`,
         rootPath || ''
       )
+    }
+
+    const lint = settings?.lint as RawConfig
+    lintConfig = lint
+    if (lint?.rules) {
+      documents.all().forEach((v) => {
+        makeDiagnostics(v)
+      })
     }
   })
 
