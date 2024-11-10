@@ -130,11 +130,12 @@ describe('keyword completion', () => {
     expect(result.candidates[0].label).toEqual('DELETE')
   })
 
-  test("complete 'DROP'/'DROP TABLE' keyword", () => {
+  test("complete 'DROP'/'DROP TABLE'/'DROP VIEW' keyword", () => {
     const sql = 'DR'
     const result = complete(sql, { line: 0, column: sql.length })
-    expect(result.candidates.length).toEqual(2)
+    expect(result.candidates.length).toEqual(3)
     expect(result.candidates.map((v) => v.label)).toContain('DROP TABLE')
+    expect(result.candidates.map((v) => v.label)).toContain('DROP VIEW')
     expect(result.candidates.map((v) => v.label)).toContain('DROP')
   })
 })
