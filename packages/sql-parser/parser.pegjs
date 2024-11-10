@@ -83,6 +83,7 @@ ast =
   replace_insert_stmt /
   delete_stmt /
   drop_table_stmt /
+  drop_view_stmt /
   create_table_stmt /
   alter_table_stmt /
   create_index_stmt /
@@ -1072,6 +1073,7 @@ KW_UPDATE         = val:"UPDATE"i     !ident_start { return makeKeywordNode(val,
 KW_CREATE         = val:"CREATE"i     !ident_start { return makeKeywordNode(val, location()) }
 KW_CREATE_TABLE   = "CREATE TABLE"i   !ident_start
 KW_DROP_TABLE     = "DROP TABLE"i     !ident_start
+KW_DROP_VIEW      = "DROP VIEW"i      !ident_start
 KW_IF_NOT_EXISTS  = "IF NOT EXISTS"i  !ident_start
 KW_IF_EXISTS      = val:"IF EXISTS"i  !ident_start { return makeKeywordNode(val, location()) }
 KW_DELETE         = val:"DELETE"i     !ident_start { return makeKeywordNode(val, location()) }
@@ -1950,3 +1952,41 @@ drop_type_stmt =
       location: location()
     }
   }
+
+drop_view_stmt
+  = keyword: drop_view_keyword __
+    if_exists_keyword: (KW_IF_EXISTS)? __
+    views: view_ref_list __
+    dependency_action: (KW_CASCADE / KW_RESTRICT)?
+    {
+      return {
+        type: 'drop_view',
+        keyword: keyword,
+        if_exists: if_exists_keyword || null,
+        views: views,
+        dependency_action: dependency_action || null,
+      }
+    }
+
+view_ref_list
+  = head:view_ref tail:(__ COMMA __ view_ref)* {
+      return createList(head, tail);
+    }
+
+view_ref
+  = view:ident {
+      return  {
+        type: 'view',
+        value  : view,
+      }
+    }
+
+drop_view_keyword
+  = val: KW_DROP_VIEW {
+    return {
+      type: 'keyword',
+      value: val && val[0],
+      location: location()
+    }
+  }
+
