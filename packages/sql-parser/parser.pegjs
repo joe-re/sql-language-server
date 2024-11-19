@@ -88,7 +88,8 @@ ast =
   alter_table_stmt /
   create_index_stmt /
   create_type_stmt /
-  drop_type_stmt
+  drop_type_stmt /
+  set_stmt
 
 union_stmt
   = head:select_stmt tail:(__ KW_UNION __ KW_ALL? __ select_stmt)* {
@@ -1127,6 +1128,7 @@ KW_KEY            = "KEY"i            !ident_start    { return 'KEY';      }
 KW_NOT            = "NOT"i            !ident_start    { return 'NOT';      }
 KW_AND            = "AND"i            !ident_start    { return 'AND';      }
 KW_OR             = "OR"i             !ident_start    { return 'OR';       }
+KW_TO             = "TO"i             !ident_start    { return 'TO';      }
 
 KW_COUNT          = "COUNT"i          !ident_start    { return 'COUNT';    }
 KW_MAX            = "MAX"i            !ident_start    { return 'MAX';      }
@@ -1989,4 +1991,58 @@ drop_view_keyword
       location: location()
     }
   }
+
+set_stmt
+  = KW_SET __
+    assignments:(
+      session_authorization_assignment /
+      search_path_assignment /
+      variable_assignment_list
+    ) {
+      return {
+        type: 'set',
+        assignments: assignments,
+        location: location()
+      }
+    }
+session_authorization_assignment
+  = "session"i __ "authorization"i __ 
+    (KW_TO / "=") __ 
+    value:literal_string {
+      return {
+        type: 'session_authorization',
+        value: value,
+        location: location()
+      }
+    }
+
+search_path_assignment
+  = name:"search_path"i __
+    (KW_TO / "=") __
+    head:literal_string
+    tail:(__ COMMA __ literal_string)* {
+      return {
+        type: 'search_path',
+        value: createList(head, tail),
+        location: location()
+      }
+    }
+
+variable_assignment_list
+  = head:variable_assignment
+    tail:(__ COMMA __ variable_assignment)* {
+      return createList(head, tail)
+    }
+
+variable_assignment
+  = name:("@" ident_name) __
+    "=" __
+    value:(literal / expr) {
+      return {
+        type: 'variable',
+        name: name[1],
+        value: value,
+        location: location()
+      }
+    }
 
