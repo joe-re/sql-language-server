@@ -271,27 +271,6 @@ foo.c = 'c' AND
 foo.d = 'd'
 ```
 
-##### align-where-clause-to-the-first
-
-Where clauses must align to the first clause.
-
-Good
-```sql
-SELECT foo.a
-FROM foo 
-WHERE foo.a = 'a' AND foo.b = 'b' AND
-      foo.c = 'c' AND
-      foo.d = 'd'
-```
-
-Bad
-```sql
-SELECT foo.a
-FROM foo 
-WHERE foo.a = 'a' AND foo.b = 'b' AND
-foo.c = 'c' AND
-foo.d = 'd'
-```
 ##### require-as-to-rename-column
 
 As is always required to rename a column name.
