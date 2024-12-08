@@ -88,7 +88,8 @@ ast =
   alter_table_stmt /
   create_index_stmt /
   create_type_stmt /
-  drop_type_stmt
+  drop_type_stmt /
+  set_stmt
 
 union_stmt
   = head:select_stmt tail:(__ KW_UNION __ KW_ALL? __ select_stmt)* {
@@ -1127,6 +1128,7 @@ KW_KEY            = "KEY"i            !ident_start    { return 'KEY';      }
 KW_NOT            = "NOT"i            !ident_start    { return 'NOT';      }
 KW_AND            = "AND"i            !ident_start    { return 'AND';      }
 KW_OR             = "OR"i             !ident_start    { return 'OR';       }
+KW_TO             = "TO"i             !ident_start    { return 'TO';      }
 
 KW_COUNT          = "COUNT"i          !ident_start    { return 'COUNT';    }
 KW_MAX            = "MAX"i            !ident_start    { return 'MAX';      }
@@ -1149,6 +1151,23 @@ KW_NO_ACTION      = val:"NO ACTION"i   !ident_start { return makeKeywordNode(val
 KW_TYPE           = val:"TYPE"i        !ident_start { return makeKeywordNode(val, location()) }
 KW_ENUM           = val:"ENUM"i        !ident_start { return makeKeywordNode(val, location()) }
 KW_RANGE          = val:"RANGE"i       !ident_start { return makeKeywordNode(val, location()) }
+KW_SESSION        = val:"SESSION"i       !ident_start { return makeKeywordNode(val, location()) }
+KW_AUTHORIZATION  = val:"AUTHORIZATION"i !ident_start { return makeKeywordNode(val, location()) }
+KW_TRANSACTION    = val:"TRANSACTION"i !ident_start { return makeKeywordNode(val, location()) }
+KW_ISOLATION      = val:"ISOLATION"i !ident_start { return makeKeywordNode(val, location()) }
+KW_LEVEL          = val:"LEVEL"i !ident_start { return makeKeywordNode(val, location()) }
+KW_SERIALIZABLE   = val:"SERIALIZABLE"i !ident_start { return makeKeywordNode(val, location()) }
+
+KW_REPEATABLE_READ  = val:"REPEATABLE READ"i !ident_start { return makeKeywordNode(val, location()) }
+KW_READ_COMMITTED   = val:"READ COMMITTED"i !ident_start { return makeKeywordNode(val, location()) }
+KW_READ_UNCOMMITTED = val:"READ UNCOMMITTED"i !ident_start { return makeKeywordNode(val, location()) }
+KW_READ_WRITE       = val:"READ WRITE"i !ident_start { return makeKeywordNode(val, location()) }
+KW_READ_ONLY        = val:"READ ONLY"i !ident_start { return makeKeywordNode(val, location()) }
+KW_DEFERRABLE       = val:"DEFERRABLE"i !ident_start { return makeKeywordNode(val, location()) }
+KW_SEARCH_PATH      = val:"SEARCH_PATH"i !ident_start { return makeKeywordNode(val, location()) }
+KW_ROLE             = val:"ROLE"i !ident_start { return makeKeywordNode(val, location()) }
+KW_TIME_ZONE        = val:"TIME ZONE"i !ident_start { return makeKeywordNode(val, location()) }
+KW_LOCAL            = val:"LOCAL"i !ident_start { return makeKeywordNode(val, location()) }
 
 //specail character
 DOT       = '.'
@@ -1989,4 +2008,128 @@ drop_view_keyword
       location: location()
     }
   }
+
+set_stmt
+  = KW_SET __
+    assignments:(
+      session_authorization_assignment /
+      search_path_assignment /
+      variable_assignment_list /
+      transaction_assignment /
+      role_assignment /
+      time_zone_assignment
+    ) {
+      return {
+        type: 'set',
+        assignments: assignments,
+        location: location()
+      }
+    }
+
+session_authorization_assignment
+  = KW_SESSION __ KW_AUTHORIZATION __ 
+    (KW_TO / "=") __ 
+    value:literal_string {
+      return {
+        type: 'session_authorization',
+        value: value,
+        location: location()
+      }
+    }
+
+search_path_assignment
+  = name:KW_SEARCH_PATH __
+    (KW_TO / "=") __
+    head:literal_string
+    tail:(__ COMMA __ literal_string)* {
+      return {
+        type: 'search_path',
+        value: createList(head, tail),
+        location: location()
+      }
+    }
+
+variable_assignment_list
+  = head:variable_assignment
+    tail:(__ COMMA __ variable_assignment)* {
+      return createList(head, tail)
+    }
+
+variable_assignment
+  = name:("@" ident_name) __
+    "=" __
+    value:(literal / expr) {
+      return {
+        type: 'variable',
+        name: name[0] + name[1],
+        value: value,
+        location: location()
+      }
+    }
+
+transaction_assignment
+  = KW_TRANSACTION __
+    modes:transaction_mode_list {
+      return {
+        type: 'transaction',
+        modes: modes,
+        location: location()
+      }
+    }
+
+transaction_mode_list
+  = head:transaction_mode tail:(__ COMMA __ transaction_mode)* {
+      return createList(head, tail);
+    }
+
+transaction_mode
+  = isolation_level
+  / access_mode
+  / deferrable_mode
+
+isolation_level
+  = KW_ISOLATION __ KW_LEVEL __ level:(KW_SERIALIZABLE / KW_REPEATABLE_READ / KW_READ_COMMITTED / KW_READ_UNCOMMITTED) {
+      return {
+        type: 'isolation_level',
+        level: level
+      }
+    }
+
+access_mode
+  = mode:(KW_READ_WRITE / KW_READ_ONLY) {
+      return {
+        type: 'access_mode',
+        mode: mode
+      }
+    }
+
+deferrable_mode
+  = mode:(KW_DEFERRABLE / KW_NOT __ KW_DEFERRABLE) {
+      return {
+        type: 'deferrable_mode',
+        mode: mode.join(' ')
+      }
+    }
+
+role_assignment
+  = KW_ROLE __
+    (KW_TO / "=") __
+    value:literal_string {
+      return {
+        type: 'role',
+        value: value,
+        location: location()
+      }
+    }
+
+time_zone_assignment
+  = KW_TIME_ZONE __
+    (KW_TO / "=") __
+    value:(literal_string / KW_LOCAL / KW_DEFAULT) {
+      return {
+        type: 'time_zone',
+        value: value,
+        location: location()
+      }
+    }
 
