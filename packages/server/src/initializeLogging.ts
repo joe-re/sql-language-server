@@ -1,12 +1,17 @@
 import * as path from 'path'
 import * as os from 'os'
 import log4js from 'log4js'
+import { Connection } from 'vscode-languageserver'
+import { getLspAppender } from './LspAppender'
 
 const MAX_LOG_SIZE = 1024 * 1024
 const MAX_LOG_BACKUPS = 10
 const LOG_FILE_PATH = path.join(os.tmpdir(), 'sql-language-server.log')
 
-export default function initializeLogging(debug = false) {
+export default function initializeLogging(
+  connection: Connection,
+  debug = false
+) {
   log4js.configure({
     appenders: {
       server: {
@@ -15,10 +20,16 @@ export default function initializeLogging(debug = false) {
         axLogSize: MAX_LOG_SIZE,
         ackups: MAX_LOG_BACKUPS,
       },
+      lsp: {
+        type: getLspAppender(connection),
+      },
     },
     // TODO: Should accept level
     categories: {
-      default: { appenders: ['server'], level: debug ? 'debug' : 'debug' },
+      default: {
+        appenders: ['server', 'lsp'],
+        level: debug ? 'debug' : 'debug',
+      },
     },
   })
 

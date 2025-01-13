@@ -38,7 +38,7 @@ export function createServerWithConnection(
   connection: Connection,
   debug = false
 ) {
-  initializeLogging(debug)
+  initializeLogging(connection, debug)
   const logger = log4js.getLogger()
   const documents = new TextDocuments(TextDocument)
   documents.listen(connection)
