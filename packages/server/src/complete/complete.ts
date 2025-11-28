@@ -255,20 +255,13 @@ class Completer {
     this.addCandidatesForExpectedLiterals(expectedLiteralNodes)
     this.addCandidatesForFunctions()
 
-    const { addedSome: addedSomeScopedColumnCandidates } =
-      this.addCandidatesForScopedColumns(fromNodes, schemaAndSubqueries)
-    if (!addedSomeScopedColumnCandidates) {
-      this.addCandidatesForUnscopedColumns(fromNodes, schemaAndSubqueries)
-    }
-
-    this.addCandidatesForAliases(fromNodes)
-
+    // Detect FROM clause context BEFORE adding column suggestions
     const fromNodesContainingCursor = fromNodes.filter((tableNode) =>
       isPosInLocation(tableNode.location, this.pos)
     )
     const isCursorInsideFromClause = fromNodesContainingCursor.length > 0
 
-    // Check if cursor is right after FROM keyword (no table typed yet)
+    // Check if cursor is right after FROM keyword or typing a table name
     const afterFromClause = parsedFromClause.after?.trim().toUpperCase() || ''
     const isCursorAfterFromKeyword =
       afterFromClause === 'FROM' ||
@@ -277,7 +270,20 @@ class Completer {
         afterFromClause
       )
 
-    if (isCursorInsideFromClause || isCursorAfterFromKeyword) {
+    const isTypingTableName = isCursorInsideFromClause || isCursorAfterFromKeyword
+
+    // Only add column suggestions if NOT typing a table name in FROM clause
+    if (!isTypingTableName) {
+      const { addedSome: addedSomeScopedColumnCandidates } =
+        this.addCandidatesForScopedColumns(fromNodes, schemaAndSubqueries)
+      if (!addedSomeScopedColumnCandidates) {
+        this.addCandidatesForUnscopedColumns(fromNodes, schemaAndSubqueries)
+      }
+    }
+
+    this.addCandidatesForAliases(fromNodes)
+
+    if (isTypingTableName) {
       // add table candidates if the cursor is inside a FROM clause, JOIN clause,
       // or right after FROM/JOIN keyword waiting for a table name
       this.addCandidatesForTables(schemaAndSubqueries, true)
