@@ -54,7 +54,7 @@ Run the following command and reference the [nvim-lsp documentation](https://git
 
 See the [example](https://github.com/joe-re/sql-language-server/blob/master/example/monaco_editor) to use the Monaco Editor to develop sql-language-server.
 
-Follow the [development section](#development) section to check Mocaco Editor working.
+Follow the [development section](#development) section to check Monaco Editor working.
 
 ## Usage
 
