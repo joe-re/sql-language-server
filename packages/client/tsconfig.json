@@ -1,13 +1,17 @@
 {
   "compilerOptions": {
-    "target": "es2017",
-    "module": "es6",
-    "lib": [ "dom", "es2018", "es2019" ],
+    "target": "es2022",
+    "module": "esnext",
+    "lib": [
+      "es2022"
+    ],
     "strict": false,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "sourceMap": true,
     "outDir": "out"
   },
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

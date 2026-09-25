@@ -28,9 +28,10 @@
     "watch:cli": "pnpm compile:cli --watch",
     "watch:index": "tsc -w",
     "watch:vscode": "esbuild bin/vscodeExtensionServer.ts --bundle --platform=node --external:pg-native --external:aws-sdk --external:mock-aws-s3 --external:nock --outfile=dist/vscodeExtensionServer.js --watch",
-    "test": "jest",
+    "test": "vitest run",
     "prepare-vsc-extension": "pnpm clean && pnpm compile:vscode",
-    "prepublishOnly": "pnpm clean && pnpm compile:index"
+    "prepublishOnly": "pnpm clean && pnpm compile:index",
+    "typecheck": "tsc -p tsconfig.test.json"
   },
   "files": [
     "package.json",
@@ -44,7 +45,6 @@
     "@types/pg": "~8.6.6",
     "@types/yargs": "^17.0.8",
     "cardinal": "^2.1.1",
-    "jest": "^26.0.1",
     "log4js": "^6.2.1",
     "mysql2": "^2.3.0",
     "node-ssh-forward": "^0.6.3",
@@ -60,16 +60,14 @@
     "yargs": "^17.3.1"
   },
   "devDependencies": {
-    "@types/jest": "^25.2.2",
     "@types/mysql": "^2.15.5",
-    "@types/node": "~22.9.3",
+    "@types/node": "^22.18.0",
     "@types/sqlite3": "^3.1.6",
     "@types/yargs": "^17.0.0",
     "esbuild": "^0.28.2",
-    "jest": "^26.0.1",
     "rollup": "^2.10.2",
-    "ts-jest": "^26.0.0",
     "tslib": "^2.3.1",
-    "typescript": "^4.4.2"
+    "typescript": "~6.0.3",
+    "vitest": "~5.0.1"
   }
 }

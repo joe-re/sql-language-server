@@ -23,6 +23,7 @@
   "publisher": "joe-re",
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "typecheck": "pnpm --filter sqlint --filter sql-language-server typecheck",
     "vsc-compile": "pnpm vsc-compile:client && pnpm vsc-compile:server",
     "vsc-compile:client": "pnpm --filter sql-language-server_vsc compile",
     "vsc-compile:server": "pnpm build:sqlint && pnpm --filter sql-language-server prepare-vsc-extension",
@@ -46,7 +47,7 @@
     "release:publish": "pnpm npm:prepublish && changeset publish"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=22.13",
     "vscode": "^1.45.1"
   },
   "activationEvents": [
@@ -104,7 +105,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.5.1",
-    "typescript": "^4.5.5",
+    "typescript": "~6.0.3",
     "wait-on": "^5.0.1"
   },
   "dependencies": {
