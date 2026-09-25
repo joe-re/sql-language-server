@@ -1,0 +1,9 @@
+packages:
+  - packages/*
+  - example/*
+allowBuilds:
+  esbuild: true
+  sqlite3: true
+overrides:
+  # @types/pg depends on pg-protocol@*, whose latest typings need TypeScript >= 5.7
+  pg-protocol: ~1.6.0

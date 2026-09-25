@@ -427,7 +427,7 @@ $ docker compose exec assets bash
 
 ```sh
 $ cd example/monaco_editor
-$ yarn migrate:postgres # postgres
-$ yarn migrate:mysql    # mysql
-$ yarn migrate:sqlite   # sqlite3
+$ pnpm migrate:postgres # postgres
+$ pnpm migrate:mysql    # mysql
+$ pnpm migrate:sqlite   # sqlite3
 ```

@@ -6,7 +6,7 @@
   "typings": "index.d.ts",
   "scripts": {
     "test": "jest",
-    "build": "npm run generateParser && npm run generateFromClauseParser",
+    "build": "pnpm run generateParser && pnpm run generateFromClauseParser",
     "generateParser": "peggy -o ./base/parser.js parser.pegjs",
     "generateFromClauseParser": "peggy -o ./base/fromClauseParser.js  --allowed-start-rules extract_from_clause parser.pegjs"
   },

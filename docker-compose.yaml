@@ -14,7 +14,7 @@ services:
       - node_modules_sqlint:/opt/sql-language-server/packages/sqlint/node_modules
     environment:
       NODE_OPTIONS: --openssl-legacy-provider
-    command: bash -c "yarn && yarn bootstrap && yarn dev" # tail -f /dev/null
+    command: bash -c "pnpm install && pnpm dev" # tail -f /dev/null
     ports:
       - '3000:3000'
   postgres:
