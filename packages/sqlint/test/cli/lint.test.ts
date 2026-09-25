@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import { styleText } from 'node:util'
 import { lint } from '../../src/cli/lint'
 
 describe('lint', () => {
@@ -10,12 +10,14 @@ describe('lint', () => {
         configPath: `${__dirname}/fixtures/lint`,
       })
       expect(result).toContain(
-        `${chalk.dim('1:0')} ${chalk.red(
+        `${styleText('dim', '1:0')} ${styleText(
+          'red',
           'error'
         )} reserved word must be uppercase`
       )
       expect(result).toContain(
-        `${chalk.dim('1:9')} ${chalk.red(
+        `${styleText('dim', '1:9')} ${styleText(
+          'red',
           'error'
         )} reserved word must be uppercase`
       )

@@ -18,7 +18,7 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=22.13"
+    "node": "^22.13.0 || >=24"
   },
   "devDependencies": {
     "vitest": "~5.0.1",

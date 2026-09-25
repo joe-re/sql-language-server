@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+import { styleText } from 'node:util'
 import { execute, Diagnostic, ErrorLevel } from '../rules'
 import { applyFixes, FixDescription } from '../fixer'
 import { getFileList, readFile, writeFile } from './utils'
@@ -25,17 +25,18 @@ function formatStylish(result: LintResult[]): string {
     return output
   }
   targetResult.forEach((v) => {
-    output += chalk.underline(v.filepath) + '\n'
+    output += styleText('underline', v.filepath) + '\n'
     v.diagnostics.forEach((v2) => {
-      const position = chalk.dim(
+      const position = styleText(
+        'dim',
         `${v2.location.start.line}:${v2.location.start.offset}`
       )
       const messageType =
         v2.errorLevel === ErrorLevel.Error
-          ? chalk.red('error')
-          : chalk.yellow('warning')
+          ? styleText('red', 'error')
+          : styleText('yellow', 'warning')
       const message = v2.message
-      const ruleName = chalk.dim(v2.rulename)
+      const ruleName = styleText('dim', v2.rulename)
       output += `  ${position} ${messageType} ${message} ${ruleName}\n`
       if (v2.errorLevel === ErrorLevel.Error) errorCount++
       else if (v2.errorLevel === ErrorLevel.Warn) warningCount++
@@ -43,7 +44,8 @@ function formatStylish(result: LintResult[]): string {
   })
   output += '\n'
   const total = errorCount + warningCount
-  output += chalk.bold.red(
+  output += styleText(
+    ['bold', 'red'],
     [
       `\u2716 ${total} ${pluralize('problem', total)}`,
       `(${errorCount} ${pluralize('error', errorCount)},`,
