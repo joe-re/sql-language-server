@@ -3,19 +3,14 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strict": true,
-    "target": "es2017",
-    "module": "CommonJS",
-    "lib": [ "es2018", "es2019" ],
-    "moduleResolution": "node",
+    "target": "es2022",
+    "module": "node16",
+    "lib": ["es2022"],
+    "types": ["node"],
+    "moduleResolution": "node16",
     "sourceMap": true,
     "esModuleInterop": true,
     "declaration": true,
-    "baseUrl": ".",
-    "composite": true,
-    "paths": {
-      "sql-language-server": ["packages/server/*"],
-      "@joe-re/sql-parser": ["packages/sql-parser/*"],
-      "sqlint": ["packages/sqlint/*"]
-    }
-  },
+    "composite": true
+  }
 }

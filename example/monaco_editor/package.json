@@ -9,7 +9,7 @@
     "tsc:watch": "tsc -w",
     "webpack:watch": "webpack -w",
     "copy": "mkdir -p dist && cp src/index.html dist/index.html",
-    "build": "yarn tsc && webpack && yarn run copy",
+    "build": "pnpm tsc && webpack && pnpm run copy",
     "watch": "run-p webpack:watch copy ",
     "start": "ts-node-dev --transpile-only ./src/server/server.ts",
     "migrate:postgres": "NODE_ENV=postgres sequelize-cli db:migrate",
@@ -22,6 +22,9 @@
     "monaco-editor-core": "^0.22.3",
     "monaco-languageclient": "^0.13.1-next.1",
     "reconnecting-websocket": "^4.4.0",
+    "sql-language-server": "workspace:*",
+    "vscode-languageserver": "8.0.0-next.8",
+    "vscode-uri": "^3.0.2",
     "vscode-ws-jsonrpc": "^0.2.0",
     "ws": "^7.3.1"
   },

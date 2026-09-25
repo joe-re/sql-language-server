@@ -1,0 +1,12 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@4.0.1/schema.json",
+  "baseBranch": "release",
+  "access": "public",
+  "fixed": [["@joe-re/sql-parser", "sqlint", "sql-language-server"]],
+  "linked": [],
+  "ignore": [],
+  "privatePackages": { "version": false, "tag": false },
+  "updateInternalDependencies": "patch",
+  "commit": false,
+  "changelog": "@changesets/cli/changelog"
+}

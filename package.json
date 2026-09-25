@@ -22,29 +22,32 @@
   "license": "MIT",
   "publisher": "joe-re",
   "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "lint": "yarn run eslint . --ext .js,.jsx,.ts,.tsx",
-    "vsc-compile": "yarn vsc-compile:client && yarn vsc-compile:server",
-    "vsc-compile:client": "cd ./packages/client && yarn run compile",
-    "vsc-compile:server": "yarn build:sqlint && cd ./packages/server && yarn run prepare-vsc-extension",
-    "test:server": "cd ./packages/server && yarn run test",
-    "test:parser": "cd ./packages/sql-parser && yarn run test",
-    "test:sqlint": "cd ./packages/sqlint && yarn run test",
-    "build:sqlint": "cd ./packages/sqlint && yarn run build",
-    "build:server": "cd ./packages/server && yarn run compile:index",
+    "lint": "eslint .",
+    "typecheck": "pnpm --filter sqlint --filter sql-language-server typecheck",
+    "vsc-compile": "pnpm vsc-compile:client && pnpm vsc-compile:server",
+    "vsc-compile:client": "pnpm --filter sql-language-server_vsc compile",
+    "vsc-compile:server": "pnpm build:sqlint && pnpm --filter sql-language-server prepare-vsc-extension",
+    "test:server": "pnpm --filter sql-language-server test",
+    "test:parser": "pnpm --filter @joe-re/sql-parser test",
+    "test:sqlint": "pnpm --filter sqlint test",
+    "build:sqlint": "pnpm --filter sqlint build",
+    "build:server": "pnpm --filter sql-language-server compile:index",
     "watch": "run-p watch:client watch:server",
-    "watch:client": "cd ./packages/client && yarn run watch",
-    "watch:sqlint": "cd ./packages/sqlint && yarn run watch",
-    "watch:server": "wait-on ./packages/sqlint/dist/src/index.js && cd ./packages/server && yarn run watch:index",
-    "watch:dev-server:client": "cd ./example/monaco_editor && yarn run watch",
-    "watch:dev-server:server": "wait-on ./packages/server/dist/src/index.js && cd ./example/monaco_editor && yarn run start",
-    "dev": "yarn build:sqlint && run-p watch:sqlint watch:server watch:dev-server:client watch:dev-server:server",
-    "vscode:prepublish": "yarn run vsc-compile",
-    "npm:prepublish": "yarn build:sqlint && yarn build:server",
-    "version": "lerna version",
-    "vscode:publish": "yarn vscode:prepublish && vsce publish"
+    "watch:client": "pnpm --filter sql-language-server_vsc watch",
+    "watch:sqlint": "pnpm --filter sqlint watch",
+    "watch:server": "wait-on ./packages/sqlint/dist/src/index.js && pnpm --filter sql-language-server watch:index",
+    "watch:dev-server:client": "pnpm --filter sql-lsp-monaco-editor-example watch",
+    "watch:dev-server:server": "wait-on ./packages/server/dist/src/index.js && pnpm --filter sql-lsp-monaco-editor-example start",
+    "dev": "pnpm build:sqlint && run-p watch:sqlint watch:server watch:dev-server:client watch:dev-server:server",
+    "vscode:prepublish": "pnpm run vsc-compile",
+    "npm:prepublish": "pnpm build:sqlint && pnpm build:server",
+    "vscode:publish": "pnpm vscode:prepublish && vsce publish",
+    "changeset": "changeset",
+    "release:version": "changeset version",
+    "release:publish": "pnpm npm:prepublish && changeset publish"
   },
   "engines": {
+    "node": ">=22.13",
     "vscode": "^1.45.1"
   },
   "activationEvents": [
@@ -91,28 +94,23 @@
     }
   },
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "example/*"
-  ],
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.10.1",
-    "@typescript-eslint/parser": "^5.10.1",
-    "eslint": "^8.8.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "lerna": "^6.5.1",
+    "@changesets/cli": "^3.0.3",
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-n": "^18.3.0",
+    "eslint-plugin-prettier": "^5.5.6",
+    "globals": "^17.12.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.5.1",
-    "typescript": "^4.5.5",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1",
     "wait-on": "^5.0.1"
   },
   "dependencies": {
     "sqlite3": "^5.0.3"
   },
-  "resolutions": {
-    "tar": ">4.4.18"
-  }
+  "packageManager": "pnpm@11.13.1"
 }

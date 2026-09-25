@@ -5,8 +5,8 @@
   "version": "1.7.0",
   "typings": "index.d.ts",
   "scripts": {
-    "test": "jest",
-    "build": "npm run generateParser && npm run generateFromClauseParser",
+    "test": "vitest run",
+    "build": "pnpm run generateParser && pnpm run generateFromClauseParser",
     "generateParser": "peggy -o ./base/parser.js parser.pegjs",
     "generateFromClauseParser": "peggy -o ./base/fromClauseParser.js  --allowed-start-rules extract_from_clause parser.pegjs"
   },
@@ -21,7 +21,7 @@
     "node": ">=0.8.0"
   },
   "devDependencies": {
-    "jest": "^26.0.1"
+    "vitest": "~5.0.1"
   },
   "readmeFilename": "README.md",
   "main": "index.js",

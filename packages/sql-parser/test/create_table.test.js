@@ -112,7 +112,7 @@ describe('CREATE TABLE statement', () => {
         { trigger: 'UPDATE', action: 'RESTRICT' },
         { trigger: 'UPDATE', action: 'NO ACTION' }
       ].forEach(({ trigger, action }) => {
-        describe(`ON ${trigger} ${action}`, () => {
+        it(`ON ${trigger} ${action}`, () => {
           const sql = `
             CREATE TABLE IF NOT EXISTS wallets (
               id INT AUTO_INCREMENT PRIMARY KEY,
