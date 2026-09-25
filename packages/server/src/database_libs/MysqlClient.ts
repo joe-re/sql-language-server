@@ -1,7 +1,7 @@
 import type { Connection as MySqlConnection } from 'mysql2'
 import { Connection } from '../SettingStore'
 import AbstractClient, { RawField } from './AbstractClient'
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const mysql = require('mysql2')
 
 export default class MysqlClient extends AbstractClient {

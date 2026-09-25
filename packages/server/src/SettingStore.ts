@@ -17,13 +17,7 @@ export type SSHConfig = {
 export type Connection = {
   name: string | null
   adapter:
-    | 'json'
-    | 'mysql'
-    | 'postgresql'
-    | 'postgres'
-    | 'sqlite3'
-    | 'bigquery'
-    | null
+    'json' | 'mysql' | 'postgresql' | 'postgres' | 'sqlite3' | 'bigquery' | null
   host: string | null
   port: number | null
   user: string | null

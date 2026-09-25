@@ -35,7 +35,7 @@ export default class Sqlite3Client extends AbstractClient {
     }
     try {
       // use commonjs to avoid dynamic import build error
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const sqlite3: SQLite3 = require('sqlite3')
 
       this.connection = new sqlite3.Database(
