@@ -5,6 +5,9 @@
   "bin": "bin/cli.js",
   "author": "joe-re<joe.tialtngo@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node": "^22.13.0 || >=24"
+  },
   "scripts": {
     "build": "tsc -p .",
     "watch": "tsc -w",
@@ -34,15 +37,13 @@
   "types": "./dist/src",
   "dependencies": {
     "@joe-re/sql-parser": "workspace:^",
-    "ajv": "^6.12.2",
-    "chalk": "^4.0.0",
-    "js-yaml": "^3.14.0",
+    "ajv": "^8.17.0",
+    "js-yaml": "^4.1.0",
     "log4js": "^6.2.1",
     "yargs": "^17.3.1"
   },
   "devDependencies": {
-    "@types/ajv": "^1.0.0",
-    "@types/js-yaml": "^3.12.4",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.18.0",
     "@types/yargs": "^17.0.0",
     "typescript": "~6.0.3",

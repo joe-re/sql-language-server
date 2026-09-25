@@ -20,7 +20,7 @@ describe('loadConfig', () => {
     test('it should show error details', () => {
       expect(() =>
         loadConfig(`${__dirname}/fixtures/loadConfig/invalid`)
-      ).toThrowError(/Unexpected property "bar"/)
+      ).toThrowError(/Unexpected property "invalidProp"/)
     })
   })
 

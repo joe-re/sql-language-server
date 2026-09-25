@@ -47,7 +47,7 @@
     "release:publish": "pnpm npm:prepublish && changeset publish"
   },
   "engines": {
-    "node": ">=22.13",
+    "node": "^22.13.0 || >=24",
     "vscode": "^1.45.1"
   },
   "activationEvents": [

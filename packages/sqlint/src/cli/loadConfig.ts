@@ -1,6 +1,6 @@
 import { extname } from 'path'
 import * as yaml from 'js-yaml'
-import Ajv from 'ajv'
+import Ajv, { ErrorObject } from 'ajv'
 import { Config, ErrorLevel } from '../rules'
 import schemaConf from '../../schema.conf'
 import { fileExists, readFile, directoryExists } from './utils'
@@ -24,23 +24,20 @@ const defaultConfig: Config = {
   },
 }
 
-function formatErrors(errors: Ajv.ErrorObject[]) {
+function formatErrors(errors: ErrorObject[]) {
   return errors
     .map((error) => {
       if (error.keyword === 'additionalProperties') {
-        return `Unexpected property "${error.data.invalidProp}"`
+        return `Unexpected property "${error.params.additionalProperty}"`
       }
+      return `${error.instancePath || 'config'} ${error.message}`
     })
     .map((message) => `\t- ${message}.\n`)
     .join('')
 }
 
 function validateSchema(config: Record<string, unknown>) {
-  const ajv = new Ajv({
-    verbose: true,
-    schemaId: 'auto',
-    missingRefs: 'ignore',
-  })
+  const ajv = new Ajv({ verbose: true })
   const validate = ajv.compile(schemaConf)
   if (!validate(config)) {
     throw new Error(
@@ -123,7 +120,7 @@ export function loadConfig(directoryOrFile: string): Config {
       break
     case '.yaml':
     case '.yml':
-      config = yaml.safeLoad(fileContent) as RawConfig
+      config = yaml.load(fileContent) as RawConfig
       break
     default:
       config = JSON.parse(fileContent)
