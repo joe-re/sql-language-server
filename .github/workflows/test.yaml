@@ -26,6 +26,7 @@ jobs:
       - run: pnpm test:server
       - run: pnpm test:parser
       - run: pnpm test:sqlint
+      - run: pnpm --filter sql-lsp-monaco-editor-example build
   db-integration:
     runs-on: ubuntu-latest
     services:

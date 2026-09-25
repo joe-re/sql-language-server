@@ -1,8 +1,5 @@
 {
-  "adapter": "postgres",
-  "host": "postgres",
-  "port": 5432,
-  "user": "sqlls",
-  "password": "sqlls",
-  "database": "postgres_db"
+  "name": "sqlite",
+  "adapter": "sqlite3",
+  "filename": "sample.sqlite3"
 }

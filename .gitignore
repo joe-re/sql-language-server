@@ -18,3 +18,4 @@ packages/server/dist/*
 yarn-error.log
 *.vsix
 .vscode-test
+.pnpm-store

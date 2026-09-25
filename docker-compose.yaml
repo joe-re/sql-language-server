@@ -1,22 +1,27 @@
-version: '3'
 services:
   assets:
-    platform: linux/x86_64
     build:
       context: .
       dockerfile: dockerfile
     volumes:
       - .:/opt/sql-language-server:rw
-      # exclude node_modules dir from sharing with host
+      # keep node_modules inside the container (native binaries differ from the host)
       - node_modules:/opt/sql-language-server/node_modules
-      - node_modules_example:/opt/sql-language-server/example/node_modules
+      - node_modules_client:/opt/sql-language-server/packages/client/node_modules
       - node_modules_server:/opt/sql-language-server/packages/server/node_modules
       - node_modules_sqlint:/opt/sql-language-server/packages/sqlint/node_modules
+      - node_modules_parser:/opt/sql-language-server/packages/sql-parser/node_modules
+      - node_modules_example:/opt/sql-language-server/example/monaco_editor/node_modules
+      - pnpm_store:/pnpm-store
     environment:
-      NODE_OPTIONS: --openssl-legacy-provider
-    command: bash -c "pnpm install && pnpm dev" # tail -f /dev/null
+      # keep pnpm's content-addressable store out of the mounted repository
+      npm_config_store_dir: /pnpm-store
+    command: bash -c "pnpm install && pnpm --filter sql-lsp-monaco-editor-example setup:sqlite && pnpm dev"
     ports:
       - '3000:3000'
+    depends_on:
+      - postgres
+      - mysql
   postgres:
     image: postgres:17
     restart: always
@@ -25,9 +30,10 @@ services:
       POSTGRES_USER: sqlls
       POSTGRES_PASSWORD: sqlls
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - postgres17:/var/lib/postgresql/data
+      # runs only when the volume is empty
+      - ./example/monaco_editor/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
   mysql:
-    platform: linux/x86_64
     image: mysql:8.4
     restart: always
     environment:
@@ -36,11 +42,15 @@ services:
       MYSQL_USER: sqlls
       MYSQL_PASSWORD: sqlls
     volumes:
-      - mysql:/var/lib/mysql
+      - mysql84:/var/lib/mysql
+      - ./example/monaco_editor/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 volumes:
-  postgres:
-  mysql:
+  postgres17:
+  mysql84:
   node_modules:
-  node_modules_example:
+  node_modules_client:
   node_modules_server:
   node_modules_sqlint:
+  node_modules_parser:
+  node_modules_example:
+  pnpm_store:

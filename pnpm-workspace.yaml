@@ -5,8 +5,6 @@ allowBuilds:
   # optional native accelerators of ssh2; it falls back to pure JS
   cpu-features: false
   esbuild: true
-  # only used by example/monaco_editor (sequelize); the server uses node:sqlite
-  sqlite3: false
   ssh2: false
   # copies the vsce-sign binary from its platform specific optional dependency
   '@vscode/vsce-sign': true
