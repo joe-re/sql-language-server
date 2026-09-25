@@ -368,12 +368,9 @@ arguments: string(project name)
 
 #### SQLite3 Notes
 
-If you get error when you use sqlite3 connection, you may need to rebuild sqlite3 to your environment.
-
-VSC extension provides the command to rebuild it.(Name: `Rebuild SQLite3 Client`)
-![image](https://user-images.githubusercontent.com/4954534/85928359-ef952180-b8de-11ea-8cb3-7a9a509cd6d7.png)
-
-If you're using sql-language-server directly, go to the install directory and run `npm rebuild sqlite` to rebuild it.
+The sqlite3 adapter uses the built-in [`node:sqlite`](https://nodejs.org/api/sqlite.html) module, so no native module needs to be built.
+It requires Node.js 22.13+ (or 24+), or VS Code 1.101+ when using the VS Code extension.
+Databases are opened read-only.
 
 
 #### Linting

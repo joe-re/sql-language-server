@@ -28,7 +28,7 @@ import SettingStore, { Connection as SettingConnection } from './SettingStore'
 import { Schema } from './database_libs/AbstractClient'
 import getDatabaseClient from './database_libs/getDatabaseClient'
 import initializeLogging from './initializeLogging'
-import { RequireSqlite3Error } from './database_libs/Sqlite3Client'
+import { Sqlite3OpenError } from './database_libs/Sqlite3Client'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
 
@@ -163,9 +163,9 @@ export function createServerWithConnection(
             logger.debug('get schema', JSON.stringify(schema))
           } catch (e) {
             logger.error('failed to get schema info')
-            if (e instanceof RequireSqlite3Error) {
+            if (e instanceof Sqlite3OpenError) {
               connection.sendNotification('sqlLanguageServer.error', {
-                message: 'Need to rebuild sqlite3 module.',
+                message: `Failed to open sqlite3 database: ${e.message}`,
               })
             }
             throw e

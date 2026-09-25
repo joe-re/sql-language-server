@@ -22,7 +22,7 @@ export default class PosgresClient extends AbstractClient {
     return 'postgres'
   }
 
-  connect(): Promise<boolean> {
+  async connect(): Promise<boolean> {
     const client: PG.Client = new PG.Client({
       user: this.settings.user || '',
       host: this.settings.host || '',
@@ -30,19 +30,16 @@ export default class PosgresClient extends AbstractClient {
       password: this.settings.password || '',
       port: this.settings.port || 5432,
     })
-    return new Promise((resolve, reject) => {
-      client.connect((err) => {
-        if (err) {
-          logger.debug('Failed to connect to postgresql server')
-          logger.error(err)
-          reject(err)
-          return
-        }
-        this.connection = client
-        logger.debug('Success to connect to postgresql server')
-        resolve(true)
-      })
-    })
+    try {
+      await client.connect()
+    } catch (err) {
+      logger.debug('Failed to connect to postgresql server')
+      logger.error(err)
+      throw err
+    }
+    this.connection = client
+    logger.debug('Success to connect to postgresql server')
+    return true
   }
 
   disconnect() {
@@ -53,57 +50,39 @@ export default class PosgresClient extends AbstractClient {
   }
 
   async getTables(): Promise<string[]> {
-    const sql = `
+    if (!this.connection) {
+      throw new Error("Don't have database connection.")
+    }
+    const results = await this.connection.query<{ table_name: string }>(`
       SELECT c.relname as table_name FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
        WHERE n.nspname = 'public'
          AND c.relkind IN ('r','v','m','f')
-    `
-    return new Promise((resolve, reject) => {
-      if (!this.connection) {
-        reject(new Error("Don't have database connection."))
-        return
-      }
-      this.connection.query(sql, (err, results) => {
-        if (err) {
-          reject(new Error(err.message))
-          return
-        }
-        const tables = results.rows.map(
-          (v: { [key: string]: string }) => v[`table_name`]
-        )
-        resolve(tables)
-      })
-    })
+    `)
+    return results.rows.map((v) => v.table_name)
   }
 
-  getColumns(tableName: string): Promise<RawField[]> {
-    const sql = `
+  async getColumns(tableName: string): Promise<RawField[]> {
+    if (!this.connection) {
+      throw new Error("Don't have database connection.")
+    }
+    const results = await this.connection.query<RawField>(
+      `
     SELECT
       a.attname as field,
       format_type(a.atttypid, a.atttypmod) as type,
       pg_get_expr(d.adbin, d.adrelid) as default,
-      a.attnotnull as null,
+      CASE WHEN a.attnotnull THEN 'No' ELSE 'Yes' END as null,
       col_description(a.attrelid, a.attnum) AS comment
     FROM pg_attribute a
       LEFT JOIN pg_attrdef d ON a.attrelid = d.adrelid AND a.attnum = d.adnum
       LEFT JOIN pg_type t ON a.atttypid = t.oid
       LEFT JOIN pg_collation c ON a.attcollation = c.oid AND a.attcollation <> t.typcollation
-    WHERE a.attrelid = '"${tableName}"'::regclass
+    WHERE a.attrelid = quote_ident($1)::regclass
       AND a.attnum > 0 AND NOT a.attisdropped
     ORDER BY a.attnum
-    `
-    return new Promise((resolve, reject) => {
-      if (!this.connection) {
-        reject(new Error("Don't have database connection."))
-        return
-      }
-      this.connection.query(sql, (err, results) => {
-        if (err) {
-          reject(new Error(err.message))
-          return
-        }
-        resolve(results.rows)
-      })
-    })
+    `,
+      [tableName]
+    )
+    return results.rows
   }
 }
