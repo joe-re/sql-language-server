@@ -18,10 +18,11 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=0.8.0"
+    "node": ">=22.13"
   },
   "devDependencies": {
-    "vitest": "~5.0.1"
+    "vitest": "~5.0.1",
+    "peggy": "^5.1.0"
   },
   "readmeFilename": "README.md",
   "main": "index.js",
@@ -29,8 +30,5 @@
     "SQL",
     "Parer"
   ],
-  "license": "GPLv2",
-  "dependencies": {
-    "peggy": "^3.0.2"
-  }
+  "license": "GPLv2"
 }
