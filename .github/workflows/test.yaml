@@ -65,3 +65,22 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:sqlint
       - run: pnpm --filter sql-language-server test:db
+  vscode-e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # minimum supported version (engines.vscode) and latest
+        vscode-version: [1.101.0, stable]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: xvfb-run -a pnpm test:vscode
+        env:
+          VSCODE_VERSION: ${{ matrix.vscode-version }}
+      - run: pnpm vscode:package

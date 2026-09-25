@@ -1,13 +1,7 @@
-**/test/
-.**
-**/*.ts
-**/*.map
-**/tsconfig.json
-**/tslint.json
-.cache
-.vscode
-**/*/rollup.config.js
-**/*/jest.config.js
-**/*/yarn-error.log
-**/*/.npmignore
-**/*/node_modules
+# Both the client and the server are bundled by esbuild, so the extension only
+# ships these files (plus package.json, README.md and LICENSE, which vsce adds).
+**
+!packages/client/out/extension.js
+!packages/server/dist/vscodeExtensionServer.js
+!README.md
+!LICENSE

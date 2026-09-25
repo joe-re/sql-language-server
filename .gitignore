@@ -16,3 +16,5 @@ packages/server/dist/*
 .pnp.*
 .node-version
 yarn-error.log
+*.vsix
+.vscode-test

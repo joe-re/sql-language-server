@@ -428,3 +428,30 @@ $ pnpm migrate:postgres # postgres
 $ pnpm migrate:mysql    # mysql
 $ pnpm migrate:sqlite   # sqlite3
 ```
+
+#### Running tests
+
+Node.js 22.13+ and pnpm are required (`corepack enable` sets up the pnpm version pinned in `package.json`).
+
+```sh
+$ pnpm install
+$ pnpm npm:prepublish        # build sqlint and the server
+$ pnpm lint && pnpm typecheck
+$ pnpm test:parser && pnpm test:sqlint && pnpm test:server
+```
+
+Database integration tests run only when connection URLs are given:
+
+```sh
+$ SQLLS_TEST_POSTGRES=postgres://user:pass@127.0.0.1:5432/db \
+  SQLLS_TEST_MYSQL=mysql://user:pass@127.0.0.1:3306/db \
+  pnpm --filter sql-language-server test:db
+```
+
+The VS Code extension is tested end to end by launching VS Code (downloaded into `packages/client/.vscode-test`).
+Set `VSCODE_VERSION` to test a specific version (default: `stable`).
+
+```sh
+$ pnpm test:vscode
+$ pnpm vscode:package        # build the .vsix
+```

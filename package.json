@@ -30,6 +30,7 @@
     "test:server": "pnpm --filter sql-language-server test",
     "test:parser": "pnpm --filter @joe-re/sql-parser test",
     "test:sqlint": "pnpm --filter sqlint test",
+    "test:vscode": "pnpm vsc-compile && pnpm --filter sql-language-server_vsc test:e2e",
     "build:sqlint": "pnpm --filter sqlint build",
     "build:server": "pnpm --filter sql-language-server compile:index",
     "watch": "run-p watch:client watch:server",
@@ -41,7 +42,8 @@
     "dev": "pnpm build:sqlint && run-p watch:sqlint watch:server watch:dev-server:client watch:dev-server:server",
     "vscode:prepublish": "pnpm run vsc-compile",
     "npm:prepublish": "pnpm build:sqlint && pnpm build:server",
-    "vscode:publish": "pnpm vscode:prepublish && vsce publish",
+    "vscode:package": "vsce package --no-dependencies",
+    "vscode:publish": "vsce publish --no-dependencies",
     "changeset": "changeset",
     "release:version": "changeset version",
     "release:publish": "pnpm npm:prepublish && changeset publish"
@@ -92,6 +94,7 @@
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
     "@eslint/js": "^9.39.5",
+    "@vscode/vsce": "^4.0.0",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
