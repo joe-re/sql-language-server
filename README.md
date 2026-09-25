@@ -402,31 +402,18 @@ Code contributions are always appreciated, so feel free to fork the repo and sub
 
 #### Development environment
 
-You can start developing sql-language-server using Docker Compose. To begin the development process in your Docker container, run the following command:
+`pnpm dev` builds sqlint and the server in watch mode and starts the [monaco-editor example](./example/monaco_editor) on http://localhost:3000:
+
+```sh
+$ pnpm install
+$ pnpm --filter sql-lsp-monaco-editor-example setup:sqlite
+$ pnpm dev
+```
+
+To try postgres and mysql as well, use Docker Compose. The sample schema in `example/monaco_editor/db/init.sql` is loaded automatically.
 
 ```sh
 $ docker compose up
-```
-
-Open `http://localhost:3000` on your browser.
-
-#### Migrating the Database
-
-To migrate the database, follow these steps:
-
-1. Login into development Docker container
-
-```sh
-$ docker compose exec assets bash
-```
-
-2. Migrate the database
-
-```sh
-$ cd example/monaco_editor
-$ pnpm migrate:postgres # postgres
-$ pnpm migrate:mysql    # mysql
-$ pnpm migrate:sqlite   # sqlite3
 ```
 
 #### Running tests

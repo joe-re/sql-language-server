@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>sql-language-server monaco example</title>
+    <link rel="icon" href="data:," />
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 16px; }
+      header { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+      h1 { font-size: 18px; margin: 0 16px 0 0; }
+      #status { font-size: 12px; color: #666; }
+      #error { color: #b00020; font-size: 13px; min-height: 1.2em; }
+      #editor { height: 70vh; border: 1px solid #ccc; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>sql-language-server</h1>
+      <label>Connection <select id="connection"></select></label>
+      <button id="fix">Fix all auto-fixable problems</button>
+      <span id="status"></span>
+    </header>
+    <div id="error"></div>
+    <div id="editor"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
