@@ -11,6 +11,7 @@ export default tseslint.config(
       '**/node_modules/',
       '**/dist/',
       '**/out/',
+      '**/.vscode-test/',
       '**/bin/',
       '**/npm_bin/',
       'packages/sql-parser/',
