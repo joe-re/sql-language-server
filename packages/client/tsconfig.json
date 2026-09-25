@@ -9,7 +9,12 @@
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "sourceMap": true,
-    "outDir": "out"
+    "outDir": "out",
+    "types": [
+      "node",
+      "vscode"
+    ],
+    "noEmit": true
   },
   "exclude": [
     "node_modules"
