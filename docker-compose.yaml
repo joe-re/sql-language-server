@@ -18,7 +18,7 @@ services:
     ports:
       - '3000:3000'
   postgres:
-    image: postgres:10
+    image: postgres:17
     restart: always
     environment:
       POSTGRES_DB: postgres_db
@@ -28,7 +28,7 @@ services:
       - postgres:/var/lib/postgresql/data
   mysql:
     platform: linux/x86_64
-    image: mysql
+    image: mysql:8.4
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root

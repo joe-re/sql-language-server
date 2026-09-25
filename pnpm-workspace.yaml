@@ -2,8 +2,9 @@ packages:
   - packages/*
   - example/*
 allowBuilds:
+  # optional native accelerators of ssh2; it falls back to pure JS
+  cpu-features: false
   esbuild: true
-  sqlite3: true
-overrides:
-  # @types/pg depends on pg-protocol@*, whose latest typings need TypeScript >= 5.7
-  pg-protocol: ~1.6.0
+  # only used by example/monaco_editor (sequelize); the server uses node:sqlite
+  sqlite3: false
+  ssh2: false

@@ -26,3 +26,42 @@ jobs:
       - run: pnpm test:server
       - run: pnpm test:parser
       - run: pnpm test:sqlint
+  db-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: sqlls
+          POSTGRES_PASSWORD: sqlls
+          POSTGRES_DB: sqlls_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sqlls"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: sqlls_test
+          MYSQL_USER: sqlls
+          MYSQL_PASSWORD: sqlls
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -usqlls -psqlls --silent"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      SQLLS_TEST_POSTGRES: postgres://sqlls:sqlls@127.0.0.1:5432/sqlls_test
+      SQLLS_TEST_MYSQL: mysql://sqlls:sqlls@127.0.0.1:3306/sqlls_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:sqlint
+      - run: pnpm --filter sql-language-server test:db

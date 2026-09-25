@@ -18,7 +18,6 @@ import {
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node'
-import { rebuild } from './rebuild'
 
 const NOTEBOOK_CELL_SCHEME = 'vscode-notebook-cell'
 const SQL = 'sql'
@@ -245,30 +244,8 @@ export function activate(context: ExtensionContext) {
     }
   )
 
-  let isRebuilding = false
-  const rebuildSqlite3 = commands.registerCommand(
-    'extension.rebuildSqlite3',
-    async () => {
-      if (isRebuilding) {
-        Window.showInformationMessage('Already started rebuild Sqlite3 process')
-        return
-      }
-      isRebuilding = true
-      try {
-        Window.showInformationMessage('Start to rebuild Sqlite3.')
-        await rebuild()
-        Window.showInformationMessage('Done to rebuild Sqlite3.')
-      } catch (e) {
-        Window.showErrorMessage(e)
-      } finally {
-        isRebuilding = false
-      }
-    }
-  )
-
   context.subscriptions.push(switchConnection)
   context.subscriptions.push(fixAllFixableProblem)
-  context.subscriptions.push(rebuildSqlite3)
   return client.start()
 }
 

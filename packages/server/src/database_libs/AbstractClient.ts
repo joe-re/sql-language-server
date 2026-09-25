@@ -1,7 +1,6 @@
-import { readFileSync } from 'fs'
 import log4js from 'log4js'
-import { SSHConnection } from 'node-ssh-forward'
 import { Connection } from '../SettingStore'
+import { openSshTunnel, SshTunnel } from './sshTunnel'
 
 const logger = log4js.getLogger()
 
@@ -47,36 +46,20 @@ export default abstract class AbstractClient {
 
   async getSchema(): Promise<Schema> {
     const schema: Schema = { tables: [], functions: [] }
-    const sshConnection = this.settings.ssh?.remoteHost
-      ? new SSHConnection({
-          endHost: this.settings.ssh.remoteHost,
-          username: this.settings.ssh.user,
-          privateKey: readFileSync(
-            this.settings.ssh.identityFile || `${process.env.HOME}/.ssh/id_rsa`
-          ),
-          passphrase: this.settings.ssh.passphrase || '',
-        })
+    // The database client connects to settings.host:settings.port, which is
+    // expected to point at the local end of the tunnel (usually 127.0.0.1)
+    const sshTunnel: SshTunnel | null = this.settings.ssh?.remoteHost
+      ? await openSshTunnel(
+          this.settings.ssh,
+          this.settings.port || this.DefaultPort,
+          this.settings.ssh.dbPort || this.DefaultPort
+        )
       : null
-    if (sshConnection) {
-      await sshConnection
-        .forward({
-          fromPort: this.settings.port || this.DefaultPort,
-          toPort: this.settings.ssh?.dbPort || this.DefaultPort,
-          toHost: this.settings.ssh?.dbHost || '127.0.0.1',
-        })
-        .then((v) => {
-          if (v) {
-            logger.error('Failed to ssh remote server')
-            logger.error(v)
-          }
-          return []
-        })
-    }
-    if (!(await this.connect())) {
-      logger.error('AbstractClinet.getSchema: failed to connect database')
-      return { tables: [], functions: [] }
-    }
     try {
+      if (!(await this.connect())) {
+        logger.error('AbstractClinet.getSchema: failed to connect database')
+        return { tables: [], functions: [] }
+      }
       const tables = await this.getTables()
       schema.tables = await Promise.all(
         tables.map((v) =>
@@ -93,9 +76,7 @@ export default abstract class AbstractClient {
       throw e
     } finally {
       this.disconnect()
-      if (sshConnection) {
-        sshConnection.shutdown()
-      }
+      sshTunnel?.close()
     }
     return schema
   }

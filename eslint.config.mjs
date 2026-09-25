@@ -47,6 +47,11 @@ export default tseslint.config(
       ],
       'n/no-unsupported-features/es-syntax': 'off',
       'n/no-extraneous-import': 'off',
+      // node:sqlite is still experimental on Node 22, but adopted deliberately
+      'n/no-unsupported-features/node-builtins': [
+        'error',
+        { ignores: ['sqlite'] },
+      ],
       'n/no-missing-import': ['error', { allowModules: ['vscode'] }],
       'import/first': 0,
       'import/named': 2,

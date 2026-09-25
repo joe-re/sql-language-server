@@ -12,7 +12,7 @@
     "typecheck": "tsc -p ."
   },
   "engines": {
-    "vscode": "^1.91.0"
+    "vscode": "^1.101.0"
   },
   "activationEvents": [
     "onLanguage:sql",
@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.18.0",
-    "@types/vscode": "~1.91.0",
+    "@types/vscode": "~1.101.0",
     "esbuild": "^0.28.2",
     "tslib": "^2.0.0",
     "typescript": "~6.0.3"
