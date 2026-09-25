@@ -23,7 +23,7 @@
   "publisher": "joe-re",
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "pnpm --filter sqlint --filter sql-language-server typecheck",
+    "typecheck": "pnpm --filter sqlint --filter sql-language-server --filter sql-language-server_vsc typecheck",
     "vsc-compile": "pnpm vsc-compile:client && pnpm vsc-compile:server",
     "vsc-compile:client": "pnpm --filter sql-language-server_vsc compile",
     "vsc-compile:server": "pnpm build:sqlint && pnpm --filter sql-language-server prepare-vsc-extension",
@@ -48,7 +48,7 @@
   },
   "engines": {
     "node": "^22.13.0 || >=24",
-    "vscode": "^1.45.1"
+    "vscode": "^1.91.0"
   },
   "activationEvents": [
     "onLanguage:sql",

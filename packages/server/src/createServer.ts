@@ -6,9 +6,9 @@ import {
   InitializeResult,
   CompletionItem,
   CompletionParams,
+  CompletionTriggerKind,
+  TextDocuments,
 } from 'vscode-languageserver/node'
-import { TextDocuments } from 'vscode-languageserver'
-import { CompletionTriggerKind } from 'vscode-languageserver-protocol/lib/common/protocol'
 import { TextDocument } from 'vscode-languageserver-textdocument'
 import {
   CodeAction,

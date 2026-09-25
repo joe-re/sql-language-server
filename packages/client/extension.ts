@@ -12,12 +12,12 @@ import {
   CompletionList,
 } from 'vscode'
 import {
+  ExecuteCommandParams,
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
   TransportKind,
 } from 'vscode-languageclient/node'
-import { ExecuteCommandParams } from 'vscode-languageserver-protocol'
 import { rebuild } from './rebuild'
 
 const NOTEBOOK_CELL_SCHEME = 'vscode-notebook-cell'
@@ -114,6 +114,8 @@ export function getNotebookDocument(
   )
 }
 
+let client: LanguageClient | undefined
+
 export function activate(context: ExtensionContext) {
   // console.log("sql-language-server extension activated")
   monitorJupyterCells()
@@ -184,14 +186,24 @@ export function activate(context: ExtensionContext) {
     },
   }
 
-  const client = new LanguageClient(
+  client = new LanguageClient(
     'sqlLanguageServer',
     'SQL Language Server',
     serverOptions,
     clientOptions
   )
   client.registerProposedFeatures()
-  const disposable = client.start()
+  // Register notification handlers before start() so that notifications sent
+  // right after initialization (e.g. finishSetup) are not missed.
+  client.onNotification('sqlLanguageServer.finishSetup', (params) => {
+    connectionNames = params.personalConfig?.connections
+      ?.map((v: { name: string }) => v.name)
+      .filter((v: string) => !!v)
+    connectedConnectionName = params.config?.name || ''
+  })
+  client.onNotification('sqlLanguageServer.error', (params) => {
+    Window.showErrorMessage(params.message)
+  })
 
   const switchConnection = commands.registerCommand(
     'extension.switchDatabaseConnection',
@@ -257,16 +269,9 @@ export function activate(context: ExtensionContext) {
   context.subscriptions.push(switchConnection)
   context.subscriptions.push(fixAllFixableProblem)
   context.subscriptions.push(rebuildSqlite3)
-  context.subscriptions.push(disposable)
-  client.onReady().then(() => {
-    client.onNotification('sqlLanguageServer.finishSetup', (params) => {
-      connectionNames = params.personalConfig?.connections
-        ?.map((v: { name: string }) => v.name)
-        .filter((v: string) => !!v)
-      connectedConnectionName = params.config?.name || ''
-    })
-    client.onNotification('sqlLanguageServer.error', (params) => {
-      Window.showErrorMessage(params.message)
-    })
-  })
+  return client.start()
+}
+
+export function deactivate(): Thenable<void> | undefined {
+  return client?.stop()
 }

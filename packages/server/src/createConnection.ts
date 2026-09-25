@@ -1,11 +1,9 @@
 import {
   createConnection as _createConnection,
   Connection,
-} from 'vscode-languageserver/lib/node/main'
-import {
   IPCMessageReader,
   IPCMessageWriter,
-} from 'vscode-jsonrpc/lib/node/main'
+} from 'vscode-languageserver/node'
 import log4js from 'log4js'
 import { ConnectionMethod } from './createServer'
 const logger = log4js.getLogger()
