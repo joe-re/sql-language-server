@@ -1,19 +1,18 @@
 {
   "author": "joe-re<joe.tialtngo@gmail.com>",
   "name": "@joe-re/sql-parser",
-  "description": "sql parser for nodejs",
+  "description": "Hand-written SQL parser for sql-language-server",
   "version": "1.7.0",
-  "typings": "index.d.ts",
   "scripts": {
     "test": "vitest run",
-    "build": "pnpm run generateParser && pnpm run generateFromClauseParser",
-    "generateParser": "peggy -o ./base/parser.js parser.pegjs",
-    "generateFromClauseParser": "peggy -o ./base/fromClauseParser.js  --allowed-start-rules extract_from_clause parser.pegjs"
+    "build": "tsc -p .",
+    "watch": "tsc -w -p .",
+    "prepublishOnly": "pnpm run build"
   },
   "files": [
-    "base",
+    "dist",
+    "!dist/tsconfig.tsbuildinfo",
     "index.js",
-    "index.d.ts",
     "package.json",
     "LICENSE"
   ],
@@ -21,8 +20,8 @@
     "node": "^22.13.0 || >=24"
   },
   "devDependencies": {
-    "vitest": "~5.0.1",
-    "peggy": "^5.1.0"
+    "typescript": "~6.0.3",
+    "vitest": "~5.0.1"
   },
   "readmeFilename": "README.md",
   "main": "index.js",
@@ -30,5 +29,6 @@
     "SQL",
     "Parer"
   ],
-  "license": "GPLv2"
+  "license": "MIT",
+  "types": "dist/index.d.ts"
 }
