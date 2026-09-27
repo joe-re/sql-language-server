@@ -49,6 +49,19 @@ const EXPR_START = [
   'WITH',
 ]
 const IDENT_START = ['"', '`']
+
+/**
+ * Role markers recorded with the expectations. They tell completion what kind
+ * of name may appear at a position and never appear in syntax errors.
+ */
+export const ROLE = {
+  table: '#table',
+  column: '#column',
+  columnName: '#column_name',
+  alias: '#alias',
+  newName: '#new_name',
+} as const
+export const isRole = (label: string) => label.startsWith('#')
 /** Expected at the start of an expression outside of the select column list */
 const EXPR_PREFIX = ['NOT', '!']
 const AFTER_OPERAND = [
@@ -117,6 +130,10 @@ type ExprOptions = {
 }
 
 export type ParserOptions = {
+  /** Parse only tokens within [start, end) offsets */
+  range?: [number, number]
+  /** Used by getCompletionContext(): disables compatibility shortcuts */
+  forCompletion?: boolean
   /**
    * Mode of parseFromClause(): subqueries in FROM that fail to parse become
    * `incomplete_subquery` nodes and unterminated quotes are tolerated
@@ -146,9 +163,21 @@ export class Parser {
 
   constructor(sql: string, options: ParserOptions = {}) {
     this.sql = sql
-    this.allTokens = tokenize(sql, {
+    const tokens = tokenize(sql, {
       lenientQuotes: options.recoverFromSubquery,
     })
+    if (options.range) {
+      const [from, to] = options.range
+      const inside = tokens.filter(
+        (t) => t.kind !== 'eof' && t.start >= from && t.end <= to
+      )
+      this.allTokens = [
+        ...inside,
+        { kind: 'eof', text: '', start: to, end: to },
+      ]
+    } else {
+      this.allTokens = tokens
+    }
     this.tokens = this.allTokens.filter((t) => !isTrivia(t))
     this.lines = new LineMap(sql)
     this.options = options
@@ -478,7 +507,7 @@ export class Parser {
     for (;;) {
       this.expect('UNION')
       const op =
-        this.acceptKeyword('UNION ALL', null) ??
+        this.acceptKeyword('UNION ALL', 'UNION') ??
         this.acceptKeyword('UNION', null) ??
         this.acceptKeyword('INTERSECT', null) ??
         this.acceptKeyword('EXCEPT', null)
@@ -558,7 +587,11 @@ export class Parser {
 
   /** `[AS] alias` */
   parseAlias(): string | null {
-    if (this.acceptKeyword('AS')) return this.requireName(true)
+    this.expect(ROLE.alias)
+    if (this.acceptKeyword('AS')) {
+      this.expect(ROLE.alias)
+      return this.requireName(true)
+    }
     const part = this.acceptIdentifierPart()
     return part ? unquote(part.text) : null
   }
@@ -666,14 +699,14 @@ export class Parser {
     if (this.isPunct(this.peek(), '(')) {
       return this.parseSubqueryReference(start)
     }
-    this.expect('$')
+    this.expect('$', ROLE.table)
     const parts = [this.requireName()]
     for (;;) {
       this.expect('.')
       if (!this.isPunct(this.peek(), '.')) break
       const dot = this.i
       this.i++
-      this.expect('$')
+      this.expect('$', ROLE.table)
       const part = this.acceptIdentifierPart(true)
       if (!part) {
         if (this.options.recoverFromSubquery) {
@@ -909,6 +942,7 @@ export class Parser {
           : this.text(opStart, this.i - 1)
       const upper = infix.op
       let right: A.ExpressionNode
+      if (upper === 'IS') this.expect('NOT', 'NULL')
       if (upper === 'IN' || upper === 'NOT IN') {
         right = this.parseInList()
       } else if (upper === 'BETWEEN' || upper === 'NOT BETWEEN') {
@@ -984,7 +1018,7 @@ export class Parser {
   }
 
   private parsePrimary(): A.ExpressionNode {
-    this.expect(...EXPR_START)
+    this.expect(...EXPR_START, ROLE.column)
     const start = this.i
     const t = this.peek()
     switch (t.kind) {
@@ -1213,13 +1247,26 @@ export class Parser {
         break
       }
       const next = this.peek()
+      const dot = this.tokens[this.i - 1]
+      if (
+        this.options.forCompletion &&
+        next.kind !== 'eof' &&
+        next.start > dot.end
+      ) {
+        // `t. FROM`: the reference was left incomplete, carry on after it
+        break
+      }
       // Compatibility with the previous parser: these report no expectations
-      if (parts.length >= 2 && next.kind === 'eof')
-        this.failWithoutExpectations(next.start)
-      if (next.kind === 'word' && RESERVED.has(next.text.toUpperCase())) {
-        this.failWithoutExpectations(next.end)
+      if (!this.options.forCompletion) {
+        if (parts.length >= 2 && next.kind === 'eof') {
+          this.failWithoutExpectations(next.start)
+        }
+        if (next.kind === 'word' && RESERVED.has(next.text.toUpperCase())) {
+          this.failWithoutExpectations(next.end)
+        }
       }
       if (this.fromSubqueryDepth > 0) this.expect(')')
+      this.expect(ROLE.column)
       const part = this.requireIdentifierPart(true)
       parts.push(part.text + this.parseSubscripts())
     }
@@ -1271,6 +1318,7 @@ export class Parser {
       this.requireKeyword('REPLACE', null)
     this.acceptOneOf(['IGNORE'], false)
     this.requireKeyword('INTO')
+    this.expect(ROLE.table)
     const parts = this.requireQualifiedName(false, true)
     const table = parts[parts.length - 1]
     const db = parts.length > 1 ? parts[parts.length - 2] : ''
@@ -1356,6 +1404,8 @@ export class Parser {
   /** A column name; reports EXPECTED COLUMN NAME when it is the last token */
   private requireColumnName(locateAtEnd = false): string {
     const index = this.i
+    this.expect(ROLE.columnName)
+    if (this.options.forCompletion) return this.requireName(true)
     if (this.atEnd && index > 0 && this.isPunct(this.tokens[index - 1], ',')) {
       this.columnNameAt = index
       this.columnNameAtEnd = false
@@ -1373,6 +1423,7 @@ export class Parser {
   parseUpdate(withClause: A.WithClause | null): A.UpdateStatement {
     const statementStart = this.i
     this.requireKeyword('UPDATE', null)
+    this.expect(ROLE.table)
     const parts = this.requireQualifiedName()
     const table = parts[parts.length - 1]
     const db = parts.length > 1 ? parts[parts.length - 2] : ''
@@ -1395,7 +1446,7 @@ export class Parser {
       const columnIndex = this.i
       const column = this.requireSetColumn()
       this.requirePunct('=')
-      if (this.atEnd) {
+      if (this.atEnd && !this.options.forCompletion) {
         // Compatibility: the previous parser offered columns here
         this.columnNameAt = columnIndex
         throw new ParseFailure('expected_column_name')
@@ -1448,8 +1499,9 @@ export class Parser {
   /** `col` or `t.col` in UPDATE ... SET */
   private requireSetColumn(): string {
     const index = this.i
+    this.expect(ROLE.columnName)
     const parts = this.requireQualifiedName(true)
-    if (this.atEnd) {
+    if (this.atEnd && !this.options.forCompletion) {
       this.columnNameAt = index
       throw new ParseFailure('expected_column_name')
     }
@@ -1461,6 +1513,7 @@ export class Parser {
     this.requireKeyword('DELETE', null)
     this.requireKeyword('FROM')
     const start = this.i
+    this.expect(ROLE.table)
     const parts = this.requireQualifiedName()
     const table: A.DmlTableNode = {
       type: 'table',
@@ -1541,6 +1594,7 @@ export class Parser {
     if (foreign) {
       const columns = this.parseNameList()
       const references = this.requireKeyword('REFERENCES')
+      this.expect(ROLE.table)
       const referencesTable = this.requireQualifiedName().join('.')
       const referencesColumns = this.isPunct(this.peek(), '(')
         ? this.parseNameList()
@@ -1605,8 +1659,9 @@ export class Parser {
   /** `name data_type constraints...` */
   private parseField(start = this.i, reportColumnName: boolean): A.FieldNode {
     const nameIndex = this.i
+    this.expect(reportColumnName ? ROLE.columnName : ROLE.newName)
     const name = this.requireName(true)
-    if (reportColumnName && this.atEnd) {
+    if (reportColumnName && this.atEnd && !this.options.forCompletion) {
       this.columnNameAt = nameIndex
       throw new ParseFailure('expected_column_name')
     }
@@ -1712,6 +1767,7 @@ export class Parser {
     const ifNotExistsKeyword = this.acceptKeyword('IF NOT EXISTS')
     const name = this.requireName()
     const onKeyword = this.requireKeyword('ON')
+    this.expect(ROLE.table)
     const table = this.requireQualifiedName().join('.')
     const columns = this.parseNameList()
     return {
@@ -1854,12 +1910,14 @@ export class Parser {
   private parseAlterTable(): A.AlterTableStatement {
     const statementStart = this.i
     const keyword = this.requireKeyword('ALTER TABLE', 'ALTER')
+    this.expect(ROLE.table)
     const table = this.requireQualifiedName().join('.')
     this.expect('ADD', 'ALTER', 'DROP COLUMN', 'MODIFY')
     const start = this.i
     const drop = this.acceptKeyword('DROP COLUMN', 'DROP COLUMN')
     if (drop) {
-      if (this.atEnd) {
+      this.expect(ROLE.columnName)
+      if (this.atEnd && !this.options.forCompletion) {
         this.columnNameAt = this.i
         throw new ParseFailure('expected_column_name')
       }
@@ -1905,7 +1963,8 @@ export class Parser {
       this.acceptKeyword('MODIFY', null) ??
       this.acceptKeyword('ALTER COLUMN', 'ALTER')
     if (modify) {
-      if (this.atEnd) {
+      this.expect(ROLE.columnName)
+      if (this.atEnd && !this.options.forCompletion) {
         this.columnNameAt = this.i
         throw new ParseFailure('expected_column_name')
       }
@@ -1933,6 +1992,7 @@ export class Parser {
       const keyword = this.requireKeyword('DROP TABLE', null)
       const ifExists = this.acceptKeyword('IF EXISTS')
       const start = this.i
+      this.expect(ROLE.table)
       const parts = this.requireQualifiedName()
       const table: A.DmlTableNode = {
         type: 'table',

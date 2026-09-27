@@ -13,10 +13,8 @@ export function createFunctionCandidates(
       // Search using lowercase prefix
       .filter((v) => v.name.startsWith(lowerToken))
       // If typed string is in upper case, then return upper case suggestions
-      .map((v) => {
-        if (isTypedUpper) v.name = v.name.toUpperCase()
-        return v
-      })
+      // Do not mutate the schema: it is shared between completions
+      .map((v) => (isTypedUpper ? { ...v, name: v.name.toUpperCase() } : v))
       .map((v) => toCompletionItemForFunction(v))
   )
 }

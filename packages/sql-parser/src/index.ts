@@ -5,7 +5,7 @@ import {
   ExpectedNode,
   SqlSyntaxError,
 } from './errors'
-import { ParseFailure, Parser } from './parser'
+import { isRole, ParseFailure, Parser } from './parser'
 
 export * from './ast'
 export * from './errors'
@@ -40,7 +40,7 @@ function toSyntaxError(parser: Parser, e: ParseFailure): SqlSyntaxError {
   }
   if (parser.unterminatedAt !== null) {
     const token = parser.tokens[parser.unterminatedAt]
-    const labels = [...parser.expected]
+    const labels = [...parser.expected].filter((label) => !isRole(label))
     return new SqlSyntaxError(
       describeExpected(labels, null),
       labels.map(literal),
@@ -54,7 +54,9 @@ function toSyntaxError(parser: Parser, e: ParseFailure): SqlSyntaxError {
     ]
   // Whitespace and comments may appear wherever a token is expected. The
   // order matters: sql-language-server lists completion candidates in it.
-  const labels = [...new Set(['--', '/*', ...parser.expected])]
+  const labels = [...new Set(['--', '/*', ...parser.expected])].filter(
+    (label) => !isRole(label)
+  )
   const found = token.kind === 'eof' ? null : token.text[0]
   return new SqlSyntaxError(
     describeExpected(labels, found),
@@ -161,3 +163,5 @@ export function parseFromClause(sql: string): A.FromClauseParserResult {
     }
   })
 }
+export { getCompletionContext } from './completion'
+export type { CompletionContext } from './completion'
