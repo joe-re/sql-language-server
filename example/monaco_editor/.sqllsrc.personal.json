@@ -1,7 +1,12 @@
 {
   "connections": [
     {
-      "name": "postgres_db",
+      "name": "sqlite",
+      "adapter": "sqlite3",
+      "filename": "/opt/sql-language-server/example/monaco_editor/sample.sqlite3"
+    },
+    {
+      "name": "postgres",
       "adapter": "postgres",
       "host": "postgres",
       "port": 5432,
@@ -10,18 +15,13 @@
       "database": "postgres_db"
     },
     {
-      "name": "mysql_db",
+      "name": "mysql",
       "adapter": "mysql",
       "host": "mysql",
       "port": 3306,
       "user": "sqlls",
       "password": "sqlls",
       "database": "mysql_db"
-    },
-    {
-      "name": "sqlite_db",
-      "adapter": "sqlite3",
-      "filename": "/opt/sql-language-server/example/monaco_editor/sqlite_db.sqlite"
     }
   ]
 }

@@ -1,15 +1,14 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2022", "dom"],
+    "types": ["node", "vite/client"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": false
   },
-  "lib": [
-    "es2016",
-    "dom"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "test"
-  ],
+  "include": ["src", "server", "scripts", "vite.config.ts"]
 }

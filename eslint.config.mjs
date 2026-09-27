@@ -17,12 +17,6 @@ export default tseslint.config(
       'packages/sql-parser/',
       'packages/sqlint/schema.conf.js',
       '**/vitest.config.mts',
-      '**/migrations/',
-      '**/webpack.config.js',
-      'example/monaco_editor/models/',
-      'example/monaco_editor/config/config.js',
-      'example/monaco_editor/src/client/client.ts',
-      'example/monaco_editor/src/server/server.ts',
       'eslint.config.mjs',
     ],
   },
@@ -73,6 +67,14 @@ export default tseslint.config(
           'newlines-between': 'never',
         },
       ],
+    },
+  },
+  {
+    // Browser code of the monaco example
+    files: ['example/monaco_editor/src/**/*.ts'],
+    languageOptions: { globals: globals.browser },
+    rules: {
+      'n/no-unsupported-features/node-builtins': 'off',
     },
   },
   {
