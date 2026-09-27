@@ -51,9 +51,8 @@ function readFile(filePath: string) {
   return fs.readFileSync(path.resolve(filePath), 'utf8').replace(/^\ufeff/u, '')
 }
 
-export default class SettingStore extends EventEmitter.EventEmitter {
-  private personalConfig: PersonalConfig = { connections: [] }
-  private state: Connection = {
+function createDefaultState(): Connection {
+  return {
     name: null,
     adapter: null,
     host: null,
@@ -68,6 +67,11 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     projectPaths: [],
     jupyterLabMode: false,
   }
+}
+
+export default class SettingStore extends EventEmitter.EventEmitter {
+  private personalConfig: PersonalConfig = { connections: [] }
+  private state: Connection = createDefaultState()
   private static instance: SettingStore
 
   private constructor() {
@@ -176,7 +180,9 @@ export default class SettingStore extends EventEmitter.EventEmitter {
     const newSetting = Object.assign({}, setting)
     newSetting.ssh = newSetting.ssh ? Object.assign({}, newSetting.ssh) : null
     replaceEnv(newSetting)
-    this.state = Object.assign({}, this.state, newSetting)
+    // Replace the whole connection so that fields of the previous connection
+    // (e.g. database, host) do not leak into the new one
+    this.state = Object.assign(createDefaultState(), newSetting)
     logger.debug('setting store, emit "change"')
     this.emit('change', this.state)
   }

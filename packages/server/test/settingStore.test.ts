@@ -94,7 +94,10 @@ describe('setSettingFromWorkspaceConfig', () => {
         '/Users/sql-language-server/project2'
       )
     expect(setting?.name).toEqual('project2')
-    expect(setting?.database).toEqual('projectConfigDatabase')
+    expect(setting?.password).toEqual('pg_pass')
+    // project2 has no database. This used to leak from the previous test's
+    // project config because settings were merged into the previous state.
+    expect(setting?.database).toBeNull()
   })
 })
 
@@ -108,5 +111,29 @@ describe('changeConnection', () => {
     expect(SettingStore.getInstance().getSetting().name).toEqual('project2')
     SettingStore.getInstance().changeConnection('project1')
     expect(SettingStore.getInstance().getSetting().name).toEqual('project1')
+  })
+
+  it('should not keep fields of the previous connection', async () => {
+    await SettingStore.getInstance().setSettingFromFile(
+      `${__dirname}/fixtures/personalConfigFile.json`,
+      'no_project_config',
+      '/Users/sql-language-server/project1'
+    )
+    expect(SettingStore.getInstance().getSetting()).toMatchObject({
+      name: 'project1',
+      adapter: 'mysql',
+      host: 'localhost',
+      database: 'mysql-development',
+    })
+    // project2 has no adapter / host / database
+    SettingStore.getInstance().changeConnection('project2')
+    expect(SettingStore.getInstance().getSetting()).toMatchObject({
+      name: 'project2',
+      adapter: null,
+      host: null,
+      port: null,
+      database: null,
+      password: 'pg_pass',
+    })
   })
 })
