@@ -28,6 +28,7 @@ import SettingStore, { Connection as SettingConnection } from './SettingStore'
 import { Schema } from './database_libs/AbstractClient'
 import getDatabaseClient from './database_libs/getDatabaseClient'
 import initializeLogging from './initializeLogging'
+import resolveRootPath from './resolveRootPath'
 import { Sqlite3OpenError } from './database_libs/Sqlite3Client'
 
 export type ConnectionMethod = 'node-ipc' | 'stdio'
@@ -107,8 +108,8 @@ export function createServerWithConnection(
       (!!capabilities.workspace.configuration ||
         !!capabilities.workspace.didChangeConfiguration)
 
-    logger.debug(`onInitialize: ${params.rootPath}`)
-    rootPath = params.rootPath || ''
+    rootPath = resolveRootPath(params)
+    logger.debug(`onInitialize: ${rootPath}`)
 
     return {
       capabilities: {
@@ -184,7 +185,10 @@ export function createServerWithConnection(
         )?.connections) ||
       []
     if (connections.length > 0) {
-      SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
+      SettingStore.getInstance().setSettingFromWorkspaceConfig(
+        connections,
+        rootPath
+      )
     } else if (rootPath) {
       SettingStore.getInstance().setSettingFromFile(
         `${process.env.HOME}/.config/sql-language-server/.sqllsrc.json`,
@@ -219,7 +223,10 @@ export function createServerWithConnection(
     const connections = (sqlLanguageServerSetting.connections ??
       []) as SettingConnection[]
     if (connections.length > 0) {
-      SettingStore.getInstance().setSettingFromWorkspaceConfig(connections)
+      SettingStore.getInstance().setSettingFromWorkspaceConfig(
+        connections,
+        rootPath
+      )
     }
 
     // On configuration changes we retrieve the lint config
