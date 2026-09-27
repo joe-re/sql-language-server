@@ -15,7 +15,7 @@ services:
       - pnpm_store:/pnpm-store
     environment:
       # keep pnpm's content-addressable store out of the mounted repository
-      npm_config_store_dir: /pnpm-store
+      pnpm_config_store_dir: /pnpm-store
     command: bash -c "pnpm install && pnpm --filter sql-lsp-monaco-editor-example setup:sqlite && pnpm dev"
     ports:
       - '3000:3000'
