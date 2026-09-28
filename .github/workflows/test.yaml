@@ -133,8 +133,11 @@ jobs:
         working-directory: dist-bin
         run: |
           archive=$(ls sql-language-server-v*-${{ matrix.target }}.*)
-          tar -xf "$archive"
-          echo "BIN_DIR=dist-bin/${archive%%.tar.gz}" | sed 's/\.zip$//' >> "$GITHUB_ENV"
+          case "$archive" in
+            *.zip) unzip -q "$archive"; dir="${archive%.zip}" ;;
+            *) tar -xzf "$archive"; dir="${archive%.tar.gz}" ;;
+          esac
+          echo "BIN_DIR=dist-bin/$dir" >> "$GITHUB_ENV"
       - if: matrix.target == 'darwin-x64'
         run: softwareupdate --install-rosetta --agree-to-license || true
       - run: node scripts/smoke-binary.mjs "$BIN_DIR"
