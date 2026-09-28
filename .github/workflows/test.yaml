@@ -85,3 +85,57 @@ jobs:
         env:
           VSCODE_VERSION: ${{ matrix.vscode-version }}
       - run: pnpm vscode:package
+  binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:binary
+      - uses: actions/upload-artifact@v7
+        with:
+          name: binaries
+          path: |
+            dist-bin/*.tar.gz
+            dist-bin/*.zip
+            dist-bin/checksums.txt
+  binaries-smoke:
+    needs: binaries
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, target: linux-x64 }
+          - { os: ubuntu-24.04-arm, target: linux-arm64 }
+          - { os: macos-latest, target: darwin-arm64 }
+          # x64 binary on an arm64 runner through Rosetta
+          - { os: macos-latest, target: darwin-x64 }
+          - { os: windows-latest, target: windows-x64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+      - uses: actions/download-artifact@v8
+        with:
+          name: binaries
+          path: dist-bin
+      - name: Extract
+        shell: bash
+        working-directory: dist-bin
+        run: |
+          archive=$(ls sql-language-server-v*-${{ matrix.target }}.*)
+          tar -xf "$archive"
+          echo "BIN_DIR=dist-bin/${archive%%.tar.gz}" | sed 's/\.zip$//' >> "$GITHUB_ENV"
+      - if: matrix.target == 'darwin-x64'
+        run: softwareupdate --install-rosetta --agree-to-license || true
+      - run: node scripts/smoke-binary.mjs "$BIN_DIR"
+        shell: bash

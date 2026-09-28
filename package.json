@@ -45,6 +45,7 @@
     "npm:prepublish": "pnpm build:sqlint && pnpm build:server",
     "vscode:package": "vsce package --no-dependencies",
     "vscode:publish": "vsce publish --no-dependencies",
+    "build:binary": "pnpm build:sqlint && node scripts/build-binaries.mjs",
     "changeset": "changeset",
     "release:version": "changeset version",
     "release:publish": "pnpm npm:prepublish && changeset publish"

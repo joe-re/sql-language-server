@@ -1,0 +1,62 @@
+name: release-binaries
+# Builds standalone executables for a release tag (vX.Y.Z), attaches them to
+# the GitHub Release and generates the Homebrew formula.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build (e.g. v2.0.0)
+        required: true
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - name: Check the tag matches the package version
+        run: |
+          version=$(node -p "require('./packages/server/package.json').version")
+          test "$TAG" = "v$version" || { echo "tag $TAG does not match version $version"; exit 1; }
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:binary
+      - run: node scripts/smoke-binary.mjs "dist-bin/sql-language-server-v$VERSION-linux-x64"
+      - run: node scripts/homebrew-formula.mjs "$VERSION" dist-bin/checksums.txt "$GITHUB_REPOSITORY" > dist-bin/sql-language-server.rb
+      - name: Upload to the GitHub Release
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --verify-tag --generate-notes --title "$TAG"
+          gh release upload "$TAG" --clobber dist-bin/*.tar.gz dist-bin/*.zip dist-bin/checksums.txt dist-bin/sql-language-server.rb
+      - name: Update the Homebrew tap
+        # Requires a HOMEBREW_TAP_TOKEN secret with write access to joe-re/homebrew-tap
+        env:
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          if [ -z "$TAP_TOKEN" ]; then
+            echo "HOMEBREW_TAP_TOKEN is not set; skipped. The formula is attached to the release."
+            exit 0
+          fi
+          git clone "https://x-access-token:${TAP_TOKEN}@github.com/joe-re/homebrew-tap.git" tap
+          mkdir -p tap/Formula
+          cp dist-bin/sql-language-server.rb tap/Formula/sql-language-server.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/sql-language-server.rb
+          git diff --cached --quiet || git commit -m "sql-language-server $VERSION"
+          git push
