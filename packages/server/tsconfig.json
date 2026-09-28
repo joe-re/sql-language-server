@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "resolveJsonModule": true
   },
   "exclude": [
     "node_modules",
@@ -10,5 +11,14 @@
     "test",
     "vitest.config.mts"
   ],
-  "references": [{ "path": "../../packages/sqlint" }]
+  "references": [
+    {
+      "path": "../../packages/sqlint"
+    }
+  ],
+  "include": [
+    "bin",
+    "src",
+    "package.json"
+  ]
 }

@@ -1,8 +1,11 @@
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
+import { version } from '../package.json'
 import { ConnectionMethod, createServer } from '../src/createServer'
 
 yargs(hideBin(process.argv))
+  .scriptName('sql-language-server')
+  .version(version)
   .usage('SQL Language Server Command Line Interface')
   .command('up', 'run sql-language-server', (v) => {
     return v.option('method', {

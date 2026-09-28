@@ -26,9 +26,23 @@ Install the [VSC extension](https://marketplace.visualstudio.com/items?itemName=
 
 ### Other Editors
 
-```
-npm i -g sql-language-server
-```
+Install one of the following. They provide the `sql-language-server` and `sqlint` commands.
+
+- Homebrew (macOS / Linux):
+
+  ```
+  brew install joe-re/tap/sql-language-server
+  ```
+
+- A standalone executable that does not need Node.js: download the archive for your platform (macOS arm64 / x64, Linux x64 / arm64, Windows x64) from [GitHub Releases](https://github.com/joe-re/sql-language-server/releases) and put the executables on your `PATH`. `checksums.txt` has the SHA-256 of each archive.
+
+- npm (Node.js 22.13+ or 24+):
+
+  ```
+  npm i -g sql-language-server
+  ```
+
+Editors start the server with `sql-language-server up --method stdio`.
 
 #### Neovim
 
